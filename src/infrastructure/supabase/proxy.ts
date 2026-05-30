@@ -5,7 +5,7 @@ import type { Database } from "./database.types";
 
 type AuthProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
 
-const protectedUserPaths = ["/dashboard", "/scan", "/capture", "/result", "/wallet", "/rewards"];
+const protectedUserPaths = ["/dashboard", "/scan", "/capture", "/result", "/wallet", "/rewards", "/history"];
 const protectedAdminPaths = ["/admin"];
 
 function isProtectedPath(path: string) {

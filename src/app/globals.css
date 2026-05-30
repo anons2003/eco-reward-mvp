@@ -1,15 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbf9f8;
-  --foreground: #1b1c1c;
-  --primary: #006492;
-  --primary-bright: #2d9cdb;
-  --secondary: #219653;
-  --warning: #f2c94c;
-  --danger: #eb5757;
-  --muted: #f5f3f3;
-  --border: #d7dcdf;
+  --background: #f7fbf7;
+  --foreground: #18352f;
+  --primary: #65a30d;
+  --primary-deep: #4d7c0f;
+  --primary-bright: #14b8a6;
+  --secondary: #84cc16;
+  --secondary-bright: #a3e635;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --muted: #eef8ee;
+  --border: #d8e8d6;
+  --border-strong: #b8d7b4;
+  --surface: #ffffff;
+  --surface-soft: #f2faee;
+  --text-muted: #5b6f67;
 }
 
 * {
@@ -20,7 +26,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: "Google Sans Text", "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 a {
@@ -36,9 +42,37 @@ textarea {
 }
 
 .surface {
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--border);
-  box-shadow: 0 12px 30px rgba(28, 44, 52, 0.06);
+  box-shadow: 0 16px 42px rgba(101, 163, 13, 0.1);
+}
+
+.eco-shell {
+  background:
+    radial-gradient(circle at 14% 20%, rgba(132, 204, 22, 0.2), transparent 32%),
+    radial-gradient(circle at 86% 16%, rgba(14, 165, 233, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(247, 251, 247, 0.98), rgba(255, 255, 255, 0.98)),
+    var(--background);
+}
+
+.eco-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 14px 36px rgba(101, 163, 13, 0.1);
+}
+
+.eco-soft {
+  border: 1px solid var(--border-strong);
+  background: #f2faee;
+}
+
+.focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-ring:focus-visible {
+  outline-color: var(--secondary-bright);
 }
 
 .btn-primary {
@@ -47,11 +81,13 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 8px;
-  background: var(--primary);
-  color: white;
-  font-weight: 700;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-bright));
+  color: #ffffff;
+  font-weight: 800;
   padding: 10px 16px;
+  box-shadow: 0 12px 26px rgba(101, 163, 13, 0.18);
 }
 
 .btn-secondary {
@@ -60,20 +96,28 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 8px;
-  background: #e3f2fd;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: white;
   color: var(--primary);
-  font-weight: 700;
+  font-weight: 800;
   padding: 10px 16px;
 }
 
 .input {
   min-height: 44px;
   width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  padding: 10px 14px;
+  font-weight: 650;
+}
+
+.input:focus {
+  border-color: var(--secondary-bright);
   background: white;
-  padding: 10px 12px;
+  outline: none;
 }
 
 .badge {

@@ -8,5 +8,9 @@ dist/
 build/
 
 sticker/
+output/
+*.swp
+.agents/
+skills-lock.json
 
 .DS_Store

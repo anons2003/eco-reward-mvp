@@ -84,6 +84,8 @@ Seed demo tạo hai tài khoản local:
 ## Tài Liệu
 
 - [Proposal: Web App Tích Điểm Khi Phân Loại Rác](docs/proposal-web-app-tich-diem-phan-loai-rac.md)
+- [Software Requirements Specification: Eco-Reward MVP](docs/srs-eco-reward-mvp.md)
+- [Stitch FE Screen Map](docs/stitch-fe-screen-map.md)
 - [Kế Hoạch Triển Khai Theo Giai Đoạn 10-14 Ngày](docs/ke-hoach-trien-khai-theo-giai-doan.md)
 - [Cơ Chế Chống Gian Lận Cho Web App Phân Loại Rác](docs/co-che-chong-gian-lan-web-app-phan-loai-rac.md)
 - [Đặc Tả Thiết Kế UI/UX](docs/Design.md)

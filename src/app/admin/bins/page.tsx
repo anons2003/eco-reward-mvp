@@ -1,4 +1,5 @@
 import { MapPin } from "lucide-react";
+import { PageHeader } from "@/components/shared/eco-ui";
 import { ecoRewardService } from "@/application/services/eco-reward-service";
 
 export default function AdminBinsPage() {
@@ -6,20 +7,20 @@ export default function AdminBinsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-3xl font-black">Quản lý thùng rác</h1>
+      <PageHeader eyebrow="Bins" title="Quản lý thùng rác" body="Danh sách thùng, mã QR, vị trí và trạng thái vận hành." />
       <div className="grid gap-4 md:grid-cols-2">
         {bins.map((bin) => (
-          <article className="surface rounded-2xl p-6" key={bin.id}>
+          <article className="eco-card rounded-[28px] p-6" key={bin.id}>
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-xl font-black">{bin.name}</h2>
-                <p className="mt-1 font-mono text-sm text-[#3f4850]">{bin.qrCode}</p>
+                <p className="mt-1 font-mono text-sm text-[#5f6472]">{bin.qrCode}</p>
               </div>
-              <span className={bin.active ? "badge bg-[#D1EEDD] text-[#006d37]" : "badge bg-[#ffdad6] text-[#ba1a1a]"}>
+              <span className={bin.active ? "badge bg-[#18352f] text-[#151515]" : "badge bg-[#fff0f0] text-[#B91C1C]"}>
                 {bin.active ? "Hoạt động" : "Bảo trì"}
               </span>
             </div>
-            <p className="mt-4 flex items-center gap-2 text-[#3f4850]">
+            <p className="mt-4 flex items-center gap-2 text-[#5f6472]">
               <MapPin size={16} />
               {bin.locationName}
             </p>

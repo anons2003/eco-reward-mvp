@@ -1,28 +1,38 @@
 import Link from "next/link";
-import { Leaf, LogOut } from "lucide-react";
+import { Gift, History, LayoutDashboard, Leaf, LogOut, QrCode, Trash2, Wallet } from "lucide-react";
 
 export function TopBar({ admin = false }: { admin?: boolean }) {
+  const userLinks = [
+    ["/dashboard", "Dashboard", LayoutDashboard],
+    ["/scan", "Quét QR", QrCode],
+    ["/wallet", "Ví điểm", Wallet],
+    ["/rewards", "Đổi thưởng", Gift],
+  ] as const;
+  const adminLinks = [
+    ["/admin/dashboard", "Dashboard", LayoutDashboard],
+    ["/admin/submissions", "Lượt gửi", History],
+    ["/admin/bins", "Thùng rác", Trash2],
+  ] as const;
+  const links = admin ? adminLinks : userLinks;
+
   return (
-    <header className="sticky top-0 z-10 border-b border-[#d7dcdf] bg-[#fbf9f8]/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href={admin ? "/admin/dashboard" : "/dashboard"} className="flex items-center gap-2 font-bold text-[#006492]">
-          <Leaf size={22} />
-          Eco-Reward
+    <header className="sticky top-0 z-20 border-b border-[#e6e7ef] bg-[#fbfbff]/92 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <Link href={admin ? "/admin/dashboard" : "/dashboard"} className="flex shrink-0 items-center gap-2 font-black text-[#151515]">
+          <span className="grid size-10 place-items-center rounded-xl bg-[#f4f5fb]">
+            <Leaf size={22} />
+          </span>
+          <span className="hidden sm:inline">Eco-Reward</span>
         </Link>
-        <nav className="flex items-center gap-3 text-sm font-semibold text-[#3f4850]">
-          {admin ? (
-            <>
-              <Link href="/admin/submissions">Lượt gửi</Link>
-              <Link href="/admin/bins">Thùng rác</Link>
-            </>
-          ) : (
-            <>
-              <Link href="/wallet">Ví điểm</Link>
-              <Link href="/rewards">Đổi thưởng</Link>
-            </>
-          )}
+        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm font-bold text-[#5f6472]">
+          {links.map(([href, label, Icon]) => (
+            <Link className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 transition hover:bg-[#151515] hover:text-[#151515]" href={href} key={href}>
+              <Icon size={16} />
+              <span>{label}</span>
+            </Link>
+          ))}
           <form action="/api/auth/logout" method="post">
-            <button className="btn-secondary" type="submit" aria-label="Đăng xuất">
+            <button className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#e6e7ef] bg-white px-3 text-[#151515]" type="submit" aria-label="Đăng xuất">
               <LogOut size={16} />
             </button>
           </form>

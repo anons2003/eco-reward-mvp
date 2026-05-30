@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EcoStitch - Biến Rác Thải Thành Giá Trị</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "text-muted": "#5f6472",
+                        "on-tertiary-container": "#9863ff",
+                        "on-secondary-container": "#005f70",
+                        "on-primary": "#ffffff",
+                        "outline": "#747878",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#444748",
+                        "accent-violet-tint": "#f1ecff",
+                        "primary-fixed-dim": "#c8c6c5",
+                        "secondary-fixed": "#adecff",
+                        "tertiary-fixed": "#eaddff",
+                        "inverse-on-surface": "#f0f0f4",
+                        "surface-bright": "#f9f9fd",
+                        "on-error-container": "#93000a",
+                        "border-subtle": "#e6e7ef",
+                        "on-tertiary-fixed-variant": "#5a00c6",
+                        "on-background": "#1a1c1f",
+                        "on-surface": "#1a1c1f",
+                        "outline-variant": "#c4c7c7",
+                        "surface-container": "#ededf1",
+                        "background": "#f9f9fd",
+                        "surface-container-high": "#e8e8ec",
+                        "secondary": "#00687a",
+                        "inverse-surface": "#2e3034",
+                        "surface": "#ffffff",
+                        "on-primary-fixed-variant": "#474646",
+                        "primary-container": "#1c1b1b",
+                        "primary": "#000000",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-raised": "#f4f5fb",
+                        "tertiary-fixed-dim": "#d2bbff",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-dim": "#d9dade",
+                        "inverse-primary": "#c8c6c5",
+                        "primary-fixed": "#e5e2e1",
+                        "on-primary-fixed": "#1c1b1b",
+                        "surface-container-low": "#f3f3f7",
+                        "accent-cyan-tint": "#e8fbff",
+                        "tertiary-container": "#25005a",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e2e2e6",
+                        "secondary-container": "#48ddff",
+                        "on-secondary-fixed-variant": "#004e5d",
+                        "surface-tint": "#5f5e5e",
+                        "tertiary": "#000000",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#40d7f9",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#858383",
+                        "on-tertiary-fixed": "#25005a",
+                        "surface-container-highest": "#e2e2e6"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "unit": "8px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "20px"
+                    },
+                    fontFamily: {
+                        "display-hero-mobile": ["Plus Jakarta Sans", "sans-serif"],
+                        "display-hero": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-md": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-md": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-md": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    fontSize: {
+                        "display-hero-mobile": ["48px", { lineHeight: "52px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "display-hero": ["72px", { lineHeight: "80px", letterSpacing: "-0.04em", fontWeight: "800" }],
+                        "body-md": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "0em", fontWeight: "400" }],
+                        "headline-lg": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-md": ["28px", { lineHeight: "36px", letterSpacing: "-0.01em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #ffffff;
+            background-image: radial-gradient(#e6e7ef 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #e6e7ef;
+        }
+        .beam-gradient {
+            background: linear-gradient(135deg, rgba(32, 199, 232, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background selection:bg-secondary-container">
+<!-- Top Navigation -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-md border-b border-border-subtle h-16 flex items-center justify-between px-margin-mobile">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<span class="font-headline-md text-headline-md-mobile font-bold tracking-tighter text-primary">EcoStitch</span>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-border-subtle">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzb_gm2u9hDZvlREWddZh0Y-bWpEGX6xTV7eTsY4NMkNYmwXaQVyxNoeM4bJvwAoCtr5-6I2sNIw8vjYzr8VFcIsOZq_s9p9r0QBvXv6oD2t1AMQqkB78IQZeWNMnbXsJ0Wo3Hik7oibRkV5LmjpE5AVwHtCBuy5Ykp_139OvT2bSC8Yy41TZsEYmsjT4GNFLqzW-2eMHpkvIYGGKPtOJ4u1CmdtIBYqwdR-s2OPsQhTMD-7daW_zB3RIhUrgwEYioqAJbbOsteO5Q"/>
+</div>
+</header>
+<main class="pt-16 pb-24">
+<!-- Hero Section -->
+<section class="relative px-margin-mobile pt-12 pb-20 overflow-hidden">
+<div class="absolute inset-0 beam-gradient -z-10 opacity-50"></div>
+<div class="flex flex-col items-center text-center gap-6">
+<h1 class="font-display-hero-mobile text-display-hero-mobile text-primary">
+                    Biến Rác Thải Thành Giá Trị. Cho Bạn &amp; Hành Tinh.
+                </h1>
+<div class="w-full max-w-sm rounded-xl overflow-hidden shadow-sm border border-border-subtle bg-white p-2">
+<img alt="Eco Hero" class="w-full h-64 object-cover rounded-lg" data-alt="A vibrant and optimistic scene of a pristine beach coastline under a clear blue sky. Two children, illustrated in a clean, high-contrast modern vector style, are smiling while placing recyclable bottles and cans into green bags with recycle symbols. The sunlight is bright and clear, emphasizing a sense of hope and environmental stewardship with a sophisticated clean-tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrwkOl8WrJyI0feSQYtSeJoE30Z4S5YI3iueRYzxeAugV_9GJhA1csPHu01zVsxiTFVrmXw7CPg1H6dzjZOeXBSbnAF1oZfwJza4fVz9uqHXeEjFAsPSNmGYT6VfXi-gVaADcZcHmi2ZNu4Mzr5pspkOGkyHFGX7oWBKupnE_m0LLSD9zc2Pi-KeP3ViovJ4M8kAn_EKyoaNxCwyBanZDt-ruMPtXzMymZaemUgev3Fap4_biwITtNpqKq_nwrHwjgdNz6EC7G-LNt"/>
+</div>
+<div class="flex flex-col w-full gap-3 mt-4">
+<button class="bg-primary text-on-primary py-4 px-8 rounded-full font-bold text-body-lg active:scale-95 transition-transform">
+                        Tham gia ngay
+                    </button>
+<button class="glass-panel py-4 px-8 rounded-full font-bold text-body-lg text-primary active:scale-95 transition-transform">
+                        Tìm hiểu thêm
+                    </button>
+</div>
+</div>
+</section>
+<!-- Stats Grid -->
+<section class="px-margin-mobile py-12">
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-1">
+<span class="font-headline-md text-primary">1.2M+</span>
+<span class="text-label-sm text-text-muted uppercase">Sản phẩm tái chế</span>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-1">
+<span class="font-headline-md text-primary">45k kg</span>
+<span class="text-label-sm text-text-muted uppercase">CO2 đã giảm</span>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-1 col-span-2">
+<div class="flex items-center justify-between">
+<div>
+<span class="font-headline-md text-primary block">15,000</span>
+<span class="text-label-sm text-text-muted uppercase">Cây xanh đã trồng</span>
+</div>
+<span class="material-symbols-outlined text-on-secondary-container text-4xl" data-icon="park">park</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Steps Section -->
+<section class="px-margin-mobile py-16 bg-surface-raised/50 border-y border-border-subtle">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-10 text-center">Ba Bước Đơn Giản</h2>
+<div class="flex flex-col gap-12">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile text-primary mb-1">Quét mã QR</h3>
+<p class="text-text-muted">Tìm các thùng rác thông minh EcoStitch gần bạn và quét mã để bắt đầu.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" data-icon="photo_camera">photo_camera</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile text-primary mb-1">Chụp ảnh rác</h3>
+<p class="text-text-muted">Ghi lại khoảnh khắc bạn phân loại rác đúng cách để hệ thống AI xác nhận.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" data-icon="card_giftcard" style="font-variation-settings: 'FILL' 1;">card_giftcard</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile text-primary mb-1">Nhận thưởng</h3>
+<p class="text-text-muted">Nhận ngay EcoPoints và đổi lấy những phần quà giá trị từ đối tác của chúng tôi.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Rewards Horizontal Scroll -->
+<section class="py-16">
+<div class="px-margin-mobile flex justify-between items-end mb-8">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Kho Quà Tặng</h2>
+<a class="text-on-secondary-container font-bold text-label-md" href="#">Xem tất cả</a>
+</div>
+<div class="flex overflow-x-auto pb-4 gap-4 px-margin-mobile no-scrollbar">
+<!-- Reward Card 1 -->
+<div class="min-w-[280px] glass-panel rounded-2xl p-4 flex flex-col gap-4">
+<div class="h-40 rounded-xl overflow-hidden">
+<img alt="Cà phê" class="w-full h-full object-cover" data-alt="A close-up shot of a steaming, artisanal cup of coffee with intricate latte art, set on a clean white marble surface. The lighting is soft and natural, creating a high-end minimalist atmosphere. The color palette is composed of warm coffee tones against a bright, airy background, aligning with the luminous precision brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpXWBe8U5pF4v-l8o2qOBTYwDoNficD2tFuluvjSjkZ8__ZgyzxkvdgTWccIkhlkhYhNpUx6JCwa2sOtAaLCzpzVTGm7IlhrauEfBZD3KxN6eLDo6eiPt78A7HOpkFcUS3ib4WmsDgW7yBT-bFjnsRDERxr6PVQ8YBwdq-S2LCVqUDE4_n5gwxpAgjEJxiY-Rkrex4v0JBbPQzVJ0M_OnRvn2kWCgBUxONk4RtX4gF8N9kQzkZpsFCUTvFhwHAcia88fHTNKD4574G"/>
+</div>
+<div>
+<h4 class="font-headline-md text-body-lg font-bold">Cà phê Thủ Công</h4>
+<p class="text-label-md text-text-muted">500 EcoPoints</p>
+</div>
+<button class="w-full py-3 bg-primary text-white rounded-full font-bold active:scale-95 transition-transform">Đổi Ngay</button>
+</div>
+<!-- Reward Card 2 -->
+<div class="min-w-[280px] glass-panel rounded-2xl p-4 flex flex-col gap-4">
+<div class="h-40 rounded-xl overflow-hidden">
+<img alt="Vé xem phim" class="w-full h-full object-cover" data-alt="A modern cinema interior showing comfortable red velvet seats in soft, atmospheric lighting. The image is clean and professional, using deep shadows and cinematic highlights to convey a premium experience. The aesthetic is sophisticated and high-contrast, fitting for a reward showcase in a clean-tech application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM5unryQpER6Ie177S9Hx6sJ6txOLomPM-6dXM6TEvuZB9TB3hYT8BAQdqv3c3KaI1CYAC17Bu-oVlXSzDiqyfmijHurnzffp8T9uW9mEx2UgS1omMNyeOqRDIh2A0yTjlJImYZkjKrX2yXVXvBZeATrqZUNE9qyuXKcuxcsDt2-2dxa3GwO4iCOQgQCxE6yk6PimtnZE5CuNPh-LQB2PIDRHc2hnkUkeTX5ChY7sRqXAzr3yarE2EjTbec8uOs3yh_NxoSFl06n3w"/>
+</div>
+<div>
+<h4 class="font-headline-md text-body-lg font-bold">Vé Xem Phim</h4>
+<p class="text-label-md text-text-muted">1,200 EcoPoints</p>
+</div>
+<button class="w-full py-3 bg-primary text-white rounded-full font-bold active:scale-95 transition-transform">Đổi Ngay</button>
+</div>
+<!-- Reward Card 3 -->
+<div class="min-w-[280px] glass-panel rounded-2xl p-4 flex flex-col gap-4">
+<div class="h-40 rounded-xl overflow-hidden">
+<img alt="Trồng rừng" class="w-full h-full object-cover" data-alt="A vast, sun-drenched green forest showing young trees being planted in a sustainable restoration project. The lighting is bright and ethereal, with soft sunbeams filtering through the leaves. The image conveys environmental impact and growth through a clean, modern photographic lens with vibrant greens and soft whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1CV20IRCvEF_B5T5_50mLYpEOiljH-7NKvLhPn3G3oTbmhZ3NKFbcfrwrKceeDbVbplkAajCrlIlwRamLmjAG9OeQW3UCnoacsmVZWDh6xRgrRtNcBLpsChsOpq2UjykbqtELWglXT9wwLtQKGEJFm0A_068gsTEh70ZVZyQ16j8toij-PAqyCwtd9GSi65ID86GZtIOwM9yquLdhVXDti66ckeGekyulmqkel9KMShcsclWYgWJI3fLvfssVpWiTHZysZh3tTBMP"/>
+</div>
+<div>
+<h4 class="font-headline-md text-body-lg font-bold">Trồng Cánh Rừng</h4>
+<p class="text-label-md text-text-muted">3,000 EcoPoints</p>
+</div>
+<button class="w-full py-3 bg-primary text-white rounded-full font-bold active:scale-95 transition-transform">Đổi Ngay</button>
+</div>
+</div>
+</section>
+<!-- Testimonial -->
+<section class="px-margin-mobile py-16">
+<div class="glass-panel p-8 rounded-3xl relative text-center flex flex-col items-center gap-4">
+<div class="absolute -top-10 w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden">
+<img alt="Linh Nguyễn" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzb_gm2u9hDZvlREWddZh0Y-bWpEGX6xTV7eTsY4NMkNYmwXaQVyxNoeM4bJvwAoCtr5-6I2sNIw8vjYzr8VFcIsOZq_s9p9r0QBvXv6oD2t1AMQqkB78IQZeWNMnbXsJ0Wo3Hik7oibRkV5LmjpE5AVwHtCBuy5Ykp_139OvT2bSC8Yy41TZsEYmsjT4GNFLqzW-2eMHpkvIYGGKPtOJ4u1CmdtIBYqwdR-s2OPsQhTMD-7daW_zB3RIhUrgwEYioqAJbbOsteO5Q"/>
+</div>
+<div class="mt-8">
+<div class="flex justify-center gap-1 mb-2">
+<span class="material-symbols-outlined text-yellow-400" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-400" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-400" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-400" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-400" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-lg text-primary italic mb-4">"Ứng dụng tuyệt vời! Tôi vừa bảo vệ môi trường vừa nhận được những ly cà phê miễn phí mỗi tuần. Thật sự rất ý nghĩa!"</p>
+<h5 class="font-headline-md text-body-md font-bold">Linh Nguyễn</h5>
+<span class="text-label-sm text-text-muted">Người dùng thân thiết</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full bg-surface/80 backdrop-blur-xl border-t border-border-subtle h-20 flex items-center justify-around px-4 z-50">
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-label-sm">Bảng tin</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-text-muted">
+<span class="material-symbols-outlined" data-icon="potted_plant">potted_plant</span>
+<span class="text-label-sm">Phần thưởng</span>
+</div>
+<div class="relative -top-4">
+<div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-1 text-text-muted">
+<span class="material-symbols-outlined" data-icon="eco">eco</span>
+<span class="text-label-sm">Sứ mệnh</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-text-muted">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-sm">Cài đặt</span>
+</div>
+</nav>
+<!-- Footer -->
+<footer class="w-full py-12 px-margin-mobile bg-surface-container-lowest text-center border-t border-border-subtle mb-20">
+<span class="font-label-md font-bold text-primary block mb-4">EcoStitch</span>
+<p class="text-text-muted text-label-sm mb-6">© 2024 EcoStitch System. Tất cả quyền được bảo lưu.</p>
+<div class="flex justify-center gap-6 text-label-sm font-semibold text-primary">
+<a class="hover:underline" href="#">Bảo mật</a>
+<a class="hover:underline" href="#">Điều khoản</a>
+<a class="hover:underline" href="#">Hỗ trợ</a>
+</div>
+</footer>
+<script>
+        // Simple scroll behavior for navigation
+        let lastScrollTop = 0;
+        const header = document.querySelector('header');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            header.style.transition = 'transform 0.3s ease-in-out';
+            lastScrollTop = scrollTop;
+        });
+    </script>
+</body></html>

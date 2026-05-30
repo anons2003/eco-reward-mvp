@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BarChart3, CheckCircle2, Clock3, Coins, type LucideIcon, XCircle } from "lucide-react";
 import { ecoRewardService } from "@/application/services/eco-reward-service";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { PageHeader } from "@/components/shared/eco-ui";
 
 export default function AdminDashboardPage() {
   const stats = ecoRewardService.getDashboardStats();
@@ -16,29 +17,29 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-3xl font-black">Dashboard tổng quan</h1>
+      <PageHeader eyebrow="Admin" title="Dashboard tổng quan" body="Theo dõi lượt gửi, trạng thái duyệt và tổng điểm đã cấp cho chiến dịch." />
       <div className="grid gap-4 md:grid-cols-5">
         {cards.map(([label, value, Icon]) => (
-          <div className="surface rounded-2xl p-4" key={label as string}>
-            <Icon className="text-[#006492]" />
+          <div className="eco-card rounded-2xl p-4" key={label as string}>
+            <Icon className="text-[#151515]" />
             <p className="mt-3 text-2xl font-black">{value as number}</p>
-            <p className="text-sm text-[#3f4850]">{label as string}</p>
+            <p className="text-sm font-bold text-[#5f6472]">{label as string}</p>
           </div>
         ))}
       </div>
-      <section className="surface mt-6 rounded-2xl p-6">
+      <section className="eco-card mt-6 rounded-[28px] p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black">Lượt gửi mới</h2>
-          <Link className="font-bold text-[#006492]" href="/admin/submissions">
+          <Link className="font-bold text-[#166534]" href="/admin/submissions">
             Xem tất cả
           </Link>
         </div>
         <div className="mt-4 grid gap-3">
           {latest.map((submission) => (
-            <Link className="flex items-center justify-between rounded-xl border border-[#d7dcdf] bg-white p-4" href={`/admin/submissions/${submission.id}`} key={submission.id}>
+            <Link className="flex items-center justify-between rounded-2xl border border-[#e6e7ef] bg-white p-4 transition hover:border-[#151515]" href={`/admin/submissions/${submission.id}`} key={submission.id}>
               <div>
                 <p className="font-bold">{submission.aiResult.wasteType.replaceAll("_", " ")}</p>
-                <p className="text-sm text-[#3f4850]">{submission.reason}</p>
+                <p className="text-sm text-[#5f6472]">{submission.reason}</p>
               </div>
               <StatusBadge status={submission.status} />
             </Link>
