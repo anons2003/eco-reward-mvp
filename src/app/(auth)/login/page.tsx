@@ -3,7 +3,7 @@ import { Leaf, ShieldCheck, Smartphone } from "lucide-react";
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
   const params = await searchParams;
   const next = params.next ?? "";
-  const hasError = params.error === "invalid_credentials" || params.error === "missing_credentials";
+  const hasError = params.error === "invalid_credentials" || params.error === "missing_credentials" || params.error === "oauth_failed";
 
   return (
     <main className="grid min-h-screen place-items-center px-4 py-10">
@@ -37,6 +37,18 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <p className="mt-2 text-[#3f4850]">Dùng Supabase Auth với tài khoản demo đã seed.</p>
           {hasError ? <p className="mt-4 rounded-xl bg-[#fff0f0] p-3 text-sm font-bold text-[#b42318]">Email hoặc mật khẩu chưa đúng.</p> : null}
           <div className="mt-8 grid gap-4">
+            <form action="/api/auth/google" method="get">
+              <input type="hidden" name="next" value={next || "/dashboard"} />
+              <button className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#d7dcdf] bg-white px-4 py-3 text-base font-black text-[#1f2933] transition hover:bg-[#f5f3f3]" type="submit">
+                <span className="grid size-7 place-items-center rounded-full bg-[#4285f4] text-sm font-black text-white">G</span>
+                Đăng nhập với Google
+              </button>
+            </form>
+            <div className="flex items-center gap-3 text-xs font-bold uppercase text-[#87919a]">
+              <span className="h-px flex-1 bg-[#d7dcdf]" />
+              hoặc
+              <span className="h-px flex-1 bg-[#d7dcdf]" />
+            </div>
             <form action="/api/auth/login" className="grid gap-3" method="post">
               <input type="hidden" name="next" value={next || "/dashboard"} />
               <label className="grid gap-1 text-sm font-bold text-[#3f4850]" htmlFor="email">
