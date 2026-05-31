@@ -28,9 +28,7 @@ describe("POST /api/auth/forgot-password", () => {
 
     const response = await POST(requestWithForm({ email: "USER@Example.com " }));
 
-    expect(resetPasswordForEmail).toHaveBeenCalledWith("user@example.com", {
-      redirectTo: "https://eco.test/reset-password",
-    });
+    expect(resetPasswordForEmail).toHaveBeenCalledWith("user@example.com");
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?sent=1");
   });
