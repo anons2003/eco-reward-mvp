@@ -52,4 +52,13 @@ describe("POST /api/auth/forgot-password", () => {
 
     expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?error=email_rate_limited");
   });
+
+  it("returns a rate-limit specific error when Supabase throttles repeated requests", async () => {
+    resetPasswordForEmail.mockResolvedValueOnce({ error: new Error("For security purposes, you can only request this after 16 seconds.") });
+    const { POST } = await import("./route");
+
+    const response = await POST(requestWithForm({ email: "USER@Example.com " }));
+
+    expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?error=email_rate_limited");
+  });
 });

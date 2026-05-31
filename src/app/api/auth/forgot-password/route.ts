@@ -25,7 +25,8 @@ export async function POST(request: NextRequest | Request) {
   if (error) {
     console.error("Password reset email failed", error.message);
     const url = new URL("/forgot-password", request.url);
-    url.searchParams.set("error", error.message.toLowerCase().includes("rate limit") ? "email_rate_limited" : "reset_failed");
+    const message = error.message.toLowerCase();
+    url.searchParams.set("error", message.includes("rate limit") || message.includes("security purposes") ? "email_rate_limited" : "reset_failed");
     return NextResponse.redirect(url, { status: 302 });
   }
 
