@@ -1,18 +1,21 @@
 "use client";
 
-import { type ReactNode, useRef } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { type ReactNode, useEffect, useRef } from "react";
 
 export function LandingGsapAnimations({ children }: { children: ReactNode }) {
   const scope = useRef<HTMLDivElement>(null);
 
-  useGSAP(
-    () => {
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+
+    async function loadAnimations() {
+      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
+      if (cancelled) return;
+
+      gsap.registerPlugin(ScrollTrigger);
       const mm = gsap.matchMedia();
+      cleanup = () => mm.revert();
 
       mm.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(
@@ -162,11 +165,15 @@ export function LandingGsapAnimations({ children }: { children: ReactNode }) {
           });
         });
       });
+    }
 
-      return () => mm.revert();
-    },
-    { scope },
-  );
+    void loadAnimations();
+
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, []);
 
   return <div ref={scope}>{children}</div>;
 }

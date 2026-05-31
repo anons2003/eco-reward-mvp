@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { Award, BarChart3, Camera, Droplets, Edit3, Leaf, Mail, MapPin, Phone, Recycle, Share2, Trees, Trophy, WalletCards } from "lucide-react";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { avatarUrlFromMetadata } from "@/infrastructure/auth/avatar";
-import { createClient } from "@/infrastructure/supabase/server";
-import type { Database } from "@/infrastructure/supabase/database.types";
-
-type ProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "email" | "full_name" | "avatar_url" | "points" | "trust_score">;
+import { getUserShell } from "@/infrastructure/auth/session";
 
 function StatCard({ Icon, label, value, unit }: { Icon: typeof WalletCards; label: string; value: string; unit: string }) {
   return (
@@ -24,21 +20,8 @@ function StatCard({ Icon, label, value, unit }: { Icon: typeof WalletCards; labe
 }
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let profile: ProfileRow | null = null;
-  if (user) {
-    const { data } = await supabase.from("profiles").select("email,full_name,avatar_url,points,trust_score").eq("id", user.id).single();
-    profile = data as ProfileRow | null;
-  }
-
-  const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? "Alex Johnson";
-  const email = profile?.email ?? user?.email ?? "alex.johnson@eco-future.com";
-  const avatarUrl = profile?.avatar_url ?? avatarUrlFromMetadata(user?.user_metadata);
-  const points = profile?.points ?? 12450;
+  const { avatarUrl, displayName, points, user } = await getUserShell();
+  const email = user.email ?? "alex.johnson@eco-future.com";
   const nextRank = 15000;
   const progress = Math.min(Math.round((points / nextRank) * 100), 100);
 

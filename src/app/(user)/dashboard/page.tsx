@@ -15,12 +15,11 @@ import {
 import { StatusBadge } from "@/components/shared/status-badge";
 import { rewardCatalog } from "@/components/user/rewards-catalog";
 import type { AIResult, SubmissionStatus } from "@/core/entities/types";
+import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { Database } from "@/infrastructure/supabase/database.types";
-import { createClient } from "@/infrastructure/supabase/server";
 
 type DashboardSubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "ai_result" | "status" | "points" | "created_at">;
 type DashboardRewardRow = Pick<Database["public"]["Tables"]["reward_items"]["Row"], "id" | "title" | "points_required">;
-type DashboardProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "email" | "full_name" | "points" | "trust_score">;
 
 const weeklyTrend = [28, 42, 18, 58, 46, 68, 60];
 const weekLabels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
@@ -35,25 +34,14 @@ function parseAiResult(value: unknown): AIResult {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  let profile: DashboardProfileRow | null = null;
-  if (authUser) {
-    const { data } = await supabase.from("profiles").select("id,email,full_name,points,trust_score").eq("id", authUser.id).single();
-    profile = data;
-  }
-
-  let submissionRows: DashboardSubmissionRow[] = [];
-  if (authUser) {
-    const { data } = await supabase.from("submissions").select("id,ai_result,status,points,created_at").eq("user_id", authUser.id).order("created_at", { ascending: false }).limit(5);
-    submissionRows = data ?? [];
-  }
-
-  const { data } = await supabase.from("reward_items").select("id,title,points_required").eq("active", true).order("points_required", { ascending: true }).limit(2);
-  const rewards: DashboardRewardRow[] = data ?? [];
+  const { displayName: fullName, points, profile, user } = await getUserShell();
+  const supabase = await getSupabaseServerClient();
+  const [{ data: submissionData }, { data: rewardData }] = await Promise.all([
+    supabase.from("submissions").select("id,ai_result,status,points,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
+    supabase.from("reward_items").select("id,title,points_required").eq("active", true).order("points_required", { ascending: true }).limit(2),
+  ]);
+  const submissionRows: DashboardSubmissionRow[] = submissionData ?? [];
+  const rewards: DashboardRewardRow[] = rewardData ?? [];
   const submissions = submissionRows.map((row) => ({
     id: row.id,
     aiResult: parseAiResult(row.ai_result),
@@ -62,11 +50,8 @@ export default async function DashboardPage() {
     createdAt: row.created_at,
   }));
 
-  const dashboardProfile = profile as DashboardProfileRow | null;
-  const fullName = dashboardProfile?.full_name ?? authUser?.email ?? "Eco user";
   const firstName = fullName.split(" ")[0] || "Bạn";
-  const points = dashboardProfile?.points ?? 0;
-  const trustScore = dashboardProfile?.trust_score ?? 80;
+  const trustScore = profile?.trust_score ?? 80;
   const pendingCount = submissions.filter((row) => row.status === "pending_review").length;
   const approvedCount = submissions.filter((row) => row.status === "approved").length;
   const rewardCount = rewards.length || rewardCatalog.filter((reward) => points >= reward.points).length;

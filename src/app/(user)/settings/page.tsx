@@ -2,11 +2,7 @@ import Link from "next/link";
 import { Bell, Camera, Globe2, LockKeyhole, LogOut, Mail, MapPin, Save, Shield, UserRound } from "lucide-react";
 import { PendingSubmitButton } from "@/components/shared/loading-ui";
 import { AvatarUploadForm } from "@/components/user/avatar-upload-form";
-import { avatarUrlFromMetadata } from "@/infrastructure/auth/avatar";
-import { createClient } from "@/infrastructure/supabase/server";
-import type { Database } from "@/infrastructure/supabase/database.types";
-
-type SettingsProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "email" | "full_name" | "avatar_url">;
+import { getUserShell } from "@/infrastructure/auth/session";
 
 function Toggle({ enabled = true }: { enabled?: boolean }) {
   return (
@@ -34,20 +30,8 @@ function SettingRow({ Icon, title, body, enabled = true }: { Icon: typeof Bell; 
 }
 
 export default async function SettingsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let profile: SettingsProfileRow | null = null;
-  if (user) {
-    const { data } = await supabase.from("profiles").select("email,full_name,avatar_url").eq("id", user.id).single();
-    profile = data as SettingsProfileRow | null;
-  }
-
-  const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? "Nguyễn Văn Minh";
-  const email = profile?.email ?? user?.email ?? "minh.nguyen@email.com";
-  const avatarUrl = profile?.avatar_url ?? avatarUrlFromMetadata(user?.user_metadata);
+  const { avatarUrl, displayName, user } = await getUserShell();
+  const email = user.email ?? "minh.nguyen@email.com";
 
   return (
     <>

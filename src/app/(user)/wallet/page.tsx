@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Clock3, Coins, Gift, History, Leaf, QrCode, Recycle, ShoppingBag, Sparkles, WalletCards, type LucideIcon } from "lucide-react";
-import { createClient } from "@/infrastructure/supabase/server";
+import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { AIResult, SubmissionStatus } from "@/core/entities/types";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
-type ProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "email" | "full_name" | "points">;
 type SubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "ai_result" | "status" | "points" | "created_at">;
 type TransactionRow = Pick<Database["public"]["Tables"]["point_transactions"]["Row"], "id" | "points" | "reason" | "created_at">;
 type RewardRow = Pick<Database["public"]["Tables"]["reward_items"]["Row"], "id" | "title" | "description" | "points_required">;
@@ -19,35 +18,28 @@ function parseAiResult(value: unknown): AIResult {
 }
 
 export default async function WalletPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { points, user } = await getUserShell();
+  const supabase = await getSupabaseServerClient();
 
-  let profile: ProfileRow | null = null;
   let submissions: SubmissionRow[] = [];
   let transactions: TransactionRow[] = [];
   let rewards: RewardRow[] = [];
   let redemptions: RedemptionRow[] = [];
 
   if (user) {
-    const [{ data: profileData }, { data: submissionData }, { data: transactionData }, { data: rewardData }, { data: redemptionData }] = await Promise.all([
-      supabase.from("profiles").select("id,email,full_name,points").eq("id", user.id).single(),
+    const [{ data: submissionData }, { data: transactionData }, { data: rewardData }, { data: redemptionData }] = await Promise.all([
       supabase.from("submissions").select("id,ai_result,status,points,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
       supabase.from("point_transactions").select("id,points,reason,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(6),
       supabase.from("reward_items").select("id,title,description,points_required").eq("active", true).order("points_required", { ascending: true }).limit(2),
       supabase.from("reward_redemptions").select("id,points_spent,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
     ]);
 
-    profile = profileData;
     submissions = submissionData ?? [];
     transactions = transactionData ?? [];
     rewards = rewardData ?? [];
     redemptions = redemptionData ?? [];
   }
 
-  const walletProfile = profile as ProfileRow | null;
-  const points = walletProfile?.points ?? 0;
   const totalEarned = transactions.reduce((sum, row) => sum + Math.max(row.points, 0), 0);
   const totalRedeemed = redemptions.reduce((sum, row) => sum + row.points_spent, 0);
   const pendingSubmissions = submissions.filter((row) => row.status === "pending_review");
