@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { UserAppShell } from "@/components/user/user-app-shell";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
@@ -10,7 +11,11 @@ export default async function UserLayout({ children }: { children: React.ReactNo
     data: { user },
   } = await supabase.auth.getUser();
 
-  let displayName = user?.email ?? "Eco user";
+  if (!user) {
+    redirect("/login");
+  }
+
+  let displayName = user.email ?? "Eco user";
   let points = 0;
 
   if (user) {
