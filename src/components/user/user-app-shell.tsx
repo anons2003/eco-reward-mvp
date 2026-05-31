@@ -33,12 +33,12 @@ function isActivePath(pathname: string, match: string) {
 function SidebarLink({ href, label, Icon, active }: { href: string; label: string; Icon: LucideIcon; active: boolean }) {
   return (
     <Link
-      className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition ${
+      className={`flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${
         active ? "bg-[#8ff8b6] text-[#00391f]" : "text-[#3e4941] hover:bg-[#e7f0e7] hover:text-[#006a3d]"
       }`}
       href={href}
     >
-      <Icon size={18} />
+      <Icon size={17} />
       <span>{label}</span>
     </Link>
   );
@@ -59,37 +59,29 @@ export function UserAppShell({
   return (
     <div className="fixed inset-0 z-30 overflow-y-auto bg-[#f3fcf3] text-[#151d18] [background-image:radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px]">
       <div className="flex min-h-screen">
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-[#d9e5da] bg-[#edf6ed] p-4 lg:flex">
-          <div className="px-4 py-6">
+        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-[#d9e5da] bg-[#edf6ed] px-3 py-4 lg:flex">
+          <div className="px-3 py-2">
             <Link className="block" href="/dashboard">
               <h1 className="text-2xl font-black tracking-[-0.04em] text-[#007a3d]">EcoReward</h1>
               <p className="mt-1 text-xs font-semibold text-[#6e7a70]">Vibrant Eco-Tech</p>
             </Link>
           </div>
 
-          <nav className="flex-1 space-y-1">
+          <nav className="mt-8 space-y-2">
             {sidebarItems.map((item) => (
               <SidebarLink active={isActivePath(pathname, item.match ?? item.href)} href={item.href} Icon={item.Icon} key={item.label} label={item.label} />
             ))}
           </nav>
 
-          <div className="space-y-4 pt-4">
-            <div className="rounded-3xl border border-[#bdcabe]/40 bg-white/55 p-4">
-              <p className="mb-2 text-xs font-black text-[#007a3d]">Mục tiêu tuần</p>
-              <div className="mb-2 h-2 overflow-hidden rounded-full bg-[#d9e5da]">
-                <div className="h-full w-[65%] rounded-full bg-[#007a3d]" />
-              </div>
-              <p className="text-xs font-semibold leading-5 text-[#3e4941]">Còn 12 chai để nhận 100 điểm</p>
-            </div>
-
+          <div className="mt-auto space-y-1 pt-6">
             <div className="space-y-1">
-              <Link className="flex items-center gap-4 rounded-xl px-4 py-2 text-sm font-bold text-[#3e4941] transition hover:bg-[#e7f0e7]" href="/settings">
-                <Settings size={17} />
+              <Link className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-bold text-[#3e4941] transition hover:bg-[#e7f0e7]" href="/settings">
+                <Settings size={16} />
                 Cài đặt
               </Link>
               <form action="/api/auth/logout" method="post">
-                <button className="flex w-full items-center gap-4 rounded-xl px-4 py-2 text-sm font-bold text-[#ba1a1a] transition hover:bg-[#ffdad6]/40" type="submit">
-                  <LogOut size={17} />
+                <button className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-bold text-[#ba1a1a] transition hover:bg-[#ffdad6]/40" type="submit">
+                  <LogOut size={16} />
                   Đăng xuất
                 </button>
               </form>
@@ -97,7 +89,7 @@ export function UserAppShell({
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">
+        <main className="relative min-w-0 flex-1">
           <header className="sticky top-0 z-40 hidden h-16 items-center justify-between bg-[#f3fcf3]/90 px-8 backdrop-blur-md md:flex">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6e7a70]" size={17} />
@@ -138,6 +130,15 @@ export function UserAppShell({
           </header>
 
           <div className="mx-auto w-full max-w-[1280px] space-y-6 px-4 pb-28 pt-4 md:space-y-8 md:px-8 md:pb-10 md:pt-6">{children}</div>
+
+          <Link
+            aria-label="Quét QR rác"
+            className="fixed bottom-6 right-6 z-50 hidden size-16 place-items-center rounded-[24px] bg-[#007a3d] text-white shadow-[0_16px_34px_rgba(0,106,61,0.28)] transition hover:-translate-y-0.5 hover:bg-[#006a35] active:scale-95 lg:grid"
+            href="/scan"
+            title="Quét QR rác"
+          >
+            <QrCode size={32} />
+          </Link>
         </main>
       </div>
 
