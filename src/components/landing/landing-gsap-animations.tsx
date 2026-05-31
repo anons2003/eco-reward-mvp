@@ -25,6 +25,7 @@ export function LandingGsapAnimations({ children }: { children: ReactNode }) {
             ".landing-card",
             ".landing-reward-card",
             ".landing-testimonial",
+            ".landing-scrub-word",
             ".landing-mobile-hero > *",
             ".landing-mobile-card",
           ],
@@ -46,7 +47,7 @@ export function LandingGsapAnimations({ children }: { children: ReactNode }) {
           .from(".landing-hero-float", { autoAlpha: 0, y: 18, scale: 0.9, duration: 0.55, stagger: 0.12 }, "-=0.35")
           .from(".landing-mobile-hero > *", { autoAlpha: 0, y: 24, duration: 0.6, stagger: 0.1 }, 0.1);
 
-        gsap.to(".landing-hero-media img", {
+        gsap.to(".landing-hero-media > div:first-child", {
           yPercent: -6,
           ease: "none",
           scrollTrigger: {
@@ -83,6 +84,40 @@ export function LandingGsapAnimations({ children }: { children: ReactNode }) {
               trigger: section,
               start: "top 76%",
               toggleActions: "play none none reverse",
+            },
+          });
+        });
+
+        gsap.utils.toArray<HTMLElement>(root?.querySelectorAll(".landing-scrub-text") || []).forEach((text) => {
+          if (!text.dataset.scrubReady) {
+            const words = text.textContent?.trim().split(/\s+/) || [];
+            text.innerHTML = words.map((word) => `<span class="landing-scrub-word inline-block opacity-20">${word}</span>`).join(" ");
+            text.dataset.scrubReady = "true";
+          }
+
+          gsap.to(text.querySelectorAll(".landing-scrub-word"), {
+            opacity: 1,
+            stagger: 0.08,
+            ease: "none",
+            scrollTrigger: {
+              trigger: text,
+              start: "top 78%",
+              end: "bottom 46%",
+              scrub: 0.8,
+            },
+          });
+        });
+
+        gsap.utils.toArray<HTMLElement>(root?.querySelectorAll("#desktop-steps .landing-card") || []).forEach((card, index) => {
+          gsap.to(card, {
+            y: -index * 10,
+            scale: 1 - index * 0.015,
+            ease: "none",
+            scrollTrigger: {
+              trigger: "#desktop-steps",
+              start: "top 70%",
+              end: "bottom 35%",
+              scrub: 0.7,
             },
           });
         });

@@ -37,7 +37,7 @@ export function AuthShell({ eyebrow, title, body, children, sideTitle = "Hành �
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/82 px-4 py-2 text-sm font-black text-[#007a3d] shadow-sm">
                   <Sparkles size={16} />
-                  Eco Lime Light
+                  Ghi nhận đúng lượt gửi
                 </span>
                 <h1 className="mt-7 max-w-xl text-[56px] font-black leading-[60px] tracking-[-0.05em] text-[#093719]">{sideTitle}</h1>
                 <p className="mt-5 max-w-lg text-lg font-semibold leading-8 text-[#3e4941]">{sideBody}</p>

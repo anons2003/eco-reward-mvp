@@ -16,6 +16,13 @@
   --surface: #ffffff;
   --surface-soft: #fbfbff;
   --text-muted: #5f6472;
+  --eco-ink: #071b12;
+  --eco-forest: #007a3d;
+  --eco-forest-deep: #005d34;
+  --eco-lime: #8ff8b6;
+  --eco-mint: #edf6ed;
+  --eco-line: #d9e5da;
+  --eco-paper: #f7fbf7;
 }
 
 * {
@@ -49,18 +56,18 @@ textarea {
 
 .eco-shell {
   background:
-    radial-gradient(circle at 14% 14%, rgba(232, 251, 255, 0.7), transparent 32%),
-    radial-gradient(circle at 86% 12%, rgba(241, 236, 255, 0.7), transparent 28%),
-    radial-gradient(#e6e7ef 1px, transparent 1px),
-    linear-gradient(180deg, rgba(249, 249, 253, 0.98), rgba(255, 255, 255, 0.98)),
+    radial-gradient(circle at 12% 10%, rgba(143, 248, 182, 0.22), transparent 30%),
+    radial-gradient(circle at 84% 4%, rgba(203, 230, 255, 0.5), transparent 26%),
+    radial-gradient(#bdcabe 1px, transparent 1px),
+    linear-gradient(180deg, rgba(243, 252, 243, 0.98), rgba(255, 255, 255, 0.98)),
     var(--background);
   background-size: auto, auto, 24px 24px, auto;
 }
 
 .eco-card {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 18px 54px rgba(21, 21, 21, 0.06);
+  border: 1px solid var(--eco-line);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 44px rgba(21, 29, 24, 0.06);
 }
 
 .eco-soft {
@@ -85,16 +92,16 @@ textarea {
   gap: 8px;
   border: 0;
   border-radius: 999px;
-  background: var(--primary);
+  background: var(--eco-forest);
   color: #ffffff;
   font-weight: 800;
   padding: 12px 18px;
-  box-shadow: 0 14px 34px rgba(21, 21, 21, 0.18);
+  box-shadow: 0 14px 34px rgba(0, 106, 61, 0.2);
   cursor: pointer;
 }
 
 .btn-primary:hover {
-  background: var(--primary-bright);
+  background: var(--eco-forest-deep);
 }
 
 .btn-secondary {
@@ -140,4 +147,30 @@ textarea {
   font-size: 12px;
   font-weight: 700;
   padding: 4px 10px;
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
+  }
 }

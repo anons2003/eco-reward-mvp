@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { safeNextPath } from "@/infrastructure/auth/redirects";
+import { appOrigin, safeNextPath } from "@/infrastructure/auth/redirects";
 import { createClient } from "@/infrastructure/supabase/server";
 
 export async function GET(request: NextRequest) {
   const next = safeNextPath(request.nextUrl.searchParams.get("next"));
-  const redirectTo = new URL("/auth/callback", request.url);
+  const redirectTo = new URL("/auth/callback", appOrigin(request));
   redirectTo.searchParams.set("next", next);
 
   const supabase = await createClient();

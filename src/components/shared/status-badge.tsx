@@ -1,7 +1,7 @@
 import type { SubmissionStatus } from "@/core/entities/types";
 
 const statusClass: Record<SubmissionStatus, string> = {
-  approved: "bg-[#151515] text-white",
+  approved: "bg-[#d8f5df] text-[#007a3d]",
   pending_review: "bg-[#fff7e6] text-[#92400E]",
   rejected: "bg-[#fff0f0] text-[#B91C1C]",
 };

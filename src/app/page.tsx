@@ -22,8 +22,6 @@ import {
 } from "lucide-react";
 import { LandingGsapAnimations } from "@/components/landing/landing-gsap-animations";
 
-const heroImage = "/eco-reward/hero-cleanup.png";
-
 const oceanImage =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBHeHilav8319TrtOahZnY1fkC81RdpUlcpwhT0IkK-rTiVcBY6pzFZ7XyrRjRFQtD0iI2ipPOkq8HnPyJMJmLrokp_HbzxZLmw5ZJZ-n10qvU7ysj27q3IxlqHXHa6YxD7EWO53h0RzvC_PAcoNkboHdNCez0GXci3OmAAaZHHqWdd5KZhbbD3d4MlnvhR3k6xOnk-dnZr8PVL0oMFTzirqidc6939f56e8eadNfGzFDJRl0pvzKzsFK1bSZcXBUw8VUid3rzG_ubz";
 
@@ -108,75 +106,137 @@ export default function HomePage() {
 function DesktopHome() {
   return (
     <div className="hidden md:block" id="content">
-      <nav aria-label="Điều hướng chính" className="landing-nav fixed top-0 z-50 w-full border-b border-[#dadce0] bg-white/90 backdrop-blur-lg">
+      <nav aria-label="Điều hướng chính" className="landing-nav fixed top-0 z-50 w-full border-b border-[#d9e5da] bg-white/88 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-12 py-3">
-          <Link className="flex items-center gap-2 text-2xl font-bold tracking-[-0.015em] text-[#137333]" href="/">
-            <Leaf className="text-[#1e8e3e]" size={28} />
+          <Link className="flex items-center gap-2 text-2xl font-black tracking-[-0.03em] text-[#007a3d]" href="/">
+            <span className="grid size-10 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d] ring-1 ring-[#bdcabe]/60">
+              <Leaf size={22} />
+            </span>
             Eco-Reward
           </Link>
           <div className="hidden items-center space-x-8 lg:flex">
-            <a className="text-sm font-semibold text-[#3c4043] transition hover:text-[#137333]" href="#desktop-steps">
+            <a className="text-sm font-black text-[#151d18] transition hover:text-[#007a3d]" href="#desktop-steps">
               Cách hoạt động
             </a>
-            <a className="text-sm font-semibold text-[#5f6368] transition hover:text-[#137333]" href="#desktop-impact">
+            <a className="text-sm font-bold text-[#5d6a60] transition hover:text-[#007a3d]" href="#desktop-impact">
               Tác động
             </a>
-            <a className="text-sm font-semibold text-[#5f6368] transition hover:text-[#137333]" href="#desktop-rewards">
+            <a className="text-sm font-bold text-[#5d6a60] transition hover:text-[#007a3d]" href="#desktop-rewards">
               Phần thưởng
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            <Link className="px-4 py-2 text-sm font-semibold text-[#5f6368] transition hover:text-[#137333]" href="/login">
+            <Link className="px-4 py-2 text-sm font-black text-[#3e4941] transition hover:text-[#007a3d]" href="/login">
               Đăng nhập
             </Link>
-            <Link className="rounded-lg bg-[#137333] px-6 py-2 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] transition hover:bg-[#0d652d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#137333]" href="/login" style={{ color: "#ffffff" }}>
+            <Link className="rounded-full bg-[#007a3d] px-6 py-2.5 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,106,61,0.20)] transition hover:bg-[#006a35] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a3d]" href="/login" style={{ color: "#ffffff" }}>
               Tham gia ngay
             </Link>
           </div>
         </div>
       </nav>
 
-      <header className="relative overflow-hidden bg-[#f8f9fa] pb-24 pt-40">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-16 px-12 lg:grid-cols-2">
+      <header className="relative overflow-hidden bg-[#f3fcf3] pb-24 pt-36">
+        <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="pointer-events-none absolute left-1/2 top-20 h-80 w-[720px] -translate-x-1/2 rounded-full bg-[#8ff8b6]/25 blur-3xl" />
+        <div className="relative mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-12 px-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(560px,1fr)]">
           <div className="landing-hero-copy z-10 text-center lg:text-left">
-            <h1 className="mb-6 text-[56px] font-bold leading-[1.1] tracking-[-0.015em] text-[#3c4043]">
-              Biến Rác Thải Thành <span className="text-[#137333]">Giá Trị.</span>
-              <br className="hidden lg:block" />
-              <span className="text-[#5f6368]">Cho Bạn & Hành Tinh.</span>
+            <h1 className="mb-6 max-w-4xl text-[clamp(50px,5vw,70px)] font-black leading-[0.98] tracking-[-0.055em] text-[#071b12]">
+              Phân loại đúng.
+              <span className="block text-[#007a3d]">Nhận điểm xanh.</span>
             </h1>
-            <p className="mx-auto mb-10 max-w-xl text-lg leading-8 text-[#5f6368] lg:mx-0">
-              Gia nhập cộng đồng hơn 10.000+ Đại sứ Xanh đang phân loại rác, tích điểm và nhận quà địa phương. Mỗi hành động nhỏ đều góp phần cho tương lai bền vững.
+            <p className="mx-auto mb-10 max-w-2xl text-lg font-semibold leading-8 text-[#3e4941] lg:mx-0">
+              Eco-Reward biến QR, ảnh chụp và kiểm duyệt AI thành một dòng điểm minh bạch cho người dùng, đối tác và đội vận hành.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-              <Link className="rounded-lg bg-[#137333] px-10 py-3.5 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] transition hover:bg-[#0d652d]" href="/login" style={{ color: "#ffffff" }}>
+              <Link className="rounded-full bg-[#007a3d] px-10 py-4 text-sm font-black text-white shadow-[0_16px_34px_rgba(0,106,61,0.24)] transition hover:-translate-y-0.5 hover:bg-[#006a35]" href="/login" style={{ color: "#ffffff" }}>
                 Tham gia ngay
               </Link>
-              <a className="rounded-lg border border-[#dadce0] bg-white px-10 py-3.5 text-sm font-semibold text-[#3c4043] transition hover:bg-[#f1f3f4]" href="#desktop-steps">
-                Tìm hiểu thêm
+              <a className="rounded-full border border-[#bdcabe] bg-white/86 px-10 py-4 text-sm font-black text-[#151d18] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white" href="#desktop-steps">
+                Xem quy trình
               </a>
             </div>
+            <div className="mt-10 grid max-w-xl grid-cols-3 gap-3 text-left">
+              {[
+                ["QR", "Xác thực thùng"],
+                ["AI", "Nhận diện ảnh"],
+                ["Ops", "Duyệt điểm"],
+              ].map(([label, body]) => (
+                <div className="rounded-3xl border border-[#d9e5da] bg-white/78 p-4 shadow-[0_10px_28px_rgba(21,29,24,0.06)] backdrop-blur" key={label}>
+                  <p className="text-xl font-black tracking-[-0.04em] text-[#007a3d]">{label}</p>
+                  <p className="mt-1 text-xs font-bold leading-5 text-[#5d6a60]">{body}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="relative mt-12 flex justify-center lg:mt-0 lg:justify-end">
-            <div className="landing-hero-media relative w-full max-w-xl overflow-hidden rounded-2xl shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
-              <Image alt="Minh họa thu gom rác" className="aspect-[4/3] w-full object-cover" height={620} priority src={heroImage} width={760} />
+          <div className="landing-hero-media relative">
+            <div className="overflow-hidden rounded-[34px] border border-[#103d28] bg-[#071b12] p-4 shadow-[0_28px_90px_rgba(7,27,18,0.28)]">
+              <div className="rounded-[26px] border border-white/10 bg-[#0d2418] p-4">
+                <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-[#8ff8b6]">Live review queue</p>
+                    <p className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">EcoReward Ops</p>
+                  </div>
+                  <span className="rounded-full bg-[#8ff8b6] px-3 py-1 text-xs font-black text-[#071b12]">98.2% trust</span>
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    ["ECO-BIN-A1", "Chai nhựa PET", "+35 pts", "Đã duyệt"],
+                    ["ECO-BIN-B2", "Giấy tái chế", "+20 pts", "AI chắc chắn"],
+                    ["ECO-BIN-C4", "Lon nhôm", "+45 pts", "Cần kiểm tra"],
+                  ].map(([bin, waste, points, status]) => (
+                    <div className="grid grid-cols-[1fr_auto] gap-4 rounded-3xl border border-white/10 bg-white/[0.06] p-4" key={bin}>
+                      <div>
+                        <p className="font-mono text-xs font-bold text-white/45">{bin}</p>
+                        <p className="mt-1 text-lg font-black text-white">{waste}</p>
+                        <p className="mt-2 text-xs font-bold text-[#8ff8b6]">{status}</p>
+                      </div>
+                      <p className="text-xl font-black text-[#8ff8b6]">{points}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="rounded-3xl bg-[#8ff8b6] p-4 text-[#071b12]">
+                    <p className="text-3xl font-black">1.2M</p>
+                    <p className="text-xs font-black">vật phẩm</p>
+                  </div>
+                  <div className="rounded-3xl bg-white/[0.08] p-4 text-white">
+                    <p className="text-3xl font-black">45k</p>
+                    <p className="text-xs font-bold text-white/55">kg CO2</p>
+                  </div>
+                  <div className="rounded-3xl bg-white/[0.08] p-4 text-white">
+                    <p className="text-3xl font-black">15k</p>
+                    <p className="text-xs font-bold text-white/55">cây xanh</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="landing-hero-float absolute -right-6 -top-6 rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-lg">
-              <Leaf className="text-[#137333]" size={32} />
+            <div className="landing-hero-float absolute -right-5 top-10 hidden w-48 rounded-[26px] border border-[#d9e5da] bg-white p-4 shadow-[0_20px_50px_rgba(21,29,24,0.14)] xl:block">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#007a3d]">Quận 1</p>
+              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#071b12]">842</p>
+              <p className="text-sm font-bold text-[#5d6a60]">lượt gửi hợp lệ tuần này</p>
+              <div className="mt-4 flex h-12 items-end gap-1">
+                {[42, 68, 52, 84, 74, 96, 88].map((height, index) => (
+                  <span className="flex h-full flex-1 items-end rounded-full bg-[#d8f5df]" key={index}>
+                    <span className="block w-full rounded-full bg-[#007a3d]" style={{ height: `${height}%` }} />
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="landing-hero-float absolute bottom-8 -left-8 flex items-center gap-4 rounded-xl border border-[#dadce0]/50 bg-white/85 p-5 shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] backdrop-blur">
-              <div className="rounded-lg bg-[#e6f4ea] p-2.5 text-[#137333]">
+            <div className="landing-hero-float absolute -bottom-5 -left-5 flex items-center gap-4 rounded-[26px] border border-[#d9e5da] bg-white/92 p-5 shadow-[0_20px_50px_rgba(21,29,24,0.14)] backdrop-blur">
+              <div className="grid size-12 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d]">
                 <Recycle size={24} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#3c4043]">+500 Điểm</p>
-                <p className="text-xs font-medium text-[#5f6368]">Đã nhận thưởng!</p>
+                <p className="text-sm font-black text-[#071b12]">+500 điểm đã xác nhận</p>
+                <p className="text-xs font-bold text-[#5d6a60]">Không cần nhập tay</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <section className="landing-section bg-white py-24" id="desktop-impact">
+      <section className="landing-section bg-white py-28" id="desktop-impact">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-16 px-12 md:grid-cols-2">
           <div className="landing-section-media order-2 flex justify-center md:order-1">
             <div className="relative">
@@ -185,56 +245,56 @@ function DesktopHome() {
             </div>
           </div>
           <div className="landing-section-copy order-1 md:order-2">
-            <h2 className="mb-6 text-4xl font-semibold tracking-[-0.015em] text-[#3c4043]">Đại Dương Đang Kêu Cứu</h2>
-            <p className="mb-8 text-lg leading-8 text-[#5f6368]">
+            <h2 className="mb-6 text-5xl font-black tracking-[-0.05em] text-[#071b12]">Đại dương cần dữ liệu tốt hơn</h2>
+            <p className="landing-scrub-text mb-8 text-xl font-semibold leading-9 text-[#3e4941]">
               Hơn 8 triệu tấn nhựa thải ra đại dương mỗi năm. Hệ sinh thái của chúng ta đang suy kiệt, nhưng giải pháp bắt đầu từ chính việc nhận diện và phân loại rác hàng ngày.
             </p>
-            <div className="flex items-start gap-5 rounded-xl border border-[#dadce0] bg-[#f8f9fa] p-6">
-              <Verified className="text-[#137333]" size={26} />
+            <div className="flex items-start gap-5 rounded-[28px] border border-[#d9e5da] bg-[#f7fbf7] p-6">
+              <Verified className="text-[#007a3d]" size={26} />
               <div>
-                <h4 className="mb-1 text-sm font-semibold text-[#3c4043]">Độ chính xác từ AI</h4>
-                <p className="leading-7 text-[#5f6368]">Công nghệ của chúng tôi đảm bảo độ chính xác cao trong việc nhận diện và phân loại rác thải.</p>
+                <h4 className="mb-1 text-sm font-black text-[#071b12]">Độ chính xác từ AI</h4>
+                <p className="font-semibold leading-7 text-[#5d6a60]">Công nghệ của chúng tôi đảm bảo độ chính xác cao trong việc nhận diện và phân loại rác thải.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#f8f9fa] py-24" id="desktop-steps">
+      <section className="bg-[#f3fcf3] py-28" id="desktop-steps">
         <div className="mx-auto mb-16 max-w-[1200px] px-12 text-center">
-          <h2 className="mb-4 text-4xl font-semibold tracking-[-0.015em] text-[#3c4043]">Ba Bước Đơn Giản Để Thay Đổi</h2>
-          <p className="mx-auto max-w-2xl text-lg leading-8 text-[#5f6368]">Sống bền vững trở nên đơn giản, nhanh chóng và đầy cảm hứng với quy trình hiện đại.</p>
+          <h2 className="mb-4 text-5xl font-black tracking-[-0.05em] text-[#071b12]">Ba bước, một dòng điểm rõ ràng</h2>
+          <p className="mx-auto max-w-2xl text-lg font-semibold leading-8 text-[#5d6a60]">Sống bền vững trở nên đơn giản, nhanh chóng và đầy cảm hứng với quy trình hiện đại.</p>
         </div>
-        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-12 md:grid-cols-3">
+        <div className="mx-auto grid max-w-[1200px] grid-flow-dense grid-cols-1 gap-5 px-12 md:grid-cols-6">
           {desktopSteps.map(([Icon, title, body]) => (
-            <article className="landing-card group rounded-2xl border border-[#dadce0] bg-white p-10 transition hover:border-[#137333] hover:shadow-[0_4px_4px_rgba(60,64,67,0.3),0_8px_12px_6px_rgba(60,64,67,0.15)]" key={title}>
-              <div className="mb-8 flex size-16 items-center justify-center rounded-xl bg-[#e6f4ea] text-[#137333] transition group-hover:scale-105">
+            <article className="landing-card group rounded-[30px] border border-[#d9e5da] bg-white p-8 shadow-[0_12px_40px_rgba(21,29,24,0.05)] transition hover:-translate-y-1 hover:border-[#007a3d] md:col-span-2" key={title}>
+              <div className="mb-8 flex size-16 items-center justify-center rounded-2xl bg-[#d8f5df] text-[#007a3d] transition group-hover:scale-105">
                 <Icon size={32} />
               </div>
-              <h3 className="mb-4 text-2xl font-semibold text-[#3c4043]">{title}</h3>
-              <p className="leading-7 text-[#5f6368]">{body}</p>
+              <h3 className="mb-4 text-2xl font-black tracking-[-0.03em] text-[#071b12]">{title}</h3>
+              <p className="font-semibold leading-7 text-[#5d6a60]">{body}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#202124] py-24 text-white">
+      <section className="relative overflow-hidden bg-[#071b12] py-28 text-white">
         <div className="pointer-events-none absolute inset-0 opacity-5 [background-image:radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:32px_32px]" />
         <div className="relative z-10 mx-auto grid max-w-[1200px] grid-cols-1 gap-12 px-12 text-center md:grid-cols-3">
           <div className="space-y-2">
-            <div className="landing-stat text-5xl font-bold tracking-tight text-[#6bfe9c]" data-count="1.2" data-decimals="1" data-suffix="M+">
+            <div className="landing-stat text-6xl font-black tracking-[-0.05em] text-[#8ff8b6]" data-count="1.2" data-decimals="1" data-suffix="M+">
               1.2M+
             </div>
             <div className="text-lg font-medium text-[#dadce0]">Sản phẩm tái chế</div>
           </div>
           <div className="space-y-2 md:border-x md:border-white/10">
-            <div className="landing-stat text-5xl font-bold tracking-tight text-[#8ccdff]" data-count="45" data-suffix="k kg">
+            <div className="landing-stat text-6xl font-black tracking-[-0.05em] text-[#cbe6ff]" data-count="45" data-suffix="k kg">
               45k kg
             </div>
             <div className="text-lg font-medium text-[#dadce0]">CO2 đã giảm</div>
           </div>
           <div className="space-y-2">
-            <div className="landing-stat text-5xl font-bold tracking-tight text-[#ffe084]" data-count="15000">
+            <div className="landing-stat text-6xl font-black tracking-[-0.05em] text-[#fff3c4]" data-count="15000">
               15,000
             </div>
             <div className="text-lg font-medium text-[#dadce0]">Cây xanh đã trồng</div>
@@ -249,7 +309,7 @@ function DesktopHome() {
               <h2 className="mb-2 text-4xl font-semibold tracking-[-0.015em] text-[#3c4043]">Kho Quà Tặng</h2>
               <p className="text-lg leading-8 text-[#5f6368]">Đổi những điểm số nỗ lực của bạn lấy những thứ bạn yêu thích từ đối tác của chúng tôi.</p>
             </div>
-            <Link className="group flex items-center gap-2 text-sm font-semibold text-[#137333] transition hover:translate-x-1" href="/rewards">
+            <Link className="group flex items-center gap-2 text-sm font-black text-[#007a3d] transition hover:translate-x-1" href="/rewards">
               Xem tất cả quà tặng <ArrowRight size={16} />
             </Link>
           </div>
@@ -258,12 +318,12 @@ function DesktopHome() {
               <article className="landing-reward-card group overflow-hidden rounded-2xl border border-[#dadce0] bg-white transition hover:shadow-[0_4px_4px_rgba(60,64,67,0.3),0_8px_12px_6px_rgba(60,64,67,0.15)]" key={reward.title}>
                 <div className="relative h-56 overflow-hidden">
                   <Image alt={reward.title} className="size-full object-cover transition group-hover:scale-105" height={320} src={reward.image} width={520} />
-                  <div className="absolute left-4 top-4 rounded-lg border border-[#e0e0e0] bg-white/85 px-3 py-1.5 text-xs font-semibold text-[#137333] backdrop-blur">{reward.points}</div>
+                  <div className="absolute left-4 top-4 rounded-full border border-[#d9e5da] bg-white/90 px-3 py-1.5 text-xs font-black text-[#007a3d] backdrop-blur">{reward.points}</div>
                 </div>
                 <div className="p-8">
                   <h4 className="mb-2 text-2xl font-semibold text-[#3c4043]">{reward.title}</h4>
                   <p className="mb-6 leading-7 text-[#5f6368]">{reward.body}</p>
-                  <Link className="flex min-h-12 w-full items-center justify-center rounded-lg bg-[#f1f3f4] font-semibold text-[#3c4043] transition hover:bg-[#137333] hover:text-white" href="/rewards">
+                  <Link className="flex min-h-12 w-full items-center justify-center rounded-full bg-[#edf6ed] font-black text-[#071b12] transition hover:bg-[#007a3d] hover:text-white" href="/rewards">
                     Đổi Ngay
                   </Link>
                 </div>
@@ -277,7 +337,7 @@ function DesktopHome() {
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-20 px-12 lg:grid-cols-2">
           <div className="landing-section-media flex justify-center">
             <div className="relative">
-              <div className="absolute -inset-4 rounded-full bg-[#137333] opacity-10 blur-2xl" />
+              <div className="absolute -inset-4 rounded-full bg-[#007a3d] opacity-10 blur-2xl" />
               <Image alt="Người hùng tái chế tiêu biểu" className="relative w-full max-w-md rounded-2xl border-4 border-white shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]" height={620} src={communityImage} width={620} />
             </div>
           </div>
@@ -291,7 +351,7 @@ function DesktopHome() {
               &ldquo;Nó đã thay đổi hoàn toàn cách tôi nhìn nhận rác thải sinh hoạt của mình. AI thật sự rất thông minh, và được nhận ly cà phê miễn phí mỗi sáng là cảm giác tuyệt vời nhất!&rdquo;
             </h2>
             <div className="flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded-full bg-[#e6f4ea] text-[#137333]">
+              <div className="flex size-12 items-center justify-center rounded-full bg-[#d8f5df] text-[#007a3d]">
                 <User size={24} />
               </div>
               <div>
@@ -305,7 +365,7 @@ function DesktopHome() {
 
       <Footer />
 
-      <Link aria-label="Quét mã QR" className="fixed bottom-8 right-8 z-50 flex size-14 items-center justify-center rounded-2xl bg-[#137333] text-white shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] transition hover:-translate-y-1 hover:bg-[#0d652d]" href="/scan" style={{ color: "#ffffff" }}>
+      <Link aria-label="Quét mã QR" className="fixed bottom-8 right-8 z-50 flex size-14 items-center justify-center rounded-2xl bg-[#007a3d] text-white shadow-[0_16px_34px_rgba(0,106,61,0.28)] transition hover:-translate-y-1 hover:bg-[#006a35]" href="/scan" style={{ color: "#ffffff" }}>
         <QrCode size={26} />
       </Link>
     </div>
@@ -314,31 +374,62 @@ function DesktopHome() {
 
 function MobileHome() {
   return (
-    <div className="block bg-[#ffffff] bg-[radial-gradient(#e6e7ef_1px,transparent_1px)] [background-size:24px_24px] text-[#1a1c1f] md:hidden">
-      <header className="landing-nav fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#e6e7ef] bg-white/70 px-5 backdrop-blur-md">
+    <div className="block bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px] text-[#071b12] md:hidden">
+      <header className="landing-nav fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#d9e5da] bg-white/82 px-5 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <Menu className="text-black" size={24} />
-          <span className="text-2xl font-bold tracking-[-0.02em] text-black">Eco-Reward</span>
+          <details className="group relative">
+            <summary className="grid size-10 cursor-pointer list-none place-items-center rounded-2xl text-[#071b12] transition hover:bg-[#edf6ed] [&::-webkit-details-marker]:hidden">
+              <Menu size={24} />
+              <span className="sr-only">Mở menu</span>
+            </summary>
+            <nav className="absolute left-0 top-12 w-56 rounded-[24px] border border-[#d9e5da] bg-white p-2 text-left shadow-[0_18px_50px_rgba(21,29,24,0.14)]">
+              <a className="block rounded-2xl px-4 py-3 text-sm font-black text-[#071b12] hover:bg-[#edf6ed]" href="#mobile-steps">
+                Cách hoạt động
+              </a>
+              <a className="block rounded-2xl px-4 py-3 text-sm font-black text-[#071b12] hover:bg-[#edf6ed]" href="#mobile-rewards">
+                Phần thưởng
+              </a>
+              <Link className="block rounded-2xl px-4 py-3 text-sm font-black text-[#007a3d] hover:bg-[#edf6ed]" href="/login">
+                Đăng nhập
+              </Link>
+            </nav>
+          </details>
+          <Link className="text-2xl font-black tracking-[-0.03em] text-[#007a3d]" href="/">
+            EcoReward
+          </Link>
         </div>
-        <div className="flex size-10 items-center justify-center overflow-hidden rounded-full border border-[#e6e7ef] bg-white">
-          <Leaf className="text-black" size={22} />
+        <div className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-[#bdcabe] bg-[#d8f5df]">
+          <Leaf className="text-[#007a3d]" size={22} />
         </div>
       </header>
 
       <section className="relative overflow-hidden px-5 pb-20 pt-28">
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(32,199,232,0.10)_0%,rgba(124,58,237,0.10)_100%)] opacity-50" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_0%,rgba(143,248,182,0.35),transparent_38%)] opacity-90" />
         <div className="landing-mobile-hero flex flex-col items-center gap-6 text-center">
-          <h1 className="text-[48px] font-extrabold leading-[52px] tracking-[-0.02em] text-black">
-            Biến Rác Thải Thành Giá Trị. Cho Bạn & Hành Tinh.
+          <h1 className="text-[48px] font-black leading-[48px] tracking-[-0.055em] text-[#071b12]">
+            Phân loại đúng. Nhận điểm xanh.
           </h1>
-          <div className="w-full max-w-sm overflow-hidden rounded-xl border border-[#e6e7ef] bg-white p-2 shadow-sm">
-            <Image alt="Eco Hero" className="h-64 w-full rounded-lg object-cover" height={320} priority src={heroImage} width={380} />
+          <p className="text-base font-semibold leading-7 text-[#3e4941]">
+            QR, ảnh chụp và AI giúp mỗi lượt gửi trở thành điểm thưởng có thể kiểm chứng.
+          </p>
+          <div className="w-full max-w-sm overflow-hidden rounded-[28px] border border-[#103d28] bg-[#071b12] p-3 shadow-[0_22px_60px_rgba(7,27,18,0.22)]">
+            <div className="rounded-[22px] bg-white/[0.06] p-4 text-left">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#8ff8b6]">Phiên gửi sẵn sàng</p>
+              <div className="mt-4 grid gap-3">
+                {["Quét QR", "Chụp ảnh", "Cộng điểm"].map((item, index) => (
+                  <div className="flex items-center justify-between rounded-2xl bg-white/[0.08] p-3" key={item}>
+                    <span className="font-black text-white">{item}</span>
+                    <span className="grid size-7 place-items-center rounded-full bg-[#8ff8b6] text-xs font-black text-[#071b12]">{index + 1}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="mt-4 flex w-full flex-col gap-3">
-            <Link className="rounded-full bg-black px-8 py-4 text-lg font-bold text-white transition active:scale-95" href="/login" style={{ color: "#ffffff" }}>
+            <Link className="rounded-full bg-[#007a3d] px-8 py-4 text-lg font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition active:scale-95" href="/login" style={{ color: "#ffffff" }}>
               Tham gia ngay
             </Link>
-            <a className="rounded-full border border-[#e6e7ef] bg-white/70 px-8 py-4 text-lg font-bold text-black backdrop-blur transition active:scale-95" href="#mobile-steps">
+            <a className="rounded-full border border-[#bdcabe] bg-white/78 px-8 py-4 text-lg font-black text-[#071b12] backdrop-blur transition active:scale-95" href="#mobile-steps">
               Tìm hiểu thêm
             </a>
           </div>
@@ -420,48 +511,48 @@ function MobileHome() {
 
 function Footer() {
   return (
-    <footer className="border-t border-[#dadce0] bg-white px-12 py-20">
+    <footer className="border-t border-[#d9e5da] bg-white px-12 py-20">
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-12 md:grid-cols-4">
         <div className="space-y-6">
-          <div className="flex items-center gap-2 text-2xl font-bold text-[#137333]">
+          <div className="flex items-center gap-2 text-2xl font-black text-[#007a3d]">
             <Leaf size={26} /> Eco-Reward
           </div>
-          <p className="leading-7 text-[#5f6368]">Hệ thống phần thưởng sinh thái hàng đầu Việt Nam. Biến mỗi hành động nhỏ thành giá trị xanh bền vững.</p>
+          <p className="font-semibold leading-7 text-[#5d6a60]">Hệ thống phần thưởng sinh thái hàng đầu Việt Nam. Biến mỗi hành động nhỏ thành giá trị xanh bền vững.</p>
         </div>
         <div className="flex flex-col space-y-4">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#3c4043]">Công ty</h4>
-          <a className="font-medium text-[#5f6368] transition hover:text-[#137333]" href="#">Chính sách bảo mật</a>
-          <a className="font-medium text-[#5f6368] transition hover:text-[#137333]" href="#">Điều khoản dịch vụ</a>
-          <a className="font-medium text-[#5f6368] transition hover:text-[#137333]" href="#">Liên hệ</a>
+          <h4 className="text-xs font-black uppercase tracking-wider text-[#071b12]">Công ty</h4>
+          <a className="font-semibold text-[#5d6a60] transition hover:text-[#007a3d]" href="#">Chính sách bảo mật</a>
+          <a className="font-semibold text-[#5d6a60] transition hover:text-[#007a3d]" href="#">Điều khoản dịch vụ</a>
+          <a className="font-semibold text-[#5d6a60] transition hover:text-[#007a3d]" href="#">Liên hệ</a>
         </div>
         <div className="flex flex-col space-y-4">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#3c4043]">Cộng đồng</h4>
-          <a className="font-medium text-[#5f6368] transition hover:text-[#137333]" href="#">Về chúng tôi</a>
-          <a className="font-medium text-[#5f6368] transition hover:text-[#137333]" href="#">Tác động xanh</a>
-          <a className="font-medium text-[#5f6368] transition hover:text-[#137333]" href="#">Blog</a>
+          <h4 className="text-xs font-black uppercase tracking-wider text-[#071b12]">Cộng đồng</h4>
+          <a className="font-semibold text-[#5d6a60] transition hover:text-[#007a3d]" href="#">Về chúng tôi</a>
+          <a className="font-semibold text-[#5d6a60] transition hover:text-[#007a3d]" href="#">Tác động xanh</a>
+          <a className="font-semibold text-[#5d6a60] transition hover:text-[#007a3d]" href="#">Blog</a>
         </div>
         <div className="flex flex-col space-y-6">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#3c4043]">Nhận Cập Nhật</h4>
-          <form className="flex items-center rounded-lg border border-[#dadce0] bg-[#f1f3f4] p-1">
+          <h4 className="text-xs font-black uppercase tracking-wider text-[#071b12]">Nhận Cập Nhật</h4>
+          <form className="flex items-center rounded-2xl border border-[#d9e5da] bg-[#f7fbf7] p-1">
             <label className="sr-only" htmlFor="newsletter-email">
               Email của bạn
             </label>
-            <input className="w-full border-none bg-transparent px-4 py-2 text-sm text-[#3c4043] outline-none focus:ring-0" id="newsletter-email" placeholder="Email của bạn" type="email" />
-            <button className="rounded-md bg-[#137333] px-5 py-2 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] transition hover:bg-[#0d652d]" type="button" style={{ color: "#ffffff" }}>
+            <input className="w-full border-none bg-transparent px-4 py-2 text-sm font-bold text-[#071b12] outline-none focus:ring-0" id="newsletter-email" placeholder="Email của bạn" type="email" />
+            <button className="rounded-xl bg-[#007a3d] px-5 py-2 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,106,61,0.18)] transition hover:bg-[#006a35]" type="button" style={{ color: "#ffffff" }}>
               Đăng ký
             </button>
           </form>
           <div className="flex space-x-4">
-            <a aria-label="Website" className="flex size-10 items-center justify-center rounded-lg bg-[#f1f3f4] text-[#5f6368] transition hover:bg-[#e6f4ea] hover:text-[#137333]" href="#">
+            <a aria-label="Website" className="flex size-10 items-center justify-center rounded-xl bg-[#edf6ed] text-[#5d6a60] transition hover:bg-[#d8f5df] hover:text-[#007a3d]" href="#">
               <Globe2 size={20} />
             </a>
-            <a aria-label="Cộng đồng" className="flex size-10 items-center justify-center rounded-lg bg-[#f1f3f4] text-[#5f6368] transition hover:bg-[#e6f4ea] hover:text-[#137333]" href="#">
+            <a aria-label="Cộng đồng" className="flex size-10 items-center justify-center rounded-xl bg-[#edf6ed] text-[#5d6a60] transition hover:bg-[#d8f5df] hover:text-[#007a3d]" href="#">
               <MessageCircle size={20} />
             </a>
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-16 flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-[#dadce0] pt-8 text-sm text-[#5f6368] md:flex-row">
+      <div className="mx-auto mt-16 flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-[#d9e5da] pt-8 text-sm font-semibold text-[#5d6a60] md:flex-row">
         <p>© 2024 Eco-Reward System. Tất cả quyền được bảo lưu.</p>
         <div className="flex gap-3">
           <span>Tiếng Việt</span>

@@ -16,23 +16,23 @@ export function TopBar({ admin = false }: { admin?: boolean }) {
   const links = admin ? adminLinks : userLinks;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-[#e6e7ef] bg-white/78 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 border-b border-[#d9e5da] bg-white/82 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href={admin ? "/admin/dashboard" : "/dashboard"} className="flex shrink-0 items-center gap-2 font-black text-[#151515]">
-          <span className="grid size-10 place-items-center rounded-xl border border-[#e6e7ef] bg-white">
+        <Link href={admin ? "/admin/dashboard" : "/dashboard"} className="flex shrink-0 items-center gap-2 font-black text-[#071b12]">
+          <span className="grid size-10 place-items-center rounded-2xl border border-[#bdcabe] bg-[#d8f5df] text-[#007a3d]">
             <Leaf size={22} />
           </span>
           <span className="hidden sm:inline">Eco-Reward</span>
         </Link>
-        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm font-bold text-[#5f6472]">
+        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm font-bold text-[#5d6a60]">
           {links.map(([href, label, Icon]) => (
-            <Link className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 transition hover:bg-[#151515] hover:text-white" href={href} key={href}>
+            <Link className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 transition hover:bg-[#007a3d] hover:text-white" href={href} key={href}>
               <Icon size={16} />
               <span>{label}</span>
             </Link>
           ))}
           <form action="/api/auth/logout" method="post">
-            <button className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full border border-[#e6e7ef] bg-white px-3 text-[#151515] transition hover:border-[#151515] hover:bg-[#f4f5fb]" type="submit" aria-label="Đăng xuất">
+            <button className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full border border-[#d9e5da] bg-white px-3 text-[#071b12] transition hover:border-[#007a3d] hover:bg-[#edf6ed]" type="submit" aria-label="Đăng xuất">
               <LogOut size={16} />
             </button>
           </form>

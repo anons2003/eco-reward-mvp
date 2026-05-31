@@ -142,27 +142,27 @@ export function UserAppShell({
         </main>
       </div>
 
-      <nav className="fixed bottom-0 left-0 z-50 flex h-20 w-full items-center justify-around rounded-t-3xl border-t border-[#bdcabe]/40 bg-white px-2 shadow-[0_-8px_28px_rgba(21,29,24,0.10)] md:hidden">
+      <nav className="fixed bottom-0 left-0 z-50 grid h-20 w-full grid-cols-5 items-center gap-1 rounded-t-3xl border-t border-[#bdcabe]/40 bg-white px-2 shadow-[0_-8px_28px_rgba(21,29,24,0.10)] md:hidden">
         {mobileItems.slice(0, 2).map((item) => {
           const active = isActivePath(pathname, item.match);
           const Icon = item.Icon;
           return (
-            <Link className={`flex min-w-[70px] flex-col items-center justify-center rounded-2xl px-3 py-2 text-[10px] font-bold ${active ? "bg-[#d8f5df] text-[#007a3d]" : "text-[#3e4941]"}`} href={item.href} key={item.href}>
+            <Link className={`flex min-w-0 flex-col items-center justify-center rounded-2xl px-1 py-2 text-[10px] font-bold ${active ? "bg-[#d8f5df] text-[#007a3d]" : "text-[#3e4941]"}`} href={item.href} key={item.href}>
               <Icon size={19} />
-              <span>{item.label}</span>
+              <span className="max-w-full truncate">{item.label}</span>
             </Link>
           );
         })}
-        <Link className="-mt-10 grid size-16 place-items-center rounded-full bg-[#007a3d] text-white shadow-[0_12px_30px_rgba(0,106,61,0.32)] active:scale-95" href="/scan" aria-label="Quét mã">
+        <Link className="-mt-10 mx-auto grid size-16 place-items-center rounded-full bg-[#007a3d] text-white shadow-[0_12px_30px_rgba(0,106,61,0.32)] active:scale-95" href="/scan" aria-label="Quét mã">
           <QrCode size={28} />
         </Link>
         {mobileItems.slice(2).map((item) => {
           const active = isActivePath(pathname, item.match);
           const Icon = item.Icon;
           return (
-            <Link className={`flex min-w-[70px] flex-col items-center justify-center rounded-2xl px-3 py-2 text-[10px] font-bold ${active ? "bg-[#d8f5df] text-[#007a3d]" : "text-[#3e4941]"}`} href={item.href} key={item.href}>
+            <Link className={`flex min-w-0 flex-col items-center justify-center rounded-2xl px-1 py-2 text-[10px] font-bold ${active ? "bg-[#d8f5df] text-[#007a3d]" : "text-[#3e4941]"}`} href={item.href} key={item.href}>
               <Icon size={19} />
-              <span>{item.label}</span>
+              <span className="max-w-full truncate">{item.label}</span>
             </Link>
           );
         })}

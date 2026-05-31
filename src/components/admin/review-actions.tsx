@@ -21,9 +21,10 @@ export function ReviewActions({ submissionId }: { submissionId: string }) {
   }
 
   return (
-    <div className="eco-card rounded-[32px] p-6">
-      <h2 className="text-xl font-black text-[#151515]">Quyết định kiểm duyệt</h2>
-      <label className="mt-4 block text-sm font-bold text-[#5f6472]" htmlFor="reason">
+    <div className="eco-card rounded-[28px] p-6">
+      <h2 className="text-xl font-black text-[#071b12]">Quyết định kiểm duyệt</h2>
+      <p className="mt-2 text-sm font-semibold leading-6 text-[#5d6a60]">Ghi lý do ngắn, rõ và có thể truy vết trước khi cấp hoặc từ chối điểm.</p>
+      <label className="mt-4 block text-sm font-bold text-[#5d6a60]" htmlFor="reason">
         Lý do
       </label>
       <textarea className="input mt-2 min-h-24" id="reason" value={reason} onChange={(event) => setReason(event.target.value)} />

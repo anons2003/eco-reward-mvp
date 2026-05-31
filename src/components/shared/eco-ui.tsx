@@ -16,9 +16,9 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        {eyebrow ? <p className="text-xs font-black uppercase tracking-[0.18em] text-[#5f6472]">{eyebrow}</p> : null}
-        <h1 className="mt-2 text-4xl font-black leading-tight tracking-[-0.03em] text-[#151515] sm:text-5xl">{title}</h1>
-        {body ? <p className="mt-2 max-w-2xl leading-7 text-[#5f6472]">{body}</p> : null}
+        {eyebrow ? <p className="text-xs font-black uppercase tracking-[0.18em] text-[#007a3d]">{eyebrow}</p> : null}
+        <h1 className="mt-2 text-4xl font-black leading-tight tracking-[-0.05em] text-[#071b12] sm:text-5xl">{title}</h1>
+        {body ? <p className="mt-2 max-w-2xl font-semibold leading-7 text-[#5d6a60]">{body}</p> : null}
       </div>
       {action}
     </div>
@@ -27,19 +27,19 @@ export function PageHeader({
 
 export function MetricCard({ label, value, icon: Icon, tone = "green" }: { label: string; value: string | number; icon: LucideIcon; tone?: "green" | "blue" | "amber" | "red" }) {
   const toneClass = {
-    green: "bg-[#f4f5fb] text-[#151515]",
+    green: "bg-[#d8f5df] text-[#007a3d]",
     blue: "bg-[#e8fbff] text-[#00687a]",
     amber: "bg-[#fff7e6] text-[#92400E]",
     red: "bg-[#fff0f0] text-[#B91C1C]",
   }[tone];
 
   return (
-    <div className="eco-card rounded-[24px] p-5">
+    <div className="eco-card rounded-[22px] p-5">
       <span className={`grid size-11 place-items-center rounded-xl ${toneClass}`}>
         <Icon size={21} />
       </span>
-      <p className="mt-4 text-3xl font-black text-[#151515]">{value}</p>
-      <p className="mt-1 text-sm font-bold text-[#5f6472]">{label}</p>
+      <p className="mt-4 text-3xl font-black tracking-[-0.04em] text-[#071b12]">{value}</p>
+      <p className="mt-1 text-sm font-bold text-[#5d6a60]">{label}</p>
     </div>
   );
 }

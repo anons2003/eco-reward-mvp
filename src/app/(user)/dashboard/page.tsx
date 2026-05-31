@@ -96,11 +96,14 @@ export default async function DashboardPage() {
         <FeaturedRewardCard className="hidden xl:block" />
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricTile label="Ví điểm xanh" value={points.toLocaleString("vi-VN")} Icon={Coins} tone="green" />
-        <MetricTile label="Giảm thiểu CO2" value="12.5 kg" Icon={Leaf} tone="blue" />
-        <MetricTile label="Rác đã phân loại" value={`${submissions.length || approvedCount}`} Icon={Recycle} tone="mint" />
-        <MetricTile label="Xếp hạng tháng" value="Top 5%" Icon={Trophy} tone="gold" />
+      <section>
+        <h2 className="mb-3 px-1 text-xl font-black tracking-[-0.04em] text-[#151d18] md:hidden">Tác động của bạn</h2>
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <MetricTile label="Ví điểm xanh" value={points.toLocaleString("vi-VN")} Icon={Coins} tone="green" />
+          <MetricTile label="Giảm thiểu CO2" value="12.5 kg" Icon={Leaf} tone="blue" />
+          <MetricTile label="Rác đã phân loại" value={`${submissions.length || approvedCount}`} Icon={Recycle} tone="mint" />
+          <MetricTile label="Xếp hạng tháng" value="Top 5%" Icon={Trophy} tone="gold" />
+        </div>
       </section>
 
       <FeaturedRewardCard className="xl:hidden" />
@@ -214,25 +217,30 @@ export default async function DashboardPage() {
 }
 
 function FeaturedRewardCard({ className = "" }: { className?: string }) {
+  const rewardHref = `/rewards/${featuredReward.id}`;
+
   return (
-    <Link
-      className={`group overflow-hidden rounded-[28px] border border-[#d9e5da] bg-white p-4 shadow-[0_12px_34px_rgba(21,29,24,0.06)] transition hover:-translate-y-0.5 hover:border-[#007a3d] ${className}`}
-      href={`/rewards/${featuredReward.id}`}
+    <article
+      className={`group overflow-hidden rounded-[24px] border border-[#d9e5da] bg-white p-3 shadow-[0_12px_34px_rgba(21,29,24,0.06)] transition hover:-translate-y-0.5 hover:border-[#007a3d] sm:rounded-[28px] sm:p-4 ${className}`}
     >
-      <div className="flex items-center justify-between">
-        <span className="rounded-full bg-[#fff3c4] px-3 py-1 text-[11px] font-black uppercase text-[#755b00]">Ưu đãi nổi bật</span>
-        <Star className="text-[#755b00]" size={18} />
+      <div className="flex gap-3 sm:block">
+        <div className="h-24 w-24 shrink-0 rounded-[20px] bg-cover bg-center sm:mt-3 sm:aspect-[16/10] sm:h-auto sm:w-full sm:rounded-3xl" style={{ backgroundImage: `url(${featuredReward.image})` }} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 sm:-order-none sm:mb-0">
+            <span className="rounded-full bg-[#fff3c4] px-3 py-1 text-[10px] font-black uppercase text-[#755b00] sm:text-[11px]">Ưu đãi nổi bật</span>
+            <Star className="shrink-0 text-[#755b00]" size={18} />
+          </div>
+          <p className="mt-3 line-clamp-2 text-sm font-black leading-5 text-[#151d18]">{featuredReward.title}</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
+            <p className="text-xl font-black tracking-[-0.04em] text-[#007a3d] sm:text-lg">{featuredReward.points.toLocaleString("vi-VN")} pts</p>
+            <Link className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#edf6ed] px-3 py-1.5 text-xs font-black text-[#007a3d] transition hover:bg-[#d8f5df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a3d]" href={rewardHref}>
+              Đổi ngay
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
       </div>
-      <div className="mt-3 aspect-[16/10] rounded-3xl bg-cover bg-center" style={{ backgroundImage: `url(${featuredReward.image})` }} />
-      <p className="mt-3 text-sm font-black leading-5 text-[#151d18]">{featuredReward.title}</p>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <p className="text-lg font-black text-[#007a3d]">{featuredReward.points.toLocaleString("vi-VN")} pts</p>
-        <span className="inline-flex items-center gap-1 text-xs font-black text-[#007a3d]">
-          Đổi ngay
-          <ArrowRight size={14} />
-        </span>
-      </div>
-    </Link>
+    </article>
   );
 }
 
@@ -255,14 +263,14 @@ function MetricTile({
   tone: keyof typeof metricTones;
 }) {
   return (
-    <div className="rounded-[22px] border border-[#d9e5da] bg-white p-4 shadow-[0_8px_24px_rgba(21,29,24,0.04)]">
-      <div className="flex items-center gap-3">
-        <span className={`grid size-11 place-items-center rounded-2xl ${metricTones[tone]}`}>
+    <div className="min-w-0 rounded-[22px] border border-[#d9e5da] bg-white p-4 shadow-[0_8px_24px_rgba(21,29,24,0.04)]">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+        <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${metricTones[tone]}`}>
           <Icon size={19} />
         </span>
-        <div>
-          <p className="text-xl font-black text-[#151d18]">{value}</p>
-          <p className="text-xs font-semibold text-[#5d6a60]">{label}</p>
+        <div className="min-w-0">
+          <p className="truncate text-[22px] font-black leading-7 tracking-[-0.04em] text-[#151d18] sm:text-xl">{value}</p>
+          <p className="mt-1 text-xs font-bold leading-4 text-[#5d6a60]">{label}</p>
         </div>
       </div>
     </div>
