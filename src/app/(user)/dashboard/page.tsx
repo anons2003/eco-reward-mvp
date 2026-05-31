@@ -1,13 +1,30 @@
 import Link from "next/link";
-import { ArrowRight, Award, Camera, Coins, Gift, Leaf, MapPin, QrCode, Recycle, Sparkles, Trophy, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  Coins,
+  Gift,
+  Leaf,
+  MapPin,
+  QrCode,
+  Recycle,
+  Star,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { createClient } from "@/infrastructure/supabase/server";
+import { rewardCatalog } from "@/components/user/rewards-catalog";
 import type { AIResult, SubmissionStatus } from "@/core/entities/types";
 import type { Database } from "@/infrastructure/supabase/database.types";
+import { createClient } from "@/infrastructure/supabase/server";
 
 type DashboardSubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "ai_result" | "status" | "points" | "created_at">;
 type DashboardRewardRow = Pick<Database["public"]["Tables"]["reward_items"]["Row"], "id" | "title" | "points_required">;
 type DashboardProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "email" | "full_name" | "points" | "trust_score">;
+
+const weeklyTrend = [28, 42, 18, 58, 46, 68, 60];
+const weekLabels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+const featuredReward = rewardCatalog[0];
 
 function parseAiResult(value: unknown): AIResult {
   if (value && typeof value === "object" && "wasteType" in value) {
@@ -28,158 +45,226 @@ export default async function DashboardPage() {
     const { data } = await supabase.from("profiles").select("id,email,full_name,points,trust_score").eq("id", authUser.id).single();
     profile = data;
   }
+
   let submissionRows: DashboardSubmissionRow[] = [];
   if (authUser) {
-    const { data } = await supabase.from("submissions").select("id,ai_result,status,points,created_at").eq("user_id", authUser.id).order("created_at", { ascending: false }).limit(4);
+    const { data } = await supabase.from("submissions").select("id,ai_result,status,points,created_at").eq("user_id", authUser.id).order("created_at", { ascending: false }).limit(5);
     submissionRows = data ?? [];
   }
-  const { data } = await supabase.from("reward_items").select("id,title,points_required").eq("active", true).order("points_required", { ascending: true }).limit(2);
-  const rewardRows: DashboardRewardRow[] = data ?? [];
 
-  const submissions =
-    submissionRows?.map((row) => ({
-      id: row.id,
-      aiResult: parseAiResult(row.ai_result),
-      status: row.status as SubmissionStatus,
-      points: row.points,
-      createdAt: row.created_at,
-    })) ?? [];
-  const rewards = rewardRows ?? [];
+  const { data } = await supabase.from("reward_items").select("id,title,points_required").eq("active", true).order("points_required", { ascending: true }).limit(2);
+  const rewards: DashboardRewardRow[] = data ?? [];
+  const submissions = submissionRows.map((row) => ({
+    id: row.id,
+    aiResult: parseAiResult(row.ai_result),
+    status: row.status as SubmissionStatus,
+    points: row.points,
+    createdAt: row.created_at,
+  }));
+
   const dashboardProfile = profile as DashboardProfileRow | null;
   const fullName = dashboardProfile?.full_name ?? authUser?.email ?? "Eco user";
+  const firstName = fullName.split(" ")[0] || "Bạn";
   const points = dashboardProfile?.points ?? 0;
   const trustScore = dashboardProfile?.trust_score ?? 80;
   const pendingCount = submissions.filter((row) => row.status === "pending_review").length;
+  const approvedCount = submissions.filter((row) => row.status === "approved").length;
+  const rewardCount = rewards.length || rewardCatalog.filter((reward) => points >= reward.points).length;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <section className="overflow-hidden rounded-[32px] border border-[#e6e7ef] bg-white/78 p-6 shadow-[0_28px_90px_rgba(21,21,21,0.08)] backdrop-blur-xl sm:p-8">
-        <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-[#e6e7ef] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-[#5f6472]">
-              <Leaf size={14} />
-              Xin chào, {fullName}
+    <div className="space-y-5">
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="relative overflow-hidden rounded-[28px] bg-[#008f4a] p-6 text-white shadow-[0_18px_46px_rgba(0,122,61,0.22)] md:p-8">
+          <div className="relative z-10 max-w-2xl">
+            <h1 className="text-3xl font-black tracking-[-0.04em] md:text-4xl">Chào buổi sáng, {firstName}!</h1>
+            <p className="mt-4 max-w-xl text-sm font-semibold leading-6 text-white/88">
+              Hôm nay là một ngày tuyệt vời để bảo vệ môi trường. Hãy cùng nhau giảm thiểu rác thải nhựa nhé!
             </p>
-            <h1 className="mt-5 text-5xl font-black leading-tight tracking-[-0.03em] text-[#151515] sm:text-6xl">{points} điểm xanh</h1>
-            <p className="mt-3 max-w-xl leading-7 text-[#5f6472]">Quét QR tại thùng rác, chụp ảnh vật phẩm và nhận điểm sau khi lượt gửi được xác minh.</p>
-          </div>
-          <Link className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#151515] px-6 py-4 font-black text-white shadow-[0_14px_34px_rgba(21,21,21,0.18)] transition hover:bg-[#2a2a2a]" href="/scan" style={{ color: "#ffffff" }}>
-            <QrCode size={20} />
-            Quét QR
-          </Link>
-        </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {([
-            ["Lượt phân loại", submissions.length.toString(), Recycle],
-            ["Đang chờ duyệt", pendingCount.toString(), Camera],
-            ["Quà có thể đổi", rewards.length.toString(), Award],
-          ] as Array<[string, string, LucideIcon]>).map(([label, value, Icon]) => (
-            <div className="rounded-2xl border border-[#e6e7ef] bg-white p-4" key={label}>
-              <Icon className="text-[#151515]" />
-              <p className="mt-3 text-2xl font-black text-[#151515]">{value}</p>
-              <p className="text-sm font-semibold text-[#5f6472]">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <aside className="eco-card rounded-[28px] p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black">Điểm tin cậy</h2>
-          <Sparkles className="text-[#151515]" />
-        </div>
-        <div className="mt-5 grid place-items-center">
-          <div className="grid size-36 place-items-center rounded-full" style={{ background: `conic-gradient(#151515 ${trustScore * 3.6}deg, #e6e7ef 0deg)` }}>
-            <div className="grid size-28 place-items-center rounded-full bg-white text-center">
-              <p className="text-3xl font-black text-[#151515]">{trustScore}</p>
-              <p className="text-xs font-bold uppercase text-[#5f6472]">/100</p>
-            </div>
-          </div>
-        </div>
-        <p className="mt-4 text-center text-sm leading-6 text-[#5f6472]">Điểm tin cậy cao giúp lượt gửi hợp lệ được duyệt nhanh hơn.</p>
-      </aside>
-
-      <section className="eco-card rounded-[28px] p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-black">Phần thưởng nổi bật</h2>
-          <Link className="inline-flex items-center gap-1 text-sm font-black text-[#151515]" href="/rewards">
-            Xem
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {rewards.map((reward) => (
-            <div className="rounded-2xl border border-[#e6e7ef] bg-white p-4" key={reward.id}>
-              <div className="flex items-start gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f4f5fb] text-[#151515]">
-                  <Gift size={20} />
-                </span>
-                <div>
-                  <p className="font-black">{reward.title}</p>
-                  <p className="mt-1 text-sm font-semibold text-[#5f6472]">{reward.points_required} điểm</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="eco-card rounded-[28px] p-6">
-        <h2 className="text-xl font-black">Tác động của bạn</h2>
-        <div className="mt-4 grid gap-3">
-          {[
-            ["Điểm tích lũy", `${points}`, Coins],
-            ["Top tuần", "#12", Trophy],
-            ["Thùng gần nhất", "Sảnh A", MapPin],
-          ].map(([label, value, Icon]) => (
-            <div className="flex items-center justify-between rounded-2xl border border-[#e6e7ef] bg-white p-4" key={label as string}>
-              <div className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-full bg-white text-[#151515]">
-                  <Icon size={20} />
-                </span>
-                <p className="font-bold text-[#5f6472]">{label as string}</p>
-              </div>
-              <p className="font-black text-[#151515]">{value as string}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="eco-card rounded-[28px] p-6 lg:col-span-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black">Lịch sử gần đây</h2>
-          <Link className="font-bold text-[#151515]" href="/wallet">
-            Xem ví điểm
-          </Link>
-        </div>
-        <div className="mt-4 grid gap-3">
-          {submissions.map((submission) => (
-            <Link className="flex items-center justify-between gap-4 rounded-2xl border border-[#e6e7ef] bg-white p-4 transition hover:border-[#151515]" href={`/result/${submission.id}`} key={submission.id}>
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#f4f5fb] text-[#151515]">
-                  <Recycle size={20} />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate font-black">{submission.aiResult.wasteType.replaceAll("_", " ")}</p>
-                  <p className="text-sm text-[#5f6472]">{new Date(submission.createdAt).toLocaleString("vi-VN")}</p>
-                </div>
-              </div>
-              <div className="shrink-0 text-right">
-                <StatusBadge status={submission.status} />
-                <p className="mt-1 font-black text-[#151515]">+{submission.points}</p>
-              </div>
+            <Link
+              className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-black text-[#007a3d] shadow-[0_12px_30px_rgba(0,57,31,0.16)] transition hover:bg-[#f3fcf3]"
+              href="/scan"
+              style={{ color: "#007a3d" }}
+            >
+              <QrCode size={18} />
+              Quét mã QR ngay
             </Link>
-          ))}
-          {submissions.length === 0 ? (
-            <div className="rounded-2xl bg-white p-6 text-center text-[#5f6472]">
-              <p className="font-bold">Chưa có lượt phân loại nào.</p>
-              <Link className="mt-4 inline-flex font-black text-[#151515]" href="/scan">
-                Quét QR đầu tiên
-              </Link>
+          </div>
+          <Leaf className="absolute -bottom-8 right-6 text-white/10" size={190} strokeWidth={1.2} />
+          <div className="absolute bottom-8 right-12 hidden size-32 rounded-[36px] border border-white/12 bg-white/8 md:block" />
+        </div>
+
+        <FeaturedRewardCard className="hidden xl:block" />
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricTile label="Ví điểm xanh" value={points.toLocaleString("vi-VN")} Icon={Coins} tone="green" />
+        <MetricTile label="Giảm thiểu CO2" value="12.5 kg" Icon={Leaf} tone="blue" />
+        <MetricTile label="Rác đã phân loại" value={`${submissions.length || approvedCount}`} Icon={Recycle} tone="mint" />
+        <MetricTile label="Xếp hạng tháng" value="Top 5%" Icon={Trophy} tone="gold" />
+      </section>
+
+      <FeaturedRewardCard className="xl:hidden" />
+
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Xu hướng tích cực</h2>
+              <p className="mt-1 text-sm font-semibold text-[#6e7a70]">Số lượng rác tái chế trong tuần này</p>
             </div>
-          ) : null}
+            <button className="rounded-full bg-[#edf6ed] px-4 py-2 text-xs font-black text-[#3e4941]" type="button">
+              Tuần này
+            </button>
+          </div>
+          <div className="mt-8 flex h-56 items-end gap-3">
+            {weeklyTrend.map((value, index) => (
+              <div className="flex flex-1 flex-col items-center gap-3" key={weekLabels[index]}>
+                <div className="flex h-44 w-full items-end rounded-full bg-[#edf6ed]">
+                  <div className="w-full rounded-full bg-[#007a3d]" style={{ height: `${value}%` }} />
+                </div>
+                <span className="text-xs font-black text-[#6e7a70]">{weekLabels[index]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Gần đây</h2>
+            <Link className="text-xs font-black text-[#007a3d]" href="/history">
+              Xem tất cả
+            </Link>
+          </div>
+          <div className="mt-5 space-y-3">
+            {submissions.map((submission) => (
+              <Link className="flex items-center justify-between gap-3 rounded-[22px] border border-transparent p-2 transition hover:border-[#d9e5da] hover:bg-white" href={`/result/${submission.id}`} key={submission.id}>
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#edf6ed] text-[#007a3d]">
+                    <Recycle size={19} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-[#151d18]">{submission.aiResult.wasteType.replaceAll("_", " ")}</p>
+                    <p className="text-xs font-semibold text-[#6e7a70]">{new Date(submission.createdAt).toLocaleDateString("vi-VN")}</p>
+                  </div>
+                </div>
+                <StatusBadge status={submission.status} />
+              </Link>
+            ))}
+            {submissions.length === 0 ? (
+              <div className="rounded-[22px] bg-white p-5 text-center text-[#5d6a60]">
+                <p className="font-bold">Chưa có lượt phân loại nào.</p>
+                <Link className="mt-4 inline-flex font-black text-[#007a3d]" href="/scan">
+                  Quét QR đầu tiên
+                </Link>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
+
+      <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]" id="impact">
+        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+          <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Tác động của bạn</h2>
+          <div className="mt-4 grid gap-3">
+            {[
+              ["Điểm tin cậy", `${trustScore}/100`, Award],
+              ["Top tuần", "#12", Trophy],
+              ["Thùng gần nhất", "Sảnh A", MapPin],
+            ].map(([label, value, Icon]) => (
+              <div className="flex items-center justify-between rounded-[22px] border border-[#d9e5da] bg-white p-4" key={label as string}>
+                <div className="flex items-center gap-3">
+                  <span className="grid size-10 place-items-center rounded-2xl bg-[#edf6ed] text-[#007a3d]">
+                    <Icon size={20} />
+                  </span>
+                  <p className="font-bold text-[#5d6a60]">{label as string}</p>
+                </div>
+                <p className="font-black text-[#151d18]">{value as string}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Ưu đãi phù hợp</h2>
+            <Link className="inline-flex items-center gap-1 text-sm font-black text-[#007a3d]" href="/rewards">
+              Xem
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {(rewards.length ? rewards : rewardCatalog.slice(0, 2).map((reward) => ({ id: reward.id, title: reward.title, points_required: reward.points }))).map((reward) => (
+              <Link className="rounded-[22px] border border-[#d9e5da] bg-white p-4 transition hover:border-[#007a3d]" href={rewardCatalog.some((item) => item.id === reward.id) ? `/rewards/${reward.id}` : "/rewards"} key={reward.id}>
+                <div className="flex items-start gap-3">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d]">
+                    <Gift size={20} />
+                  </span>
+                  <div>
+                    <p className="font-black text-[#151d18]">{reward.title}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#5d6a60]">{reward.points_required.toLocaleString("vi-VN")} điểm</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function FeaturedRewardCard({ className = "" }: { className?: string }) {
+  return (
+    <Link
+      className={`group overflow-hidden rounded-[28px] border border-[#d9e5da] bg-white p-4 shadow-[0_12px_34px_rgba(21,29,24,0.06)] transition hover:-translate-y-0.5 hover:border-[#007a3d] ${className}`}
+      href={`/rewards/${featuredReward.id}`}
+    >
+      <div className="flex items-center justify-between">
+        <span className="rounded-full bg-[#fff3c4] px-3 py-1 text-[11px] font-black uppercase text-[#755b00]">Ưu đãi nổi bật</span>
+        <Star className="text-[#755b00]" size={18} />
+      </div>
+      <div className="mt-3 aspect-[16/10] rounded-3xl bg-cover bg-center" style={{ backgroundImage: `url(${featuredReward.image})` }} />
+      <p className="mt-3 text-sm font-black leading-5 text-[#151d18]">{featuredReward.title}</p>
+      <div className="mt-2 flex items-end justify-between gap-2">
+        <p className="text-lg font-black text-[#007a3d]">{featuredReward.points.toLocaleString("vi-VN")} pts</p>
+        <span className="inline-flex items-center gap-1 text-xs font-black text-[#007a3d]">
+          Đổi ngay
+          <ArrowRight size={14} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+const metricTones = {
+  green: "bg-[#d8f5df] text-[#007a3d]",
+  blue: "bg-[#e3f2ff] text-[#006496]",
+  mint: "bg-[#e7f8ef] text-[#007a3d]",
+  gold: "bg-[#fff3c4] text-[#755b00]",
+};
+
+function MetricTile({
+  label,
+  value,
+  Icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  Icon: LucideIcon;
+  tone: keyof typeof metricTones;
+}) {
+  return (
+    <div className="rounded-[22px] border border-[#d9e5da] bg-white p-4 shadow-[0_8px_24px_rgba(21,29,24,0.04)]">
+      <div className="flex items-center gap-3">
+        <span className={`grid size-11 place-items-center rounded-2xl ${metricTones[tone]}`}>
+          <Icon size={19} />
+        </span>
+        <div>
+          <p className="text-xl font-black text-[#151d18]">{value}</p>
+          <p className="text-xs font-semibold text-[#5d6a60]">{label}</p>
+        </div>
+      </div>
     </div>
   );
 }

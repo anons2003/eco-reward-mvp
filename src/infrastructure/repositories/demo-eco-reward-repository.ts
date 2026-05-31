@@ -7,7 +7,21 @@ import type { EcoRewardRepository } from "@/application/repositories/eco-reward-
 const now = () => new Date().toISOString();
 const id = (prefix: string) => `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 
-const profiles: Profile[] = [
+type DemoEcoRewardStore = {
+  profiles: Profile[];
+  bins: Bin[];
+  scanSessions: ScanSession[];
+  submissions: Submission[];
+  pointTransactions: PointTransaction[];
+  rewardItems: RewardItem[];
+  auditLogs: AuditLog[];
+};
+
+declare global {
+  var __ecoRewardDemoStore: DemoEcoRewardStore | undefined;
+}
+
+const initialProfiles: Profile[] = [
   {
     id: "demo-user",
     email: "user@example.com",
@@ -26,7 +40,7 @@ const profiles: Profile[] = [
   },
 ];
 
-const bins: Bin[] = [
+const initialBins: Bin[] = [
   {
     id: "bin-001",
     name: "Thùng rác thông minh A1",
@@ -56,8 +70,8 @@ const bins: Bin[] = [
   },
 ];
 
-const scanSessions: ScanSession[] = [];
-const submissions: Submission[] = [
+const initialScanSessions: ScanSession[] = [];
+const initialSubmissions: Submission[] = [
   {
     id: "sub-demo-001",
     userId: "demo-user",
@@ -86,18 +100,18 @@ const submissions: Submission[] = [
   },
 ];
 
-const pointTransactions: PointTransaction[] = [
+const initialPointTransactions: PointTransaction[] = [
   {
     id: "pt-demo-001",
     userId: "demo-user",
     submissionId: "sub-demo-001",
     points: 10,
     reason: "Chai nhựa tại thùng A1",
-    createdAt: submissions[0].createdAt,
+    createdAt: initialSubmissions[0].createdAt,
   },
 ];
 
-const rewardItems: RewardItem[] = [
+const initialRewardItems: RewardItem[] = [
   {
     id: "reward-001",
     title: "Voucher cà phê xanh",
@@ -114,7 +128,21 @@ const rewardItems: RewardItem[] = [
   },
 ];
 
-const auditLogs: AuditLog[] = [];
+const initialAuditLogs: AuditLog[] = [];
+
+const store =
+  globalThis.__ecoRewardDemoStore ??
+  (globalThis.__ecoRewardDemoStore = {
+    profiles: initialProfiles,
+    bins: initialBins,
+    scanSessions: initialScanSessions,
+    submissions: initialSubmissions,
+    pointTransactions: initialPointTransactions,
+    rewardItems: initialRewardItems,
+    auditLogs: initialAuditLogs,
+  });
+
+const { profiles, bins, scanSessions, submissions, pointTransactions, rewardItems, auditLogs } = store;
 
 export function getDemoUser(role: "user" | "admin" = "user") {
   return profiles.find((profile) => profile.role === role) ?? profiles[0];

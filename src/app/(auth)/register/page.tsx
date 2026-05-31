@@ -1,56 +1,76 @@
 import Link from "next/link";
-import { ArrowRight, Leaf, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, Lock, Mail, UserRound } from "lucide-react";
+import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
 
 export default function RegisterPage() {
   return (
-    <main className="eco-shell flex min-h-screen items-center justify-center px-4 py-6">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-[32px] border border-[#e6e7ef] bg-white/78 shadow-[0_28px_90px_rgba(21,21,21,0.10)] backdrop-blur-xl lg:grid-cols-[0.9fr_1fr]">
-        <div className="border-r border-[#e6e7ef] bg-[#fbfbff] p-8 sm:p-10">
-          <Link className="flex w-fit items-center gap-2 text-xl font-black text-[#151515]" href="/">
-            <span className="grid size-12 place-items-center rounded-2xl border border-[#e6e7ef] bg-white">
-              <Leaf size={26} />
-            </span>
-            Eco-Reward
-          </Link>
-          <h1 className="mt-10 text-5xl font-black leading-[1.05] tracking-[-0.03em] text-[#151515]">Tạo tài khoản xanh cho hành trình phân loại rác.</h1>
-          <p className="mt-5 leading-7 text-[#5f6472]">Tạo hồ sơ để theo dõi điểm xanh, lịch sử phân loại và các phần thưởng bạn có thể đổi.</p>
-          <div className="mt-8 rounded-2xl border border-[#e6e7ef] bg-white p-5">
-            <ShieldCheck className="text-[#151515]" />
-            <p className="mt-3 font-black">Bảo vệ tài khoản của bạn</p>
-            <p className="mt-1 text-sm leading-6 text-[#5f6472]">Thông tin đăng nhập giúp giữ điểm thưởng, lịch sử hoạt động và lượt đổi quà luôn gắn với đúng chủ tài khoản.</p>
-          </div>
-        </div>
-        <div className="p-8 sm:p-10 lg:p-12">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#5f6472]">Đăng ký</p>
-          <h2 className="mt-3 text-4xl font-black tracking-[-0.03em] text-[#151515]">Bắt đầu với Eco-Reward</h2>
-          <form className="mt-8 grid gap-4">
-            <label className="grid gap-2 text-sm font-bold text-[#5f6472]" htmlFor="name">
-              Họ và tên
-              <span className="relative">
-                <UserRound className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af]" size={18} />
-                <input className="input pl-12" id="name" placeholder="Nguyễn Văn Xanh" type="text" />
-              </span>
-            </label>
-            <label className="grid gap-2 text-sm font-bold text-[#5f6472]" htmlFor="email">
-              Email
-              <span className="relative">
-                <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af]" size={18} />
-                <input className="input pl-12" id="email" placeholder="eco-hero@example.com" type="email" />
-              </span>
-            </label>
-            <Link className="btn-primary mt-2 w-full" href="/login">
-              Tiếp tục đăng nhập
-              <ArrowRight size={18} />
-            </Link>
-          </form>
-          <p className="mt-8 text-center text-sm text-[#5f6472]">
-            Đã có tài khoản?{" "}
-            <Link className="font-black text-[#151515]" href="/login">
-              Đăng nhập
-            </Link>
-          </p>
-        </div>
-      </section>
-    </main>
+    <AuthShell
+      eyebrow="Đăng ký"
+      title="Tạo tài khoản xanh"
+      body="Lưu điểm thưởng, lịch sử phân loại và các phần thưởng đổi được trong một hồ sơ cá nhân."
+      sideTitle="Bắt đầu hành trình phân loại rác có thưởng."
+      sideBody="Mỗi tài khoản giúp hệ thống ghi nhận đúng lượt gửi, điểm xanh và tác động môi trường của riêng bạn."
+    >
+      <form className="grid gap-4">
+        <label className="block text-sm font-black text-[#151d18]" htmlFor="name">
+          Họ và tên
+          <span className="relative mt-2 block">
+            <UserRound className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6e7a70]" size={18} />
+            <input
+              aria-describedby="name-helper"
+              autoComplete="name"
+              className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
+              id="name"
+              placeholder="Nguyễn Văn Xanh"
+              type="text"
+            />
+          </span>
+          <FieldHelper id="name-helper">Tên này sẽ hiển thị trong hồ sơ và ví điểm.</FieldHelper>
+        </label>
+
+        <label className="block text-sm font-black text-[#151d18]" htmlFor="email">
+          Email
+          <span className="relative mt-2 block">
+            <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6e7a70]" size={18} />
+            <input
+              aria-describedby="register-email-helper"
+              autoComplete="email"
+              className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
+              id="email"
+              placeholder="you@example.com"
+              type="email"
+            />
+          </span>
+          <FieldHelper id="register-email-helper">Email dùng để đăng nhập và nhận thông báo tài khoản.</FieldHelper>
+        </label>
+
+        <label className="block text-sm font-black text-[#151d18]" htmlFor="password">
+          Mật khẩu
+          <span className="relative mt-2 block">
+            <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6e7a70]" size={18} />
+            <input
+              aria-describedby="register-password-helper"
+              autoComplete="new-password"
+              className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
+              id="password"
+              type="password"
+            />
+          </span>
+          <FieldHelper id="register-password-helper">Dùng ít nhất 8 ký tự để bảo vệ ví điểm.</FieldHelper>
+        </label>
+
+        <Link className="focus-ring mt-2 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" href="/login">
+          Tiếp tục
+          <ArrowRight size={18} />
+        </Link>
+      </form>
+
+      <p className="mt-8 text-center text-sm font-semibold text-[#5d6a60]">
+        Đã có tài khoản?{" "}
+        <Link className="font-black text-[#007a3d] underline-offset-4 hover:underline" href="/login">
+          Đăng nhập
+        </Link>
+      </p>
+    </AuthShell>
   );
 }
