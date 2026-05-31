@@ -17,7 +17,7 @@ export default async function VerifyRecoveryPage({ searchParams }: { searchParam
     <AuthShell
       eyebrow="Xác minh mã"
       title="Nhập mã khôi phục"
-      body="Nhập mã 6 số đã được gửi vào email của bạn để tiếp tục đặt mật khẩu mới."
+      body="Nhập mã 8 số đã được gửi vào email của bạn để tiếp tục đặt mật khẩu mới."
       sideTitle="Xác minh trước khi đổi mật khẩu."
       sideBody="Mã OTP giúp đảm bảo chỉ chủ email mới có thể đặt lại mật khẩu và truy cập ví điểm xanh."
     >
@@ -54,16 +54,16 @@ export default async function VerifyRecoveryPage({ searchParams }: { searchParam
               className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 text-center text-2xl font-black tracking-[0.32em] text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
               id="token"
               inputMode="numeric"
-              maxLength={6}
-              minLength={6}
+              maxLength={8}
+              minLength={8}
               name="token"
-              pattern="[0-9]{6}"
-              placeholder="000000"
+              pattern="[0-9]{8}"
+              placeholder="00000000"
               required
               type="text"
             />
           </span>
-          <FieldHelper id="verify-recovery-token-helper">Mã gồm 6 chữ số trong email khôi phục.</FieldHelper>
+          <FieldHelper id="verify-recovery-token-helper">Mã gồm 8 chữ số trong email khôi phục.</FieldHelper>
         </label>
 
         <button className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" type="submit">

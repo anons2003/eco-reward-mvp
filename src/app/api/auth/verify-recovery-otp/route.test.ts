@@ -29,13 +29,13 @@ describe("POST /api/auth/verify-recovery-otp", () => {
     const response = await POST(
       requestWithForm({
         email: "USER@Example.com ",
-        token: "123456",
+        token: "12345678",
       }),
     );
 
     expect(verifyOtp).toHaveBeenCalledWith({
       email: "user@example.com",
-      token: "123456",
+      token: "12345678",
       type: "recovery",
     });
     expect(response.headers.get("location")).toBe("https://eco.test/reset-password?verified=1");
@@ -48,7 +48,7 @@ describe("POST /api/auth/verify-recovery-otp", () => {
     const response = await POST(
       requestWithForm({
         email: "user@example.com",
-        token: "000000",
+        token: "00000000",
       }),
     );
 
