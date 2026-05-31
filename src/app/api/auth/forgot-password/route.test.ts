@@ -32,7 +32,7 @@ describe("POST /api/auth/forgot-password", () => {
       redirectTo: "https://eco.test/?type=recovery",
     });
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?sent=1");
+    expect(response.headers.get("location")).toBe("https://eco.test/verify-recovery?email=user%40example.com&sent=1");
   });
 
   it("returns a visible error when Supabase rejects the reset email request", async () => {

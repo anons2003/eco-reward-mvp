@@ -29,7 +29,8 @@ export async function POST(request: NextRequest | Request) {
     return NextResponse.redirect(url, { status: 302 });
   }
 
-  const url = new URL("/forgot-password", request.url);
+  const url = new URL("/verify-recovery", request.url);
+  url.searchParams.set("email", email);
   url.searchParams.set("sent", "1");
   return NextResponse.redirect(url, { status: 302 });
 }
