@@ -14,13 +14,19 @@ export async function POST(request: NextRequest | Request) {
     return NextResponse.redirect(url, { status: 302 });
   }
 
-  const redirectTo = new URL("/auth/callback", appOrigin(request));
-  redirectTo.searchParams.set("next", "/reset-password");
+  const redirectTo = new URL("/reset-password", appOrigin(request));
 
   const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(email, {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: redirectTo.toString(),
   });
+
+  if (error) {
+    console.error("Password reset email failed", error.message);
+    const url = new URL("/forgot-password", request.url);
+    url.searchParams.set("error", "reset_failed");
+    return NextResponse.redirect(url, { status: 302 });
+  }
 
   const url = new URL("/forgot-password", request.url);
   url.searchParams.set("sent", "1");

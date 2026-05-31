@@ -29,9 +29,18 @@ describe("POST /api/auth/forgot-password", () => {
     const response = await POST(requestWithForm({ email: "USER@Example.com " }));
 
     expect(resetPasswordForEmail).toHaveBeenCalledWith("user@example.com", {
-      redirectTo: "https://eco.test/auth/callback?next=%2Freset-password",
+      redirectTo: "https://eco.test/reset-password",
     });
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?sent=1");
+  });
+
+  it("returns a visible error when Supabase rejects the reset email request", async () => {
+    resetPasswordForEmail.mockResolvedValueOnce({ error: new Error("redirect URL is not allowed") });
+    const { POST } = await import("./route");
+
+    const response = await POST(requestWithForm({ email: "USER@Example.com " }));
+
+    expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?error=reset_failed");
   });
 });
