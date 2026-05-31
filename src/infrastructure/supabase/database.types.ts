@@ -8,12 +8,15 @@ export type Database = {
           id: string;
           email: string;
           full_name: string;
+          avatar_url: string | null;
+          avatar_object_key: string | null;
           role: "user" | "admin";
           points: number;
           trust_score: number;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
+        Relationships: [];
       };
       bins: {
         Row: {

@@ -58,6 +58,13 @@ function messageForRoute(pathname: string, params: URLSearchParams): ToastMessag
   }
 
   if (pathname === "/settings") {
+    const avatar = params.get("avatar");
+    if (avatar === "success") return { tone: "success", body: "Ảnh đại diện đã được cập nhật." };
+    if (avatar === "missing_file") return { tone: "error", body: "Vui lòng chọn ảnh đại diện." };
+    if (avatar === "invalid_type") return { tone: "error", body: "Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP." };
+    if (avatar === "file_too_large") return { tone: "error", body: "Ảnh đại diện tối đa 2 MB." };
+    if (avatar === "upload_failed") return { tone: "error", body: "Chưa thể tải ảnh đại diện lên S3. Vui lòng thử lại." };
+
     const password = params.get("password");
     if (password === "success") return { tone: "success", body: "Mật khẩu đã được cập nhật." };
     if (password === "missing_fields") return { tone: "error", body: "Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới." };

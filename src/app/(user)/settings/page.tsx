@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Bell, Camera, Globe2, LockKeyhole, LogOut, Mail, MapPin, Save, Shield, UserRound } from "lucide-react";
+import { AvatarUploadForm } from "@/components/user/avatar-upload-form";
+import { avatarUrlFromMetadata } from "@/infrastructure/auth/avatar";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
-type SettingsProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "email" | "full_name">;
+type SettingsProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "email" | "full_name" | "avatar_url">;
 
 function Toggle({ enabled = true }: { enabled?: boolean }) {
   return (
@@ -38,12 +40,13 @@ export default async function SettingsPage() {
 
   let profile: SettingsProfileRow | null = null;
   if (user) {
-    const { data } = await supabase.from("profiles").select("email,full_name").eq("id", user.id).single();
+    const { data } = await supabase.from("profiles").select("email,full_name,avatar_url").eq("id", user.id).single();
     profile = data as SettingsProfileRow | null;
   }
 
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? "Nguyễn Văn Minh";
   const email = profile?.email ?? user?.email ?? "minh.nguyen@email.com";
+  const avatarUrl = profile?.avatar_url ?? avatarUrlFromMetadata(user?.user_metadata);
 
   return (
     <>
@@ -65,9 +68,7 @@ export default async function SettingsPage() {
 
       <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="rounded-[2rem] border border-[#bdcabe]/60 bg-white p-6 text-center shadow-[0_2px_8px_rgba(21,29,24,0.05)]">
-          <div className="mx-auto grid size-24 place-items-center rounded-full bg-[#d8f5df] text-3xl font-black text-[#007a3d] ring-4 ring-white">
-            {displayName.slice(0, 2).toUpperCase()}
-          </div>
+          <AvatarUploadForm avatarUrl={avatarUrl} displayName={displayName} />
           <h2 className="mt-4 text-xl font-black text-[#151d18]">{displayName}</h2>
           <p className="mt-1 text-sm font-semibold text-[#6e7a70]">{email}</p>
           <span className="mt-4 inline-flex rounded-full bg-[#d8f5df] px-3 py-1 text-xs font-black uppercase text-[#007a3d]">Thành viên Bạch kim</span>

@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { Bell, Gift, HelpCircle, History, Home, Leaf, LogOut, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-
-const avatarImage =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCAFo7b_J72tadOho_GvIhFprMqBuADtOe4l09BKqxZl2He--GI-Sdg-N8sduHLK0fQvANy7Vj1FbYe6f0IvzLIdKkG6VEAq_o5ULvBvbI6H6ZQ8EB4l9v_Knuw1vEwsvspHZqryYoG1xJizRWVWE_J4g_P1hdclB9nE0E0wekwBlqQuXN-Az9xeNgGgpSqFcnMnMVXkVLzG-laqxu2sBNIozPyxtUs-Dt_3CkCSnNWY0xKj99zJVi5dOcVsSwAwsEoFKlI0CFZKbTx";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 const sidebarItems: Array<{ href: string; label: string; Icon: LucideIcon; match?: string }> = [
   { href: "/dashboard", label: "Dashboard", Icon: Home, match: "/dashboard" },
@@ -47,10 +45,12 @@ function SidebarLink({ href, label, Icon, active }: { href: string; label: strin
 export function UserAppShell({
   children,
   displayName,
+  avatarUrl,
   points,
 }: {
   children: React.ReactNode;
   displayName: string;
+  avatarUrl?: string | null;
   points: number;
 }) {
   const pathname = usePathname();
@@ -112,7 +112,7 @@ export function UserAppShell({
                   <p className="text-sm font-black leading-none">{displayName}</p>
                   <p className="mt-1 text-xs font-semibold text-[#6e7a70]">Thành viên Bạc • {points.toLocaleString("vi-VN")} pts</p>
                 </div>
-                <div className="size-10 rounded-full border-2 border-[#007a3d]/20 bg-cover bg-center" style={{ backgroundImage: `url(${avatarImage})` }} />
+                <UserAvatar className="ring-0" name={displayName} size="md" src={avatarUrl} />
               </div>
             </div>
           </header>
@@ -125,7 +125,7 @@ export function UserAppShell({
               <button aria-label="Thông báo" className="grid size-9 place-items-center rounded-full transition hover:bg-[#e7f0e7]" type="button">
                 <Bell className="text-[#3e4941]" size={19} />
               </button>
-              <div className="size-9 rounded-full border-2 border-[#007a3d]/20 bg-cover bg-center" style={{ backgroundImage: `url(${avatarImage})` }} title={firstName} />
+              <UserAvatar className="ring-0" name={firstName} size="sm" src={avatarUrl} />
             </div>
           </header>
 

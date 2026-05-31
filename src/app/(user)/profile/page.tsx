@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Award, BarChart3, Camera, Droplets, Edit3, Leaf, Mail, MapPin, Phone, Recycle, Share2, Trees, Trophy, WalletCards } from "lucide-react";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { avatarUrlFromMetadata } from "@/infrastructure/auth/avatar";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
-type ProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "email" | "full_name" | "points" | "trust_score">;
+type ProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "email" | "full_name" | "avatar_url" | "points" | "trust_score">;
 
 function StatCard({ Icon, label, value, unit }: { Icon: typeof WalletCards; label: string; value: string; unit: string }) {
   return (
@@ -29,12 +31,13 @@ export default async function ProfilePage() {
 
   let profile: ProfileRow | null = null;
   if (user) {
-    const { data } = await supabase.from("profiles").select("email,full_name,points,trust_score").eq("id", user.id).single();
+    const { data } = await supabase.from("profiles").select("email,full_name,avatar_url,points,trust_score").eq("id", user.id).single();
     profile = data as ProfileRow | null;
   }
 
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? "Alex Johnson";
   const email = profile?.email ?? user?.email ?? "alex.johnson@eco-future.com";
+  const avatarUrl = profile?.avatar_url ?? avatarUrlFromMetadata(user?.user_metadata);
   const points = profile?.points ?? 12450;
   const nextRank = 15000;
   const progress = Math.min(Math.round((points / nextRank) * 100), 100);
@@ -56,9 +59,7 @@ export default async function ProfilePage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-center">
           <div className="flex flex-col gap-5 md:flex-row md:items-center">
             <div className="relative">
-              <div className="grid size-28 place-items-center rounded-full bg-[#d8f5df] text-4xl font-black text-[#007a3d] ring-4 ring-[#007a3d]/20">
-                {displayName.slice(0, 2).toUpperCase()}
-              </div>
+              <UserAvatar className="ring-[#007a3d]/20" name={displayName} size="xl" src={avatarUrl} />
               <span className="absolute bottom-1 right-1 grid size-9 place-items-center rounded-full bg-[#007a3d] text-white ring-4 ring-white">
                 <Camera size={16} />
               </span>
