@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { appOrigin } from "@/infrastructure/auth/redirects";
 import { createClient } from "@/infrastructure/supabase/server";
 
 export async function POST(request: NextRequest | Request) {
@@ -13,8 +14,13 @@ export async function POST(request: NextRequest | Request) {
     return NextResponse.redirect(url, { status: 302 });
   }
 
+  const redirectTo = new URL("/", appOrigin(request));
+  redirectTo.searchParams.set("type", "recovery");
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectTo.toString(),
+  });
 
   if (error) {
     console.error("Password reset email failed", error.message);

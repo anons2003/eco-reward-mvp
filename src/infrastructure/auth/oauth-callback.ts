@@ -5,9 +5,27 @@ import { appOrigin, safeNextPath } from "./redirects";
 
 type AuthProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
 
+function isRecoveryCallback(request: NextRequest) {
+  if (request.nextUrl.searchParams.get("type") === "recovery") {
+    return true;
+  }
+
+  return request.cookies.getAll().some((cookie) => {
+    if (!cookie.name.endsWith("auth-token-code-verifier") || !cookie.value.startsWith("base64-")) {
+      return false;
+    }
+
+    try {
+      return Buffer.from(cookie.value.replace(/^base64-/, ""), "base64").toString("utf8").includes("/recovery");
+    } catch {
+      return false;
+    }
+  });
+}
+
 export async function handleOAuthCallback(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const fallbackPath = request.nextUrl.searchParams.get("type") === "recovery" ? "/reset-password" : "/dashboard";
+  const fallbackPath = isRecoveryCallback(request) ? "/reset-password" : "/dashboard";
   const next = safeNextPath(request.nextUrl.searchParams.get("next"), fallbackPath);
   const origin = appOrigin(request);
 
