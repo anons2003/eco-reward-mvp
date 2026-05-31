@@ -82,4 +82,16 @@ describe("POST /api/profile/avatar", () => {
     expect(eq).toHaveBeenCalledWith("id", "user-1");
     expect(response.headers.get("location")).toBe("https://eco.test/settings?avatar=success");
   });
+
+  it("redirects with a storage error when S3 upload fails", async () => {
+    getUser.mockResolvedValueOnce({ data: { user: { id: "user-1" } } });
+    putAvatarObject.mockRejectedValueOnce(new Error("AccessDenied"));
+    vi.spyOn(console, "error").mockImplementationOnce(() => {});
+    const { POST } = await import("./route");
+
+    const response = await POST(requestWithAvatar(new File(["image"], "avatar.jpg", { type: "image/jpeg" })));
+
+    expect(update).not.toHaveBeenCalled();
+    expect(response.headers.get("location")).toBe("https://eco.test/settings?avatar=storage_failed");
+  });
 });

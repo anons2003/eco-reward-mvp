@@ -52,23 +52,29 @@ export async function POST(request: NextRequest | Request) {
   const key = `avatars/${user.id}/${crypto.randomUUID()}.${extension}`;
   const body = Buffer.from(await file.arrayBuffer());
 
+  let avatarUrl: string;
   try {
     await putAvatarObject({ key, body, contentType: file.type });
-    const avatarUrl = avatarPublicUrl(key);
+    avatarUrl = avatarPublicUrl(key);
+  } catch (error) {
+    console.error("Avatar S3 upload failed", {
+      error: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : "UnknownError",
+    });
+    return NextResponse.redirect(settingsUrl(request, "storage_failed"), { status: 302 });
+  }
 
-    const profiles = supabase.from("profiles") as unknown as ProfileUpdateTable;
-    const { error } = await profiles
-      .update({
-        avatar_url: avatarUrl,
-        avatar_object_key: key,
-      })
-      .eq("id", user.id);
+  const profiles = supabase.from("profiles") as unknown as ProfileUpdateTable;
+  const { error } = await profiles
+    .update({
+      avatar_url: avatarUrl,
+      avatar_object_key: key,
+    })
+    .eq("id", user.id);
 
-    if (error) {
-      return NextResponse.redirect(settingsUrl(request, "upload_failed"), { status: 302 });
-    }
-  } catch {
-    return NextResponse.redirect(settingsUrl(request, "upload_failed"), { status: 302 });
+  if (error) {
+    console.error("Avatar profile update failed", { error: error.message });
+    return NextResponse.redirect(settingsUrl(request, "profile_update_failed"), { status: 302 });
   }
 
   return NextResponse.redirect(settingsUrl(request, "success"), { status: 302 });

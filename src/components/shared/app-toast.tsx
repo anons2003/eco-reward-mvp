@@ -63,6 +63,8 @@ function messageForRoute(pathname: string, params: URLSearchParams): ToastMessag
     if (avatar === "missing_file") return { tone: "error", body: "Vui lòng chọn ảnh đại diện." };
     if (avatar === "invalid_type") return { tone: "error", body: "Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP." };
     if (avatar === "file_too_large") return { tone: "error", body: "Ảnh đại diện tối đa 2 MB." };
+    if (avatar === "storage_failed") return { tone: "error", body: "Chưa thể tải ảnh đại diện lên S3. Kiểm tra cấu hình AWS/Vercel env." };
+    if (avatar === "profile_update_failed") return { tone: "error", body: "Ảnh đã tải lên nhưng chưa cập nhật được hồ sơ. Vui lòng thử lại." };
     if (avatar === "upload_failed") return { tone: "error", body: "Chưa thể tải ảnh đại diện lên S3. Vui lòng thử lại." };
 
     const password = params.get("password");
