@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock3, MapPin, QrCode, ScanLine, ShieldCheck, Wifi, type LucideIcon } from "lucide-react";
+import { LoadingButtonContent, useGlobalLoading } from "@/components/shared/loading-ui";
 
 type ScanPayload = {
   session?: { id: string; expiresAt: string };
@@ -12,6 +13,7 @@ type ScanPayload = {
 
 export function ScanForm() {
   const router = useRouter();
+  const { clearGlobalLoading, setGlobalLoading } = useGlobalLoading();
   const [qrCode, setQrCode] = useState("ECO-BIN-A1");
   const [payload, setPayload] = useState<ScanPayload | null>(null);
   const [error, setError] = useState("");
@@ -19,26 +21,32 @@ export function ScanForm() {
 
   async function verifyBin() {
     setLoading(true);
+    setGlobalLoading("Đang xác nhận thùng...");
     setError("");
-    const response = await fetch("/api/scan-sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ qrCode, lat: 10.7769, lng: 106.7009 }),
-    });
-    const nextPayload = (await response.json()) as ScanPayload;
-    setLoading(false);
+    try {
+      const response = await fetch("/api/scan-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qrCode, lat: 10.7769, lng: 106.7009 }),
+      });
+      const nextPayload = (await response.json()) as ScanPayload;
 
-    if (!response.ok || !nextPayload.session || !nextPayload.bin) {
-      setPayload(null);
-      setError(nextPayload.error ?? "Không tạo được phiên quét.");
-      return;
+      if (!response.ok || !nextPayload.session || !nextPayload.bin) {
+        setPayload(null);
+        setError(nextPayload.error ?? "Không tạo được phiên quét.");
+        return;
+      }
+
+      setPayload(nextPayload);
+    } finally {
+      setLoading(false);
+      clearGlobalLoading();
     }
-
-    setPayload(nextPayload);
   }
 
   function continueToCapture() {
     if (!payload?.session) return;
+    setGlobalLoading("Đang mở camera...");
     router.push(`/capture?scanSessionId=${payload.session.id}`);
   }
 
@@ -103,8 +111,10 @@ export function ScanForm() {
 
         <div className="mt-6 grid gap-3">
           <button className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 font-black text-white shadow-[0_12px_30px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] disabled:cursor-not-allowed disabled:opacity-60" disabled={loading} onClick={verifyBin} type="button">
-            <ShieldCheck size={18} />
-            {loading ? "Đang xác nhận..." : payload ? "Xác nhận lại" : "Xác nhận thùng"}
+            <LoadingButtonContent loading={loading} loadingLabel="Đang xác nhận...">
+              <ShieldCheck size={18} />
+              {payload ? "Xác nhận lại" : "Xác nhận thùng"}
+            </LoadingButtonContent>
           </button>
           <button className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#edf6ed] px-5 font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50" disabled={!payload?.session} onClick={continueToCapture} type="button">
             Tiếp tục chụp ảnh

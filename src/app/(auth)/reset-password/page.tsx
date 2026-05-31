@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { PendingSubmitButton } from "@/components/shared/loading-ui";
 
 export default function ResetPasswordPage() {
   return (
@@ -48,10 +49,10 @@ export default function ResetPasswordPage() {
           <FieldHelper id="confirm-password-helper">Nhập lại để tránh sai sót khi đổi mật khẩu.</FieldHelper>
         </label>
 
-        <button className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" type="submit">
+        <PendingSubmitButton className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang cập nhật..." type="submit">
           Cập nhật mật khẩu
           <ArrowRight size={18} />
-        </button>
+        </PendingSubmitButton>
       </form>
 
       <Link className="mt-8 inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-black text-[#007a3d] transition hover:bg-[#edf6ed]" href="/login">

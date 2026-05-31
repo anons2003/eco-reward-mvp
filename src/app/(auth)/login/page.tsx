@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { AuthDivider, AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { PendingSubmitButton } from "@/components/shared/loading-ui";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string; registered?: string; reset?: string }> }) {
   const params = await searchParams;
@@ -11,10 +12,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className="grid gap-4">
         <form action="/api/auth/google" method="get">
           <input name="next" type="hidden" value={next || "/dashboard"} />
-          <button className="focus-ring flex min-h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-[#007a3d] px-5 py-4 text-base font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" type="submit">
+          <PendingSubmitButton className="focus-ring flex min-h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-[#007a3d] px-5 py-4 text-base font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang mở Google..." type="submit">
             <span className="grid size-7 place-items-center rounded-full bg-white text-sm font-black text-[#007a3d]">G</span>
             Đăng nhập với Google
-          </button>
+          </PendingSubmitButton>
         </form>
 
         <AuthDivider />
@@ -61,10 +62,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <FieldHelper id="password-helper">Mật khẩu tối thiểu 8 ký tự.</FieldHelper>
           </label>
 
-          <button className="focus-ring flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-[#d9e5da] bg-white px-5 py-4 font-black text-[#151d18] transition hover:border-[#007a3d] hover:bg-[#edf6ed] active:scale-[0.99]" type="submit">
+          <PendingSubmitButton className="focus-ring flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-[#d9e5da] bg-white px-5 py-4 font-black text-[#151d18] transition hover:border-[#007a3d] hover:bg-[#edf6ed] active:scale-[0.99] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang đăng nhập..." type="submit">
             Đăng nhập
             <ArrowRight size={18} />
-          </button>
+          </PendingSubmitButton>
         </form>
       </div>
 

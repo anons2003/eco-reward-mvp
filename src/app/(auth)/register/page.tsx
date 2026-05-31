@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Lock, Mail, UserRound } from "lucide-react";
 import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { PendingSubmitButton } from "@/components/shared/loading-ui";
 
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
   const params = await searchParams;
@@ -70,10 +71,10 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
           <FieldHelper id="register-password-helper">Dùng ít nhất 8 ký tự để bảo vệ ví điểm.</FieldHelper>
         </label>
 
-        <button className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" type="submit">
+        <PendingSubmitButton className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang tạo tài khoản..." type="submit">
           Tiếp tục
           <ArrowRight size={18} />
-        </button>
+        </PendingSubmitButton>
       </form>
 
       <p className="mt-8 text-center text-sm font-semibold text-[#5d6a60]">

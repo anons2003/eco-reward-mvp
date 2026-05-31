@@ -1,4 +1,5 @@
 import { Camera, Upload } from "lucide-react";
+import { PendingSubmitButton } from "@/components/shared/loading-ui";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
 type AvatarUploadFormProps = {
@@ -27,10 +28,10 @@ export function AvatarUploadForm({ displayName, avatarUrl }: AvatarUploadFormPro
         <input accept="image/jpeg,image/png,image/webp" className="w-full rounded-2xl border border-[#bdcabe] bg-white p-3 text-sm font-semibold normal-case tracking-normal text-[#151d18] file:mr-3 file:rounded-full file:border-0 file:bg-[#d8f5df] file:px-4 file:py-2 file:text-sm file:font-black file:text-[#007a3d]" name="avatar" required type="file" />
       </label>
 
-      <button className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d]" type="submit">
+      <PendingSubmitButton className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang tải ảnh..." type="submit">
         <Upload size={17} />
         Tải ảnh lên
-      </button>
+      </PendingSubmitButton>
     </form>
   );
 }

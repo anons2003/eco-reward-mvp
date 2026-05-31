@@ -3,10 +3,12 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, CheckCircle2, ImageUp, Loader2, Sparkles, Timer, Zap } from "lucide-react";
+import { Camera, CheckCircle2, ImageUp, Sparkles, Timer, Zap } from "lucide-react";
+import { LoadingButtonContent, LoadingSpinner, useGlobalLoading } from "@/components/shared/loading-ui";
 
 export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
   const router = useRouter();
+  const { clearGlobalLoading, setGlobalLoading } = useGlobalLoading();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imageUrl, setImageUrl] = useState("/demo/plastic-bottle.svg");
@@ -54,21 +56,29 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
     }
 
     setLoading(true);
+    setGlobalLoading("Đang gửi phân tích...");
     setError("");
-    const response = await fetch("/api/submissions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ scanSessionId, imageUrl }),
-    });
-    const payload = (await response.json()) as { submission?: { id: string }; error?: string };
+    try {
+      const response = await fetch("/api/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanSessionId, imageUrl }),
+      });
+      const payload = (await response.json()) as { submission?: { id: string }; error?: string };
 
-    if (!response.ok || !payload.submission) {
+      if (!response.ok || !payload.submission) {
+        setLoading(false);
+        clearGlobalLoading();
+        setError(payload.error ?? "Không gửi được ảnh.");
+        return;
+      }
+
+      setTimeout(() => router.push(`/result/${payload.submission?.id}`), 700);
+    } catch {
       setLoading(false);
-      setError(payload.error ?? "Không gửi được ảnh.");
-      return;
+      clearGlobalLoading();
+      setError("Không gửi được ảnh.");
     }
-
-    setTimeout(() => router.push(`/result/${payload.submission?.id}`), 700);
   }
 
   if (loading) {
@@ -76,7 +86,7 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
       <div className="mx-auto max-w-3xl">
         <section className="rounded-[34px] border border-[#d9e5da] bg-white/86 p-8 text-center shadow-[0_22px_70px_rgba(21,29,24,0.08)]">
           <div className="mx-auto grid size-24 place-items-center rounded-full bg-[#d8f5df] text-[#007a3d]">
-            <Loader2 className="animate-spin" size={42} />
+            <LoadingSpinner className="size-10" />
           </div>
           <p className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-[#007a3d]">Đang phân tích</p>
           <h2 className="mt-3 text-4xl font-black tracking-[-0.05em] text-[#093719]">AI đang kiểm tra vật phẩm</h2>
@@ -114,8 +124,10 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
             {captured ? "Chụp lại" : "Chụp ảnh"}
           </button>
           <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 font-black text-white shadow-[0_12px_30px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] disabled:cursor-not-allowed disabled:opacity-60" disabled={!captured} onClick={submit} type="button">
-            <ImageUp size={18} />
-            Gửi phân tích
+            <LoadingButtonContent loading={loading} loadingLabel="Đang gửi...">
+              <ImageUp size={18} />
+              Gửi phân tích
+            </LoadingButtonContent>
           </button>
         </div>
       </section>

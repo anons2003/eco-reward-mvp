@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppToast } from "@/components/shared/app-toast";
+import { GlobalLoadingProvider } from "@/components/shared/loading-ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,10 +13,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="vi">
       <body>
-        {children}
-        <Suspense fallback={null}>
-          <AppToast />
-        </Suspense>
+        <GlobalLoadingProvider>
+          {children}
+          <Suspense fallback={null}>
+            <AppToast />
+          </Suspense>
+        </GlobalLoadingProvider>
       </body>
     </html>
   );

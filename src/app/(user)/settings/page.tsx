@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bell, Camera, Globe2, LockKeyhole, LogOut, Mail, MapPin, Save, Shield, UserRound } from "lucide-react";
+import { PendingSubmitButton } from "@/components/shared/loading-ui";
 import { AvatarUploadForm } from "@/components/user/avatar-upload-form";
 import { avatarUrlFromMetadata } from "@/infrastructure/auth/avatar";
 import { createClient } from "@/infrastructure/supabase/server";
@@ -135,10 +136,10 @@ export default async function SettingsPage() {
                 />
               </label>
               <div className="md:col-span-2">
-                <button className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d]" type="submit">
+                <PendingSubmitButton className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang cập nhật..." type="submit">
                   <Save size={17} />
                   Cập nhật mật khẩu
-                </button>
+                </PendingSubmitButton>
               </div>
             </form>
           </section>

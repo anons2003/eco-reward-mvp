@@ -169,8 +169,26 @@ textarea {
   }
 }
 
+@keyframes loading-progress {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  55% {
+    transform: translateX(120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer::after {
+    animation: none;
+  }
+
+  .animate-\[loading-progress_1\.1s_ease-in-out_infinite\] {
     animation: none;
   }
 }
