@@ -12,5 +12,6 @@ output/
 *.swp
 .agents/
 skills-lock.json
+.playwright-cli/
 
 .DS_Store

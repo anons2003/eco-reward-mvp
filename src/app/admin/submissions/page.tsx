@@ -10,7 +10,7 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
   return (
     <div>
       <PageHeader
-        eyebrow="Moderation"
+        eyebrow="Kiểm duyệt"
         title="Danh sách lượt gửi"
         body="Lọc, xem và xử lý các lượt gửi của người dùng."
         action={
@@ -24,14 +24,14 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
         </div>
         }
       />
-      <section className="eco-card overflow-hidden rounded-[28px]">
-        <div className="grid grid-cols-[1fr_160px_140px] gap-4 border-b border-[#e6e7ef] px-5 py-3 text-sm font-bold text-[#5f6472]">
+      <section className="eco-card overflow-hidden rounded-[32px]">
+        <div className="hidden grid-cols-[1fr_160px_140px] gap-4 border-b border-[#e6e7ef] px-5 py-3 text-sm font-bold text-[#5f6472] md:grid">
           <span>Lượt gửi</span>
           <span>Điểm</span>
           <span>Trạng thái</span>
         </div>
         {submissions.map((submission) => (
-          <Link className="grid grid-cols-[1fr_160px_140px] gap-4 border-b border-[#e6e7ef] bg-white px-5 py-4 transition hover:bg-[#151515] last:border-b-0" href={`/admin/submissions/${submission.id}`} key={submission.id}>
+          <Link className="grid gap-3 border-b border-[#e6e7ef] bg-white px-5 py-4 transition hover:bg-[#f4f5fb] last:border-b-0 md:grid-cols-[1fr_160px_140px] md:items-center" href={`/admin/submissions/${submission.id}`} key={submission.id}>
             <span>
               <strong>{submission.aiResult.wasteType.replaceAll("_", " ")}</strong>
               <span className="block text-sm text-[#5f6472]">{submission.reason}</span>

@@ -21,18 +21,18 @@ export function ReviewActions({ submissionId }: { submissionId: string }) {
   }
 
   return (
-    <div className="eco-card rounded-[28px] p-6">
+    <div className="eco-card rounded-[32px] p-6">
       <h2 className="text-xl font-black text-[#151515]">Quyết định kiểm duyệt</h2>
       <label className="mt-4 block text-sm font-bold text-[#5f6472]" htmlFor="reason">
         Lý do
       </label>
       <textarea className="input mt-2 min-h-24" id="reason" value={reason} onChange={(event) => setReason(event.target.value)} />
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <button className="btn-primary bg-[#151515]" disabled={loading || !reason.trim()} onClick={() => submit("approved")} type="button">
+        <button className="btn-primary" disabled={loading || !reason.trim()} onClick={() => submit("approved")} type="button">
           <Check size={18} />
           Duyệt
         </button>
-        <button className="btn-secondary bg-[#fff0f0] text-[#B91C1C]" disabled={loading || !reason.trim()} onClick={() => submit("rejected")} type="button">
+        <button className="btn-secondary border-[#ffd7d7] bg-[#fff7f7] text-[#B91C1C]" disabled={loading || !reason.trim()} onClick={() => submit("rejected")} type="button">
           <X size={18} />
           Từ chối
         </button>

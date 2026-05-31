@@ -20,6 +20,7 @@ import {
   User,
   Verified,
 } from "lucide-react";
+import { LandingGsapAnimations } from "@/components/landing/landing-gsap-animations";
 
 const heroImage = "/eco-reward/hero-cleanup.png";
 
@@ -84,7 +85,7 @@ const desktopSteps = [
 ] as const;
 
 const mobileSteps = [
-  [QrCode, "Quét mã QR", "Tìm các thùng rác thông minh EcoStitch gần bạn và quét mã để bắt đầu."],
+  [QrCode, "Quét mã QR", "Tìm các thùng rác thông minh Eco-Reward gần bạn và quét mã để bắt đầu."],
   [Camera, "Chụp ảnh rác", "Ghi lại khoảnh khắc bạn phân loại rác đúng cách để hệ thống AI xác nhận."],
   [Gift, "Nhận thưởng", "Nhận ngay EcoPoints và đổi lấy những phần quà giá trị từ đối tác của chúng tôi."],
 ] as const;
@@ -96,8 +97,10 @@ export default function HomePage() {
         Bỏ qua điều hướng
       </a>
 
-      <MobileHome />
-      <DesktopHome />
+      <LandingGsapAnimations>
+        <MobileHome />
+        <DesktopHome />
+      </LandingGsapAnimations>
     </main>
   );
 }
@@ -105,7 +108,7 @@ export default function HomePage() {
 function DesktopHome() {
   return (
     <div className="hidden md:block" id="content">
-      <nav aria-label="Điều hướng chính" className="fixed top-0 z-50 w-full border-b border-[#dadce0] bg-white/90 backdrop-blur-lg">
+      <nav aria-label="Điều hướng chính" className="landing-nav fixed top-0 z-50 w-full border-b border-[#dadce0] bg-white/90 backdrop-blur-lg">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-12 py-3">
           <Link className="flex items-center gap-2 text-2xl font-bold tracking-[-0.015em] text-[#137333]" href="/">
             <Leaf className="text-[#1e8e3e]" size={28} />
@@ -135,7 +138,7 @@ function DesktopHome() {
 
       <header className="relative overflow-hidden bg-[#f8f9fa] pb-24 pt-40">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-16 px-12 lg:grid-cols-2">
-          <div className="z-10 text-center lg:text-left">
+          <div className="landing-hero-copy z-10 text-center lg:text-left">
             <h1 className="mb-6 text-[56px] font-bold leading-[1.1] tracking-[-0.015em] text-[#3c4043]">
               Biến Rác Thải Thành <span className="text-[#137333]">Giá Trị.</span>
               <br className="hidden lg:block" />
@@ -154,13 +157,13 @@ function DesktopHome() {
             </div>
           </div>
           <div className="relative mt-12 flex justify-center lg:mt-0 lg:justify-end">
-            <div className="relative w-full max-w-xl overflow-hidden rounded-2xl shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
+            <div className="landing-hero-media relative w-full max-w-xl overflow-hidden rounded-2xl shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
               <Image alt="Minh họa thu gom rác" className="aspect-[4/3] w-full object-cover" height={620} priority src={heroImage} width={760} />
             </div>
-            <div className="absolute -right-6 -top-6 rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-lg">
+            <div className="landing-hero-float absolute -right-6 -top-6 rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-lg">
               <Leaf className="text-[#137333]" size={32} />
             </div>
-            <div className="absolute bottom-8 -left-8 flex items-center gap-4 rounded-xl border border-[#dadce0]/50 bg-white/85 p-5 shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] backdrop-blur">
+            <div className="landing-hero-float absolute bottom-8 -left-8 flex items-center gap-4 rounded-xl border border-[#dadce0]/50 bg-white/85 p-5 shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] backdrop-blur">
               <div className="rounded-lg bg-[#e6f4ea] p-2.5 text-[#137333]">
                 <Recycle size={24} />
               </div>
@@ -173,15 +176,15 @@ function DesktopHome() {
         </div>
       </header>
 
-      <section className="bg-white py-24" id="desktop-impact">
+      <section className="landing-section bg-white py-24" id="desktop-impact">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-16 px-12 md:grid-cols-2">
-          <div className="order-2 flex justify-center md:order-1">
+          <div className="landing-section-media order-2 flex justify-center md:order-1">
             <div className="relative">
               <div className="absolute inset-0 scale-110 rounded-full bg-[#e6f4ea] opacity-30 blur-3xl" />
               <Image alt="Minh họa hệ sinh thái biển" className="relative w-full max-w-sm rounded-2xl" height={520} src={oceanImage} width={520} />
             </div>
           </div>
-          <div className="order-1 md:order-2">
+          <div className="landing-section-copy order-1 md:order-2">
             <h2 className="mb-6 text-4xl font-semibold tracking-[-0.015em] text-[#3c4043]">Đại Dương Đang Kêu Cứu</h2>
             <p className="mb-8 text-lg leading-8 text-[#5f6368]">
               Hơn 8 triệu tấn nhựa thải ra đại dương mỗi năm. Hệ sinh thái của chúng ta đang suy kiệt, nhưng giải pháp bắt đầu từ chính việc nhận diện và phân loại rác hàng ngày.
@@ -204,7 +207,7 @@ function DesktopHome() {
         </div>
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-12 md:grid-cols-3">
           {desktopSteps.map(([Icon, title, body]) => (
-            <article className="group rounded-2xl border border-[#dadce0] bg-white p-10 transition hover:border-[#137333] hover:shadow-[0_4px_4px_rgba(60,64,67,0.3),0_8px_12px_6px_rgba(60,64,67,0.15)]" key={title}>
+            <article className="landing-card group rounded-2xl border border-[#dadce0] bg-white p-10 transition hover:border-[#137333] hover:shadow-[0_4px_4px_rgba(60,64,67,0.3),0_8px_12px_6px_rgba(60,64,67,0.15)]" key={title}>
               <div className="mb-8 flex size-16 items-center justify-center rounded-xl bg-[#e6f4ea] text-[#137333] transition group-hover:scale-105">
                 <Icon size={32} />
               </div>
@@ -219,15 +222,21 @@ function DesktopHome() {
         <div className="pointer-events-none absolute inset-0 opacity-5 [background-image:radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:32px_32px]" />
         <div className="relative z-10 mx-auto grid max-w-[1200px] grid-cols-1 gap-12 px-12 text-center md:grid-cols-3">
           <div className="space-y-2">
-            <div className="text-5xl font-bold tracking-tight text-[#6bfe9c]">1.2M+</div>
+            <div className="landing-stat text-5xl font-bold tracking-tight text-[#6bfe9c]" data-count="1.2" data-decimals="1" data-suffix="M+">
+              1.2M+
+            </div>
             <div className="text-lg font-medium text-[#dadce0]">Sản phẩm tái chế</div>
           </div>
           <div className="space-y-2 md:border-x md:border-white/10">
-            <div className="text-5xl font-bold tracking-tight text-[#8ccdff]">45k kg</div>
+            <div className="landing-stat text-5xl font-bold tracking-tight text-[#8ccdff]" data-count="45" data-suffix="k kg">
+              45k kg
+            </div>
             <div className="text-lg font-medium text-[#dadce0]">CO2 đã giảm</div>
           </div>
           <div className="space-y-2">
-            <div className="text-5xl font-bold tracking-tight text-[#ffe084]">15,000</div>
+            <div className="landing-stat text-5xl font-bold tracking-tight text-[#ffe084]" data-count="15000">
+              15,000
+            </div>
             <div className="text-lg font-medium text-[#dadce0]">Cây xanh đã trồng</div>
           </div>
         </div>
@@ -246,7 +255,7 @@ function DesktopHome() {
           </div>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {desktopRewards.map((reward) => (
-              <article className="group overflow-hidden rounded-2xl border border-[#dadce0] bg-white transition hover:shadow-[0_4px_4px_rgba(60,64,67,0.3),0_8px_12px_6px_rgba(60,64,67,0.15)]" key={reward.title}>
+              <article className="landing-reward-card group overflow-hidden rounded-2xl border border-[#dadce0] bg-white transition hover:shadow-[0_4px_4px_rgba(60,64,67,0.3),0_8px_12px_6px_rgba(60,64,67,0.15)]" key={reward.title}>
                 <div className="relative h-56 overflow-hidden">
                   <Image alt={reward.title} className="size-full object-cover transition group-hover:scale-105" height={320} src={reward.image} width={520} />
                   <div className="absolute left-4 top-4 rounded-lg border border-[#e0e0e0] bg-white/85 px-3 py-1.5 text-xs font-semibold text-[#137333] backdrop-blur">{reward.points}</div>
@@ -264,15 +273,15 @@ function DesktopHome() {
         </div>
       </section>
 
-      <section className="bg-[#f8f9fa] py-24">
+      <section className="landing-section bg-[#f8f9fa] py-24">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-20 px-12 lg:grid-cols-2">
-          <div className="flex justify-center">
+          <div className="landing-section-media flex justify-center">
             <div className="relative">
               <div className="absolute -inset-4 rounded-full bg-[#137333] opacity-10 blur-2xl" />
               <Image alt="Người hùng tái chế tiêu biểu" className="relative w-full max-w-md rounded-2xl border-4 border-white shadow-[0_1px_2px_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]" height={620} src={communityImage} width={620} />
             </div>
           </div>
-          <div>
+          <div className="landing-testimonial landing-section-copy">
             <div className="mb-6 flex gap-1 text-[#f9ab00]">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Star fill="currentColor" key={index} size={24} />
@@ -306,10 +315,10 @@ function DesktopHome() {
 function MobileHome() {
   return (
     <div className="block bg-[#ffffff] bg-[radial-gradient(#e6e7ef_1px,transparent_1px)] [background-size:24px_24px] text-[#1a1c1f] md:hidden">
-      <header className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#e6e7ef] bg-white/70 px-5 backdrop-blur-md">
+      <header className="landing-nav fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#e6e7ef] bg-white/70 px-5 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <Menu className="text-black" size={24} />
-          <span className="text-2xl font-bold tracking-[-0.02em] text-black">EcoStitch</span>
+          <span className="text-2xl font-bold tracking-[-0.02em] text-black">Eco-Reward</span>
         </div>
         <div className="flex size-10 items-center justify-center overflow-hidden rounded-full border border-[#e6e7ef] bg-white">
           <Leaf className="text-black" size={22} />
@@ -318,7 +327,7 @@ function MobileHome() {
 
       <section className="relative overflow-hidden px-5 pb-20 pt-28">
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(32,199,232,0.10)_0%,rgba(124,58,237,0.10)_100%)] opacity-50" />
-        <div className="flex flex-col items-center gap-6 text-center">
+        <div className="landing-mobile-hero flex flex-col items-center gap-6 text-center">
           <h1 className="text-[48px] font-extrabold leading-[52px] tracking-[-0.02em] text-black">
             Biến Rác Thải Thành Giá Trị. Cho Bạn & Hành Tinh.
           </h1>
@@ -338,18 +347,24 @@ function MobileHome() {
 
       <section className="px-5 py-12">
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-xl border border-[#e6e7ef] bg-white/70 p-6 backdrop-blur">
-            <span className="block text-3xl font-bold text-black">1.2M+</span>
+          <div className="landing-mobile-card rounded-xl border border-[#e6e7ef] bg-white/70 p-6 backdrop-blur">
+            <span className="landing-stat block text-3xl font-bold text-black" data-count="1.2" data-decimals="1" data-suffix="M+">
+              1.2M+
+            </span>
             <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5f6472]">Sản phẩm tái chế</span>
           </div>
-          <div className="rounded-xl border border-[#e6e7ef] bg-white/70 p-6 backdrop-blur">
-            <span className="block text-3xl font-bold text-black">45k kg</span>
+          <div className="landing-mobile-card rounded-xl border border-[#e6e7ef] bg-white/70 p-6 backdrop-blur">
+            <span className="landing-stat block text-3xl font-bold text-black" data-count="45" data-suffix="k kg">
+              45k kg
+            </span>
             <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5f6472]">CO2 đã giảm</span>
           </div>
-          <div className="col-span-2 rounded-xl border border-[#e6e7ef] bg-white/70 p-6 backdrop-blur">
+          <div className="landing-mobile-card col-span-2 rounded-xl border border-[#e6e7ef] bg-white/70 p-6 backdrop-blur">
             <div className="flex items-center justify-between">
               <div>
-                <span className="block text-3xl font-bold text-black">15,000</span>
+                <span className="landing-stat block text-3xl font-bold text-black" data-count="15000">
+                  15,000
+                </span>
                 <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#5f6472]">Cây xanh đã trồng</span>
               </div>
               <TreePine className="text-[#00687a]" size={40} />
@@ -362,7 +377,7 @@ function MobileHome() {
         <h2 className="mb-10 text-center text-[40px] font-bold leading-[48px] tracking-[-0.02em] text-black">Ba Bước Đơn Giản</h2>
         <div className="flex flex-col gap-12">
           {mobileSteps.map(([Icon, title, body]) => (
-            <article className="flex items-start gap-4" key={title}>
+            <article className="landing-mobile-card flex items-start gap-4" key={title}>
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-black text-white">
                 <Icon size={24} />
               </div>
@@ -384,7 +399,7 @@ function MobileHome() {
         </div>
         <div className="flex gap-4 overflow-x-auto px-5 pb-4">
           {mobileRewards.map((reward) => (
-            <article className="flex min-w-[280px] flex-col gap-4 rounded-2xl border border-[#e6e7ef] bg-white/70 p-4 backdrop-blur" key={reward.title}>
+            <article className="landing-mobile-card flex min-w-[280px] flex-col gap-4 rounded-2xl border border-[#e6e7ef] bg-white/70 p-4 backdrop-blur" key={reward.title}>
               <div className="h-40 overflow-hidden rounded-xl">
                 <Image alt={reward.title} className="size-full object-cover" height={240} src={reward.image} width={360} />
               </div>

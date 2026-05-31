@@ -10,9 +10,10 @@ export async function POST(request: NextRequest) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const next = safeNextPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null);
+  const loginPath = next.startsWith("/admin") ? "/admin/login" : "/login";
 
   if (!email || !password) {
-    const url = new URL("/login", request.url);
+    const url = new URL(loginPath, request.url);
     url.searchParams.set("error", "missing_credentials");
     url.searchParams.set("next", next);
     return NextResponse.redirect(url, { status: 302 });
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    const url = new URL("/login", request.url);
+    const url = new URL(loginPath, request.url);
     url.searchParams.set("error", "invalid_credentials");
     url.searchParams.set("next", next);
     return NextResponse.redirect(url, { status: 302 });

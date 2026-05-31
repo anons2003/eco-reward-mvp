@@ -9,12 +9,13 @@ const protectedUserPaths = ["/dashboard", "/scan", "/capture", "/result", "/wall
 const protectedAdminPaths = ["/admin"];
 
 function isProtectedPath(path: string) {
+  if (path === "/admin/login") return false;
   return protectedUserPaths.some((prefix) => path.startsWith(prefix)) || protectedAdminPaths.some((prefix) => path.startsWith(prefix));
 }
 
 function redirectToLogin(request: NextRequest) {
   const url = request.nextUrl.clone();
-  url.pathname = "/login";
+  url.pathname = request.nextUrl.pathname.startsWith("/admin") ? "/admin/login" : "/login";
   url.searchParams.set("next", request.nextUrl.pathname);
   return NextResponse.redirect(url);
 }
@@ -50,13 +51,24 @@ export async function updateSession(request: NextRequest) {
     return (data as AuthProfileRow | null)?.role ?? null;
   }
 
-  if (path === "/login" && user) {
+  if ((path === "/login" || path === "/admin/login") && user) {
     const role = await getProfileRole();
     return NextResponse.redirect(new URL(role === "admin" ? "/admin/dashboard" : "/dashboard", request.url));
   }
 
+  if (path === "/admin/login") {
+    return response;
+  }
+
   if (isProtectedPath(path) && !user) {
     return redirectToLogin(request);
+  }
+
+  if (protectedUserPaths.some((prefix) => path.startsWith(prefix)) && user) {
+    const role = await getProfileRole();
+    if (role === "admin") {
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    }
   }
 
   if (protectedAdminPaths.some((prefix) => path.startsWith(prefix)) && user) {

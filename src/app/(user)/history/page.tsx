@@ -21,14 +21,14 @@ export default function HistoryPage() {
           </button>
         }
       />
-      <section className="eco-card overflow-hidden rounded-[28px]">
+      <section className="eco-card overflow-hidden rounded-[32px]">
         <div className="hidden grid-cols-[1fr_160px_160px] border-b border-[#e6e7ef] px-5 py-3 text-sm font-black text-[#5f6472] md:grid">
           <span>Lượt gửi</span>
           <span>Điểm</span>
           <span>Trạng thái</span>
         </div>
         {submissions.map((submission) => (
-          <Link className="grid gap-3 border-b border-[#e6e7ef] bg-white px-5 py-4 last:border-b-0 md:grid-cols-[1fr_160px_160px] md:items-center" href={`/result/${submission.id}`} key={submission.id}>
+          <Link className="grid gap-3 border-b border-[#e6e7ef] bg-white px-5 py-4 transition hover:bg-[#f4f5fb] last:border-b-0 md:grid-cols-[1fr_160px_160px] md:items-center" href={`/result/${submission.id}`} key={submission.id}>
             <span className="flex min-w-0 items-center gap-3">
               <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f4f5fb] text-[#151515]">
                 <Recycle size={20} />

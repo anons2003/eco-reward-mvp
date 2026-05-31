@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Eco-Reward MVP",
-  description: "Web app tích điểm khi phân loại rác.",
+  title: "Eco-Reward",
+  description: "Tích điểm xanh khi phân loại rác đúng cách.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

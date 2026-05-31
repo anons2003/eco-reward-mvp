@@ -61,9 +61,9 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-      <section className="eco-card overflow-hidden rounded-[28px]">
-        <div className="bg-[#fbfbff] p-4">
-          <div className="overflow-hidden rounded-[22px] bg-black">
+      <section className="eco-card overflow-hidden rounded-[32px]">
+        <div className="bg-[#fbfbff] bg-[radial-gradient(#e6e7ef_1px,transparent_1px)] p-4 [background-size:24px_24px]">
+          <div className="overflow-hidden rounded-[28px] bg-[#151515] shadow-[0_22px_70px_rgba(21,21,21,0.16)]">
             <video ref={videoRef} autoPlay muted playsInline className="aspect-[4/3] w-full object-cover" />
           </div>
         </div>
@@ -80,25 +80,25 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
       </section>
       <canvas ref={canvasRef} className="hidden" />
 
-      <aside className="eco-card rounded-[28px] p-6">
+      <aside className="eco-card rounded-[32px] p-6">
         <div className="flex items-center gap-3">
-          <span className="grid size-12 place-items-center rounded-2xl bg-[#f4f5fb] text-[#151515]">
+          <span className="grid size-12 place-items-center rounded-2xl border border-[#e6e7ef] bg-white text-[#151515]">
             <Sparkles size={24} />
           </span>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#151515]">AI analyzer</p>
-            <h2 className="text-xl font-black text-[#151515]">Sẵn sàng xử lý</h2>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#151515]">Xác minh ảnh</p>
+            <h2 className="text-xl font-black text-[#151515]">Sẵn sàng phân tích</h2>
           </div>
         </div>
         <div className="mt-6 grid gap-3">
-          <div className="rounded-2xl bg-white p-4">
+          <div className="rounded-2xl border border-[#e6e7ef] bg-white p-4">
             <div className="flex items-center gap-2 font-black text-[#151515]">
-              <Timer size={18} className="text-[#166534]" />
+              <Timer size={18} className="text-[#00687a]" />
               Phiên QR
             </div>
-            <p className="mt-2 break-all text-sm leading-6 text-[#5f6472]">{scanSessionId || "Chưa có scanSessionId"}</p>
+            <p className="mt-2 text-sm leading-6 text-[#5f6472]">{scanSessionId ? "Phiên đã được xác nhận. Hãy chụp ảnh rõ vật phẩm cần phân loại." : "Vui lòng quét mã thùng rác trước khi chụp ảnh."}</p>
           </div>
-          <div className="rounded-2xl bg-[#f4f5fb] p-4 text-sm font-bold leading-6 text-[#5f6472]">Ảnh được gửi đến API `/api/submissions`, sau đó AI mock/Roboflow trả loại rác, confidence và điểm.</div>
+          <div className="rounded-2xl bg-[#f4f5fb] p-4 text-sm font-bold leading-6 text-[#5f6472]">Ảnh sẽ được kiểm tra để nhận diện loại rác, đánh giá độ rõ nét và tính điểm phù hợp.</div>
         </div>
         {error ? <p className="mt-4 rounded-xl bg-[#fff7e6] p-3 text-sm font-bold text-[#92400E]">{error}</p> : null}
       </aside>

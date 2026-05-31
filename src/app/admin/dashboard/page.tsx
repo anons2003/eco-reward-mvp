@@ -17,20 +17,20 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="Admin" title="Dashboard tổng quan" body="Theo dõi lượt gửi, trạng thái duyệt và tổng điểm đã cấp cho chiến dịch." />
+      <PageHeader eyebrow="Quản trị" title="Tổng quan vận hành" body="Theo dõi lượt gửi, trạng thái duyệt và tổng điểm đã cấp cho chiến dịch." />
       <div className="grid gap-4 md:grid-cols-5">
         {cards.map(([label, value, Icon]) => (
-          <div className="eco-card rounded-2xl p-4" key={label as string}>
+          <div className="eco-card rounded-[24px] p-4" key={label as string}>
             <Icon className="text-[#151515]" />
             <p className="mt-3 text-2xl font-black">{value as number}</p>
             <p className="text-sm font-bold text-[#5f6472]">{label as string}</p>
           </div>
         ))}
       </div>
-      <section className="eco-card mt-6 rounded-[28px] p-6">
+      <section className="eco-card mt-6 rounded-[32px] p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black">Lượt gửi mới</h2>
-          <Link className="font-bold text-[#166534]" href="/admin/submissions">
+          <Link className="font-bold text-[#151515] underline-offset-4 hover:underline" href="/admin/submissions">
             Xem tất cả
           </Link>
         </div>

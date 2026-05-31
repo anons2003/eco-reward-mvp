@@ -16,8 +16,8 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        {eyebrow ? <p className="text-xs font-black uppercase tracking-[0.18em] text-[#151515]">{eyebrow}</p> : null}
-        <h1 className="mt-2 text-3xl font-black leading-tight text-[#151515] sm:text-4xl">{title}</h1>
+        {eyebrow ? <p className="text-xs font-black uppercase tracking-[0.18em] text-[#5f6472]">{eyebrow}</p> : null}
+        <h1 className="mt-2 text-4xl font-black leading-tight tracking-[-0.03em] text-[#151515] sm:text-5xl">{title}</h1>
         {body ? <p className="mt-2 max-w-2xl leading-7 text-[#5f6472]">{body}</p> : null}
       </div>
       {action}
@@ -28,13 +28,13 @@ export function PageHeader({
 export function MetricCard({ label, value, icon: Icon, tone = "green" }: { label: string; value: string | number; icon: LucideIcon; tone?: "green" | "blue" | "amber" | "red" }) {
   const toneClass = {
     green: "bg-[#f4f5fb] text-[#151515]",
-    blue: "bg-[#e8fbff] text-[#166534]",
+    blue: "bg-[#e8fbff] text-[#00687a]",
     amber: "bg-[#fff7e6] text-[#92400E]",
     red: "bg-[#fff0f0] text-[#B91C1C]",
   }[tone];
 
   return (
-    <div className="eco-card rounded-2xl p-5">
+    <div className="eco-card rounded-[24px] p-5">
       <span className={`grid size-11 place-items-center rounded-xl ${toneClass}`}>
         <Icon size={21} />
       </span>

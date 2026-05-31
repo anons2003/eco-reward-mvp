@@ -53,17 +53,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <section className="overflow-hidden rounded-[28px] border border-[#d7ecdc] bg-[#e9fff0] p-6 shadow-[0_20px_60px_rgba(45,156,219,0.08)] sm:p-8">
+      <section className="overflow-hidden rounded-[32px] border border-[#e6e7ef] bg-white/78 p-6 shadow-[0_28px_90px_rgba(21,21,21,0.08)] backdrop-blur-xl sm:p-8">
         <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-[#151515]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#e6e7ef] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-[#5f6472]">
               <Leaf size={14} />
               Xin chào, {fullName}
             </p>
-            <h1 className="mt-5 text-4xl font-black leading-tight text-[#151515] sm:text-5xl">{points} điểm xanh</h1>
-            <p className="mt-3 max-w-xl leading-7 text-[#5f6472]">Quét QR tại thùng rác, chụp ảnh vật phẩm và nhận điểm sau khi AI xác minh.</p>
+            <h1 className="mt-5 text-5xl font-black leading-tight tracking-[-0.03em] text-[#151515] sm:text-6xl">{points} điểm xanh</h1>
+            <p className="mt-3 max-w-xl leading-7 text-[#5f6472]">Quét QR tại thùng rác, chụp ảnh vật phẩm và nhận điểm sau khi lượt gửi được xác minh.</p>
           </div>
-          <Link className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#151515] px-5 py-3 font-black text-[#151515] shadow-[0_16px_38px_rgba(132,204,22,0.26)] transition hover:scale-[1.01]" href="/scan">
+          <Link className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#151515] px-6 py-4 font-black text-white shadow-[0_14px_34px_rgba(21,21,21,0.18)] transition hover:bg-[#2a2a2a]" href="/scan" style={{ color: "#ffffff" }}>
             <QrCode size={20} />
             Quét QR
           </Link>
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
             ["Đang chờ duyệt", pendingCount.toString(), Camera],
             ["Quà có thể đổi", rewards.length.toString(), Award],
           ] as Array<[string, string, LucideIcon]>).map(([label, value, Icon]) => (
-            <div className="rounded-2xl border border-white/80 bg-white/78 p-4 shadow-[0_10px_34px_rgba(45,156,219,0.08)] backdrop-blur" key={label}>
+            <div className="rounded-2xl border border-[#e6e7ef] bg-white p-4" key={label}>
               <Icon className="text-[#151515]" />
               <p className="mt-3 text-2xl font-black text-[#151515]">{value}</p>
               <p className="text-sm font-semibold text-[#5f6472]">{label}</p>
@@ -83,9 +83,9 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <aside className="eco-card rounded-[24px] p-6">
+      <aside className="eco-card rounded-[28px] p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black">Trust score</h2>
+          <h2 className="text-xl font-black">Điểm tin cậy</h2>
           <Sparkles className="text-[#151515]" />
         </div>
         <div className="mt-5 grid place-items-center">
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
         <p className="mt-4 text-center text-sm leading-6 text-[#5f6472]">Điểm tin cậy cao giúp lượt gửi hợp lệ được duyệt nhanh hơn.</p>
       </aside>
 
-      <section className="eco-card rounded-[24px] p-6">
+      <section className="eco-card rounded-[28px] p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-black">Phần thưởng nổi bật</h2>
           <Link className="inline-flex items-center gap-1 text-sm font-black text-[#151515]" href="/rewards">
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {rewards.map((reward) => (
-            <div className="rounded-2xl border border-[#d7ecdc] bg-white p-4 shadow-[0_8px_24px_rgba(45,156,219,0.06)]" key={reward.id}>
+            <div className="rounded-2xl border border-[#e6e7ef] bg-white p-4" key={reward.id}>
               <div className="flex items-start gap-3">
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f4f5fb] text-[#151515]">
                   <Gift size={20} />
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="eco-card rounded-[24px] p-6">
+      <section className="eco-card rounded-[28px] p-6">
         <h2 className="text-xl font-black">Tác động của bạn</h2>
         <div className="mt-4 grid gap-3">
           {[
@@ -132,7 +132,7 @@ export default async function DashboardPage() {
             ["Top tuần", "#12", Trophy],
             ["Thùng gần nhất", "Sảnh A", MapPin],
           ].map(([label, value, Icon]) => (
-            <div className="flex items-center justify-between rounded-2xl bg-white p-4" key={label as string}>
+            <div className="flex items-center justify-between rounded-2xl border border-[#e6e7ef] bg-white p-4" key={label as string}>
               <div className="flex items-center gap-3">
                 <span className="grid size-10 place-items-center rounded-full bg-white text-[#151515]">
                   <Icon size={20} />
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="eco-card rounded-[24px] p-6 lg:col-span-2">
+      <section className="eco-card rounded-[28px] p-6 lg:col-span-2">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black">Lịch sử gần đây</h2>
           <Link className="font-bold text-[#151515]" href="/wallet">
@@ -154,7 +154,7 @@ export default async function DashboardPage() {
         </div>
         <div className="mt-4 grid gap-3">
           {submissions.map((submission) => (
-            <Link className="flex items-center justify-between gap-4 rounded-2xl border border-[#d7ecdc] bg-white p-4 transition hover:border-[#151515]" href={`/result/${submission.id}`} key={submission.id}>
+            <Link className="flex items-center justify-between gap-4 rounded-2xl border border-[#e6e7ef] bg-white p-4 transition hover:border-[#151515]" href={`/result/${submission.id}`} key={submission.id}>
               <div className="flex min-w-0 items-center gap-3">
                 <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#f4f5fb] text-[#151515]">
                   <Recycle size={20} />

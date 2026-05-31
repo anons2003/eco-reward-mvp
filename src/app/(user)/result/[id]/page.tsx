@@ -14,12 +14,12 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="mx-auto max-w-5xl">
-      <section className="eco-card overflow-hidden rounded-[28px]">
+      <section className="eco-card overflow-hidden rounded-[32px]">
         <div className={isApproved ? "bg-[#f4f5fb] p-8" : "bg-[#fff7e6] p-8"}>
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#151515]">Kết quả phân tích</p>
-              <h1 className="mt-3 text-4xl font-black text-[#151515]">{submission.aiResult.wasteType.replaceAll("_", " ")}</h1>
+              <h1 className="mt-3 text-5xl font-black tracking-[-0.03em] text-[#151515]">{submission.aiResult.wasteType.replaceAll("_", " ")}</h1>
               <p className="mt-3 max-w-2xl leading-7 text-[#5f6472]">{submission.reason}</p>
             </div>
             <StatusBadge status={submission.status} />
@@ -27,17 +27,17 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
         </div>
 
         <div className="grid gap-4 p-6 md:grid-cols-3">
-          <div className="rounded-2xl bg-white p-5">
-            <Sparkles className="text-[#166534]" />
+          <div className="rounded-2xl border border-[#e6e7ef] bg-white p-5">
+            <Sparkles className="text-[#00687a]" />
             <p className="mt-4 text-sm font-bold text-[#5f6472]">Độ tin cậy AI</p>
             <p className="mt-1 text-3xl font-black">{confidence}%</p>
           </div>
-          <div className="rounded-2xl bg-white p-5">
+          <div className="rounded-2xl border border-[#e6e7ef] bg-white p-5">
             <Coins className="text-[#151515]" />
             <p className="mt-4 text-sm font-bold text-[#5f6472]">Điểm</p>
             <p className="mt-1 text-3xl font-black text-[#151515]">+{submission.points}</p>
           </div>
-          <div className="rounded-2xl bg-white p-5">
+          <div className="rounded-2xl border border-[#e6e7ef] bg-white p-5">
             <Recycle className="text-[#92400E]" />
             <p className="mt-4 text-sm font-bold text-[#5f6472]">Vật thể</p>
             <p className="mt-1 text-3xl font-black">{submission.aiResult.objectCount}</p>
