@@ -41,4 +41,13 @@ describe("POST /api/auth/forgot-password", () => {
 
     expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?error=reset_failed");
   });
+
+  it("returns a rate-limit specific error when Supabase email quota is exceeded", async () => {
+    resetPasswordForEmail.mockResolvedValueOnce({ error: new Error("email rate limit exceeded") });
+    const { POST } = await import("./route");
+
+    const response = await POST(requestWithForm({ email: "USER@Example.com " }));
+
+    expect(response.headers.get("location")).toBe("https://eco.test/forgot-password?error=email_rate_limited");
+  });
 });

@@ -6,6 +6,7 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
   const params = await searchParams;
   const missingEmail = params.error === "missing_email";
   const resetFailed = params.error === "reset_failed";
+  const emailRateLimited = params.error === "email_rate_limited";
   const sent = params.sent === "1";
 
   return (
@@ -19,6 +20,7 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
       {sent ? <AuthNotice tone="success">Nếu email tồn tại trong hệ thống, hướng dẫn khôi phục đã được gửi.</AuthNotice> : null}
       {missingEmail ? <AuthNotice>Vui lòng nhập email cần khôi phục.</AuthNotice> : null}
       {resetFailed ? <AuthNotice>Chưa gửi được email khôi phục. Kiểm tra SMTP/rate limit Supabase hoặc thử lại sau.</AuthNotice> : null}
+      {emailRateLimited ? <AuthNotice>Đã vượt giới hạn gửi email khôi phục của Supabase. Vui lòng chờ rồi thử lại hoặc cấu hình SMTP riêng trong Supabase.</AuthNotice> : null}
 
       <form action="/api/auth/forgot-password" className="grid gap-4" method="post">
         <label className="block text-sm font-black text-[#151d18]" htmlFor="email">
