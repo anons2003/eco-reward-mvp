@@ -32,11 +32,21 @@ export async function POST(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  let profile: AuthProfileRow | null = null;
-  if (user) {
-    const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    profile = data;
+
+  if (!user?.email_confirmed_at) {
+    await supabase.auth.signOut();
+    const url = new URL("/verify-email", request.url);
+    if (email) {
+      url.searchParams.set("email", email.trim().toLowerCase());
+    }
+    url.searchParams.set("next", next);
+    url.searchParams.set("error", "email_not_confirmed");
+    return NextResponse.redirect(url, { status: 302 });
   }
+
+  let profile: AuthProfileRow | null = null;
+  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  profile = data;
   const authProfile = profile as AuthProfileRow | null;
   const destination = authProfile?.role === "admin" ? (next.startsWith("/admin") ? next : "/admin/dashboard") : next.startsWith("/admin") ? "/dashboard" : next;
 

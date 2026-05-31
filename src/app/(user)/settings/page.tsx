@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Camera, ChevronRight, Globe2, LockKeyhole, LogOut, Mail, MapPin, Save, Shield, Smartphone, UserRound } from "lucide-react";
+import { Bell, Camera, Globe2, LockKeyhole, LogOut, Mail, MapPin, Save, Shield, UserRound } from "lucide-react";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -30,7 +30,35 @@ function SettingRow({ Icon, title, body, enabled = true }: { Icon: typeof Bell; 
   );
 }
 
-export default async function SettingsPage() {
+function PasswordNotice({ status }: { status: string | undefined }) {
+  const message =
+    status === "success"
+      ? "Mật khẩu đã được cập nhật."
+      : status === "missing_fields"
+        ? "Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới."
+        : status === "weak_password"
+          ? "Mật khẩu mới cần có ít nhất 8 ký tự."
+          : status === "password_mismatch"
+            ? "Hai lần nhập mật khẩu mới không khớp."
+            : status === "current_invalid"
+              ? "Mật khẩu hiện tại không đúng."
+              : status === "unauthorized"
+                ? "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại."
+                : status === "update_failed"
+                  ? "Chưa thể cập nhật mật khẩu. Vui lòng thử lại."
+                  : null;
+
+  if (!message) return null;
+
+  return (
+    <p className={`mb-5 rounded-3xl px-4 py-3 text-sm font-bold ${status === "success" ? "bg-[#d8f5df] text-[#006a3d] ring-1 ring-[#9fd7b0]" : "bg-[#ffdad6] text-[#8c1d18] ring-1 ring-[#ffb4ab]"}`}>
+      {message}
+    </p>
+  );
+}
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ password?: string }> }) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -93,11 +121,54 @@ export default async function SettingsPage() {
                 <input className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={email} />
               </label>
             </div>
-            <button className="mt-5 inline-flex items-center gap-2 text-sm font-black text-[#007a3d]" type="button">
-              <LockKeyhole size={17} />
-              Thay đổi mật khẩu
-              <ChevronRight size={16} />
-            </button>
+          </section>
+
+          <section className="rounded-[2rem] border border-[#bdcabe]/60 bg-white p-5 shadow-[0_2px_8px_rgba(21,29,24,0.05)] md:p-6">
+            <div className="mb-5 flex items-center gap-2">
+              <LockKeyhole className="text-[#007a3d]" size={19} />
+              <h2 className="text-lg font-black text-[#151d18]">Thay đổi mật khẩu</h2>
+            </div>
+            <PasswordNotice status={params.password} />
+            <form action="/api/auth/change-password" className="grid gap-4 md:grid-cols-2" method="post">
+              <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941] md:col-span-2">
+                Mật khẩu hiện tại
+                <input
+                  autoComplete="current-password"
+                  className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]"
+                  name="currentPassword"
+                  required
+                  type="password"
+                />
+              </label>
+              <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941]">
+                Mật khẩu mới
+                <input
+                  autoComplete="new-password"
+                  className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]"
+                  minLength={8}
+                  name="password"
+                  required
+                  type="password"
+                />
+              </label>
+              <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941]">
+                Nhập lại mật khẩu mới
+                <input
+                  autoComplete="new-password"
+                  className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]"
+                  minLength={8}
+                  name="confirmPassword"
+                  required
+                  type="password"
+                />
+              </label>
+              <div className="md:col-span-2">
+                <button className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d]" type="submit">
+                  <Save size={17} />
+                  Cập nhật mật khẩu
+                </button>
+              </div>
+            </form>
           </section>
 
           <section className="rounded-[2rem] border border-[#bdcabe]/60 bg-white px-5 shadow-[0_2px_8px_rgba(21,29,24,0.05)] md:px-6">

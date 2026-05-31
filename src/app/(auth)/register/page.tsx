@@ -1,8 +1,19 @@
 import Link from "next/link";
 import { ArrowRight, Lock, Mail, UserRound } from "lucide-react";
-import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthNotice, AuthShell, FieldHelper } from "@/components/auth/auth-shell";
 
-export default function RegisterPage() {
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const params = await searchParams;
+  const next = params.next ?? "/dashboard";
+  const errorMessage =
+    params.error === "missing_fields"
+      ? "Vui lòng nhập đầy đủ họ tên, email và mật khẩu."
+      : params.error === "weak_password"
+        ? "Mật khẩu cần có ít nhất 8 ký tự."
+        : params.error === "register_failed"
+          ? "Không thể tạo tài khoản. Email có thể đã được dùng hoặc cấu hình xác thực chưa sẵn sàng."
+          : null;
+
   return (
     <AuthShell
       eyebrow="Đăng ký"
@@ -11,7 +22,10 @@ export default function RegisterPage() {
       sideTitle="Bắt đầu hành trình phân loại rác có thưởng."
       sideBody="Mỗi tài khoản giúp hệ thống ghi nhận đúng lượt gửi, điểm xanh và tác động môi trường của riêng bạn."
     >
-      <form className="grid gap-4">
+      {errorMessage ? <AuthNotice>{errorMessage}</AuthNotice> : null}
+
+      <form action="/api/auth/register" className="grid gap-4" method="post">
+        <input name="next" type="hidden" value={next.startsWith("/") ? next : "/dashboard"} />
         <label className="block text-sm font-black text-[#151d18]" htmlFor="name">
           Họ và tên
           <span className="relative mt-2 block">
@@ -21,7 +35,9 @@ export default function RegisterPage() {
               autoComplete="name"
               className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
               id="name"
+              name="name"
               placeholder="Nguyễn Văn Xanh"
+              required
               type="text"
             />
           </span>
@@ -37,7 +53,9 @@ export default function RegisterPage() {
               autoComplete="email"
               className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
               id="email"
+              name="email"
               placeholder="you@example.com"
+              required
               type="email"
             />
           </span>
@@ -53,16 +71,19 @@ export default function RegisterPage() {
               autoComplete="new-password"
               className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
               id="password"
+              minLength={8}
+              name="password"
+              required
               type="password"
             />
           </span>
           <FieldHelper id="register-password-helper">Dùng ít nhất 8 ký tự để bảo vệ ví điểm.</FieldHelper>
         </label>
 
-        <Link className="focus-ring mt-2 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" href="/login">
+        <button className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" type="submit">
           Tiếp tục
           <ArrowRight size={18} />
-        </Link>
+        </button>
       </form>
 
       <p className="mt-8 text-center text-sm font-semibold text-[#5d6a60]">

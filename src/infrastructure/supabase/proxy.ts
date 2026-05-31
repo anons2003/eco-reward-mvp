@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/infrastructure/config/env";
+import { appOrigin } from "@/infrastructure/auth/redirects";
 import type { Database } from "./database.types";
 
 type AuthProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
@@ -22,6 +23,16 @@ function redirectToLogin(request: NextRequest) {
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const path = request.nextUrl.pathname;
+
+  if (path === "/" && request.nextUrl.searchParams.has("code")) {
+    const url = new URL("/auth/callback", appOrigin(request));
+    request.nextUrl.searchParams.forEach((value, key) => url.searchParams.set(key, value));
+    if (!url.searchParams.has("type") && !url.searchParams.has("next")) {
+      url.searchParams.set("type", "recovery");
+    }
+    return NextResponse.redirect(url);
+  }
 
   if (!env.supabaseUrl || !env.supabaseAnonKey) {
     return isProtectedPath(request.nextUrl.pathname) ? redirectToLogin(request) : response;
@@ -40,7 +51,6 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const path = request.nextUrl.pathname;
   const {
     data: { user },
   } = await supabase.auth.getUser();

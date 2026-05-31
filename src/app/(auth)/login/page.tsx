@@ -2,14 +2,20 @@ import Link from "next/link";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { AuthDivider, AuthNotice, AuthShell, FieldHelper } from "@/components/auth/auth-shell";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string; registered?: string; reset?: string }> }) {
   const params = await searchParams;
   const next = params.next ?? "";
   const hasError = params.error === "invalid_credentials" || params.error === "missing_credentials" || params.error === "oauth_failed";
+  const needsConfirmation = params.error === "email_not_confirmed";
+  const registered = params.registered === "check_email";
+  const resetSuccess = params.reset === "success";
 
   return (
     <AuthShell eyebrow="Đăng nhập" title="Chào mừng trở lại" body="Vào tài khoản để quét mã, gửi ảnh phân loại và theo dõi điểm xanh của bạn.">
       {hasError ? <AuthNotice>Không đăng nhập được. Kiểm tra email, mật khẩu hoặc thử lại với Google.</AuthNotice> : null}
+      {needsConfirmation ? <AuthNotice>Vui lòng xác thực email trước khi đăng nhập.</AuthNotice> : null}
+      {registered ? <AuthNotice tone="success">Tài khoản đã được tạo. Kiểm tra email để xác nhận trước khi đăng nhập.</AuthNotice> : null}
+      {resetSuccess ? <AuthNotice tone="success">Mật khẩu đã được cập nhật. Đăng nhập lại để tiếp tục.</AuthNotice> : null}
 
       <div className="grid gap-4">
         <form action="/api/auth/google" method="get">

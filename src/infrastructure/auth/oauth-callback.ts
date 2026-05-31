@@ -7,7 +7,8 @@ type AuthProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "rol
 
 export async function handleOAuthCallback(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const next = safeNextPath(request.nextUrl.searchParams.get("next"));
+  const fallbackPath = request.nextUrl.searchParams.get("type") === "recovery" ? "/reset-password" : "/dashboard";
+  const next = safeNextPath(request.nextUrl.searchParams.get("next"), fallbackPath);
   const origin = appOrigin(request);
 
   if (!code) {

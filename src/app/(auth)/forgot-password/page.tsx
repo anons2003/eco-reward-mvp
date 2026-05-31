@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, KeyRound, Mail } from "lucide-react";
-import { AuthShell, AuthValuePill, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthNotice, AuthShell, AuthValuePill, FieldHelper } from "@/components/auth/auth-shell";
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage({ searchParams }: { searchParams: Promise<{ error?: string; sent?: string }> }) {
+  const params = await searchParams;
+  const missingEmail = params.error === "missing_email";
+  const sent = params.sent === "1";
+
   return (
     <AuthShell
       eyebrow="Khôi phục tài khoản"
@@ -11,7 +15,10 @@ export default function ForgotPasswordPage() {
       sideTitle="Không mất lịch sử phân loại của bạn."
       sideBody="Sau khi xác minh email, bạn có thể đăng nhập lại và tiếp tục theo dõi điểm thưởng, lịch sử gửi rác và phần thưởng."
     >
-      <form className="grid gap-4">
+      {sent ? <AuthNotice tone="success">Nếu email tồn tại trong hệ thống, hướng dẫn khôi phục đã được gửi.</AuthNotice> : null}
+      {missingEmail ? <AuthNotice>Vui lòng nhập email cần khôi phục.</AuthNotice> : null}
+
+      <form action="/api/auth/forgot-password" className="grid gap-4" method="post">
         <label className="block text-sm font-black text-[#151d18]" htmlFor="email">
           Email
           <span className="relative mt-2 block">
@@ -21,7 +28,9 @@ export default function ForgotPasswordPage() {
               autoComplete="email"
               className="min-h-14 w-full rounded-[18px] border border-[#d9e5da] bg-[#f9fff8] px-4 py-3 pl-12 font-bold text-[#151d18] outline-none transition placeholder:text-[#8b978e] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/15"
               id="email"
+              name="email"
               placeholder="you@example.com"
+              required
               type="email"
             />
           </span>
@@ -43,10 +52,10 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
-        <Link className="focus-ring mt-2 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" href="/login">
+        <button className="focus-ring mt-2 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 py-4 font-black text-white shadow-[0_14px_34px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] active:scale-[0.99]" type="submit">
           Gửi hướng dẫn
           <ArrowRight size={18} />
-        </Link>
+        </button>
       </form>
 
       <Link className="mt-8 inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-black text-[#007a3d] transition hover:bg-[#edf6ed]" href="/login">
