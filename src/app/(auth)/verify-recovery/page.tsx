@@ -1,17 +1,10 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, KeyRound, Mail } from "lucide-react";
-import { AuthNotice, AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
 
 export default async function VerifyRecoveryPage({ searchParams }: { searchParams: Promise<{ email?: string; error?: string; sent?: string }> }) {
   const params = await searchParams;
   const email = params.email?.trim().toLowerCase() ?? "";
-  const sent = params.sent === "1";
-  const errorMessage =
-    params.error === "missing_fields"
-      ? "Vui lòng nhập email và mã xác thực."
-      : params.error === "invalid_code"
-        ? "Mã xác thực không đúng hoặc đã hết hạn."
-        : null;
 
   return (
     <AuthShell
@@ -21,9 +14,6 @@ export default async function VerifyRecoveryPage({ searchParams }: { searchParam
       sideTitle="Xác minh trước khi đổi mật khẩu."
       sideBody="Mã OTP giúp đảm bảo chỉ chủ email mới có thể đặt lại mật khẩu và truy cập ví điểm xanh."
     >
-      {sent ? <AuthNotice tone="success">Mã khôi phục đã được gửi. Kiểm tra hộp thư đến hoặc thư rác.</AuthNotice> : null}
-      {errorMessage ? <AuthNotice>{errorMessage}</AuthNotice> : null}
-
       <form action="/api/auth/verify-recovery-otp" className="grid gap-4" method="post">
         <label className="block text-sm font-black text-[#151d18]" htmlFor="email">
           Email

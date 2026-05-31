@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, Lock, Mail, Recycle, ShieldCheck, UsersRound } from "lucide-react";
-import { AuthNotice, FieldHelper } from "@/components/auth/auth-shell";
+import { FieldHelper } from "@/components/auth/auth-shell";
 
 export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
   const params = await searchParams;
   const next = params.next ?? "/admin/dashboard";
-  const hasError = params.error === "invalid_credentials" || params.error === "missing_credentials";
 
   return (
     <main className="min-h-screen bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] px-4 py-5 text-[#151d18] [background-size:24px_24px] sm:px-6 lg:px-8">
@@ -63,8 +62,6 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
                 <h1 className="mt-3 text-[40px] font-black leading-[46px] tracking-[-0.05em] text-[#151d18] sm:text-5xl sm:leading-[54px]">Vào bảng điều khiển</h1>
                 <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-[#5d6a60] sm:text-base">Dùng tài khoản quản trị để xử lý lượt gửi, điểm thưởng và thùng rác trong hệ thống.</p>
               </div>
-
-              {hasError ? <AuthNotice>Không thể đăng nhập. Kiểm tra email và mật khẩu quản trị.</AuthNotice> : null}
 
               <form action="/api/auth/login" className="grid gap-4" method="post">
                 <input name="next" type="hidden" value={next.startsWith("/admin") ? next : "/admin/dashboard"} />

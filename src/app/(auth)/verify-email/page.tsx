@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Mail, RefreshCw } from "lucide-react";
-import { AuthNotice, AuthShell, AuthValuePill, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthShell, AuthValuePill, FieldHelper } from "@/components/auth/auth-shell";
 
 function safePath(value: string | undefined) {
   return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
@@ -17,15 +17,6 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
   const params = await searchParams;
   const email = params.email?.trim().toLowerCase() ?? "";
   const next = safePath(params.next);
-  const sent = params.sent === "1";
-  const message =
-    params.error === "email_not_confirmed"
-      ? "Tài khoản này chưa xác thực email. Hãy mở email xác thực hoặc gửi lại liên kết."
-      : params.error === "missing_email"
-        ? "Nhập email đã đăng ký để gửi lại liên kết xác thực."
-        : params.error === "resend_failed"
-          ? "Chưa thể gửi lại email xác thực. Vui lòng thử lại sau."
-          : null;
 
   return (
     <AuthShell
@@ -35,9 +26,6 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
       sideTitle="Một bước cuối để bảo vệ tài khoản."
       sideBody="Liên kết xác thực giúp đảm bảo điểm thưởng, lịch sử gửi rác và hồ sơ cá nhân thuộc đúng người dùng."
     >
-      {sent ? <AuthNotice tone="success">Email xác thực đã được gửi. Kiểm tra hộp thư đến hoặc thư rác.</AuthNotice> : null}
-      {message ? <AuthNotice>{message}</AuthNotice> : null}
-
       <div className="rounded-[24px] border border-[#d9e5da] bg-[#f3fcf3] p-4">
         <div className="flex items-center gap-3">
           <span className="grid size-11 place-items-center rounded-2xl bg-white text-[#007a3d]">

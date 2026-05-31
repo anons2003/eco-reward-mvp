@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, KeyRound, Mail } from "lucide-react";
-import { AuthNotice, AuthShell, AuthValuePill, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthShell, AuthValuePill, FieldHelper } from "@/components/auth/auth-shell";
 
-export default async function ForgotPasswordPage({ searchParams }: { searchParams: Promise<{ error?: string; sent?: string }> }) {
-  const params = await searchParams;
-  const missingEmail = params.error === "missing_email";
-  const resetFailed = params.error === "reset_failed";
-  const emailRateLimited = params.error === "email_rate_limited";
-  const sent = params.sent === "1";
-
+export default function ForgotPasswordPage() {
   return (
     <AuthShell
       eyebrow="Khôi phục tài khoản"
@@ -17,11 +11,6 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
       sideTitle="Không mất lịch sử phân loại của bạn."
       sideBody="Sau khi xác minh email, bạn có thể đăng nhập lại và tiếp tục theo dõi điểm thưởng, lịch sử gửi rác và phần thưởng."
     >
-      {sent ? <AuthNotice tone="success">Nếu email tồn tại trong hệ thống, hướng dẫn khôi phục đã được gửi.</AuthNotice> : null}
-      {missingEmail ? <AuthNotice>Vui lòng nhập email cần khôi phục.</AuthNotice> : null}
-      {resetFailed ? <AuthNotice>Chưa gửi được email khôi phục. Kiểm tra SMTP/rate limit Supabase hoặc thử lại sau.</AuthNotice> : null}
-      {emailRateLimited ? <AuthNotice>Đã vượt giới hạn gửi email khôi phục của Supabase. Vui lòng chờ rồi thử lại hoặc cấu hình SMTP riêng trong Supabase.</AuthNotice> : null}
-
       <form action="/api/auth/forgot-password" className="grid gap-4" method="post">
         <label className="block text-sm font-black text-[#151d18]" htmlFor="email">
           Email

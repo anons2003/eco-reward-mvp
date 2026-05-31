@@ -30,35 +30,7 @@ function SettingRow({ Icon, title, body, enabled = true }: { Icon: typeof Bell; 
   );
 }
 
-function PasswordNotice({ status }: { status: string | undefined }) {
-  const message =
-    status === "success"
-      ? "Mật khẩu đã được cập nhật."
-      : status === "missing_fields"
-        ? "Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới."
-        : status === "weak_password"
-          ? "Mật khẩu mới cần có ít nhất 8 ký tự."
-          : status === "password_mismatch"
-            ? "Hai lần nhập mật khẩu mới không khớp."
-            : status === "current_invalid"
-              ? "Mật khẩu hiện tại không đúng."
-              : status === "unauthorized"
-                ? "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại."
-                : status === "update_failed"
-                  ? "Chưa thể cập nhật mật khẩu. Vui lòng thử lại."
-                  : null;
-
-  if (!message) return null;
-
-  return (
-    <p className={`mb-5 rounded-3xl px-4 py-3 text-sm font-bold ${status === "success" ? "bg-[#d8f5df] text-[#006a3d] ring-1 ring-[#9fd7b0]" : "bg-[#ffdad6] text-[#8c1d18] ring-1 ring-[#ffb4ab]"}`}>
-      {message}
-    </p>
-  );
-}
-
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ password?: string }> }) {
-  const params = await searchParams;
+export default async function SettingsPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -128,7 +100,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <LockKeyhole className="text-[#007a3d]" size={19} />
               <h2 className="text-lg font-black text-[#151d18]">Thay đổi mật khẩu</h2>
             </div>
-            <PasswordNotice status={params.password} />
             <form action="/api/auth/change-password" className="grid gap-4 md:grid-cols-2" method="post">
               <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941] md:col-span-2">
                 Mật khẩu hiện tại

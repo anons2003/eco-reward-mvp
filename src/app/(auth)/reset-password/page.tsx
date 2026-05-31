@@ -1,18 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
-import { AuthNotice, AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
 
-export default async function ResetPasswordPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const params = await searchParams;
-  const errorMessage =
-    params.error === "weak_password"
-      ? "Mật khẩu mới cần có ít nhất 8 ký tự."
-      : params.error === "password_mismatch"
-        ? "Hai lần nhập mật khẩu không khớp."
-        : params.error === "reset_failed"
-          ? "Không thể cập nhật mật khẩu. Liên kết có thể đã hết hạn, hãy gửi lại yêu cầu khôi phục."
-          : null;
-
+export default function ResetPasswordPage() {
   return (
     <AuthShell
       eyebrow="Khôi phục mật khẩu"
@@ -21,8 +11,6 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
       sideTitle="Bảo vệ ví điểm xanh của bạn."
       sideBody="Sau khi đổi mật khẩu, phiên khôi phục sẽ được đăng xuất và bạn đăng nhập lại bằng mật khẩu mới."
     >
-      {errorMessage ? <AuthNotice>{errorMessage}</AuthNotice> : null}
-
       <form action="/api/auth/reset-password" className="grid gap-4" method="post">
         <label className="block text-sm font-black text-[#151d18]" htmlFor="password">
           Mật khẩu mới

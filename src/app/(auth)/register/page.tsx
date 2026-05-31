@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Lock, Mail, UserRound } from "lucide-react";
-import { AuthNotice, AuthShell, FieldHelper } from "@/components/auth/auth-shell";
+import { AuthShell, FieldHelper } from "@/components/auth/auth-shell";
 
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
   const params = await searchParams;
   const next = params.next ?? "/dashboard";
-  const errorMessage =
-    params.error === "missing_fields"
-      ? "Vui lòng nhập đầy đủ họ tên, email và mật khẩu."
-      : params.error === "weak_password"
-        ? "Mật khẩu cần có ít nhất 8 ký tự."
-        : params.error === "register_failed"
-          ? "Không thể tạo tài khoản. Email có thể đã được dùng hoặc cấu hình xác thực chưa sẵn sàng."
-          : null;
 
   return (
     <AuthShell
@@ -22,8 +14,6 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
       sideTitle="Bắt đầu hành trình phân loại rác có thưởng."
       sideBody="Mỗi tài khoản giúp hệ thống ghi nhận đúng lượt gửi, điểm xanh và tác động môi trường của riêng bạn."
     >
-      {errorMessage ? <AuthNotice>{errorMessage}</AuthNotice> : null}
-
       <form action="/api/auth/register" className="grid gap-4" method="post">
         <input name="next" type="hidden" value={next.startsWith("/") ? next : "/dashboard"} />
         <label className="block text-sm font-black text-[#151d18]" htmlFor="name">
