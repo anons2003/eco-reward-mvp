@@ -14,6 +14,10 @@ const profileSelectEq = vi.fn();
 const profileSingle = vi.fn();
 const profileUpdate = vi.fn();
 const profileEq = vi.fn();
+const pointRuleSelect = vi.fn();
+const pointRuleEqWasteType = vi.fn();
+const pointRuleEqActive = vi.fn();
+const pointRuleMaybeSingle = vi.fn();
 const transactionInsert = vi.fn();
 const auditInsert = vi.fn();
 
@@ -26,6 +30,9 @@ const from = vi.fn((table: string) => {
   }
   if (table === "point_transactions") {
     return { insert: transactionInsert };
+  }
+  if (table === "point_rules") {
+    return { select: pointRuleSelect };
   }
   if (table === "audit_logs") {
     return { insert: auditInsert };
@@ -61,6 +68,10 @@ describe("POST /api/admin/review", () => {
     profileSelectEq.mockReset();
     profileSingle.mockReset();
     profileEq.mockReset();
+    pointRuleSelect.mockReset();
+    pointRuleEqWasteType.mockReset();
+    pointRuleEqActive.mockReset();
+    pointRuleMaybeSingle.mockReset();
     transactionInsert.mockReset();
     auditInsert.mockReset();
     from.mockClear();
@@ -79,6 +90,7 @@ describe("POST /api/admin/review", () => {
         user_id: "user-1",
         status: "pending_review",
         points: 10,
+        ai_result: { wasteType: "plastic_bottle" },
       },
       error: null,
     });
@@ -100,6 +112,10 @@ describe("POST /api/admin/review", () => {
     profileSelect.mockReturnValue({ eq: profileSelectEq });
     profileSelectEq.mockReturnValue({ single: profileSingle });
     profileSingle.mockResolvedValue({ data: { points: 32 }, error: null });
+    pointRuleSelect.mockReturnValue({ eq: pointRuleEqWasteType });
+    pointRuleEqWasteType.mockReturnValue({ eq: pointRuleEqActive });
+    pointRuleEqActive.mockReturnValue({ maybeSingle: pointRuleMaybeSingle });
+    pointRuleMaybeSingle.mockResolvedValue({ data: null, error: null });
     transactionInsert.mockResolvedValue({ error: null });
     auditInsert.mockResolvedValue({ error: null });
   });
@@ -125,6 +141,7 @@ describe("POST /api/admin/review", () => {
       reason: "Hợp lệ",
       reviewed_at: expect.any(String),
       reviewed_by: "admin-1",
+      points: 10,
     });
     expect(profileUpdate).toHaveBeenCalledWith({ points: 42 });
     expect(transactionInsert).toHaveBeenCalledWith({
@@ -157,6 +174,7 @@ describe("POST /api/admin/review", () => {
         user_id: "user-1",
         status: "approved",
         points: 10,
+        ai_result: { wasteType: "plastic_bottle" },
       },
       error: null,
     });
@@ -180,8 +198,55 @@ describe("POST /api/admin/review", () => {
       reason: "Không hợp lệ",
       reviewed_at: expect.any(String),
       reviewed_by: "admin-1",
+      points: 0,
     });
     expect(profileUpdate).not.toHaveBeenCalled();
     expect(transactionInsert).not.toHaveBeenCalled();
+  });
+
+  it("uses an active point rule when approving a submission without precomputed points", async () => {
+    submissionSingle.mockResolvedValueOnce({
+      data: {
+        id: "submission-1",
+        user_id: "user-1",
+        status: "pending_review",
+        points: 0,
+        ai_result: { wasteType: "paper" },
+      },
+      error: null,
+    });
+    updateSingle.mockResolvedValueOnce({
+      data: {
+        id: "submission-1",
+        user_id: "user-1",
+        status: "approved",
+        points: 6,
+        reason: "Hợp lệ",
+      },
+      error: null,
+    });
+    pointRuleMaybeSingle.mockResolvedValueOnce({ data: { points: 6 }, error: null });
+    const { POST } = await import("./route");
+
+    const response = await POST(reviewRequest({ submissionId: "submission-1", decision: "approved", reason: "Hợp lệ" }));
+
+    expect(response.status).toBe(200);
+    expect(pointRuleSelect).toHaveBeenCalledWith("points");
+    expect(pointRuleEqWasteType).toHaveBeenCalledWith("waste_type", "paper");
+    expect(pointRuleEqActive).toHaveBeenCalledWith("active", true);
+    expect(submissionUpdate).toHaveBeenCalledWith({
+      status: "approved",
+      reason: "Hợp lệ",
+      reviewed_at: expect.any(String),
+      reviewed_by: "admin-1",
+      points: 6,
+    });
+    expect(profileUpdate).toHaveBeenCalledWith({ points: 38 });
+    expect(transactionInsert).toHaveBeenCalledWith({
+      user_id: "user-1",
+      submission_id: "submission-1",
+      points: 6,
+      reason: "Hợp lệ",
+    });
   });
 });

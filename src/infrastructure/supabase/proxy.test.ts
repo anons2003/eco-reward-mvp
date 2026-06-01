@@ -62,4 +62,13 @@ describe("updateSession", () => {
     expect(profileResponse.headers.get("location")).toBe("https://eco.test/login?next=%2Fprofile");
     expect(settingsResponse.headers.get("location")).toBe("https://eco.test/login?next=%2Fsettings");
   });
+
+  it("treats malformed auth cookies as signed out instead of throwing", async () => {
+    getUser.mockRejectedValue(new SyntaxError("Unexpected non-whitespace character after JSON"));
+    const { updateSession } = await import("./proxy");
+
+    const response = await updateSession(nextRequest("https://eco.test/wallet") as never);
+
+    expect(response.headers.get("location")).toBe("https://eco.test/login?next=%2Fwallet");
+  });
 });

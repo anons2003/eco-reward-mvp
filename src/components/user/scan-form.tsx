@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock3, MapPin, QrCode, ScanLine, ShieldCheck, Wifi, type LucideIcon } from "lucide-react";
 import { LoadingButtonContent, useGlobalLoading } from "@/components/shared/loading-ui";
@@ -11,15 +11,28 @@ type ScanPayload = {
   error?: string;
 };
 
+type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => {
+  detect(source: HTMLVideoElement): Promise<Array<{ rawValue?: string }>>;
+};
+
 export function ScanForm() {
   const router = useRouter();
   const { clearGlobalLoading, setGlobalLoading } = useGlobalLoading();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const autoScanningRef = useRef(false);
   const [qrCode, setQrCode] = useState("ECO-BIN-A1");
   const [payload, setPayload] = useState<ScanPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
 
-  async function verifyBin() {
+  const createScanSession = useCallback(async (nextQrCode: string, autoContinue = false) => {
+    const trimmedQrCode = nextQrCode.trim();
+    if (!trimmedQrCode) {
+      setError("Vui lòng nhập hoặc quét mã QR.");
+      return;
+    }
+
     setLoading(true);
     setGlobalLoading("Đang xác nhận thùng...");
     setError("");
@@ -27,7 +40,7 @@ export function ScanForm() {
       const response = await fetch("/api/scan-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qr_code: qrCode, lat: 10.7769, lng: 106.7009 }),
+        body: JSON.stringify({ qr_code: trimmedQrCode, lat: 10.7769, lng: 106.7009 }),
       });
       const nextPayload = (await response.json()) as ScanPayload;
 
@@ -38,10 +51,68 @@ export function ScanForm() {
       }
 
       setPayload(nextPayload);
+      if (autoContinue && nextPayload.session) {
+        setGlobalLoading("Đang mở camera...");
+        router.push(`/capture?scanSessionId=${nextPayload.session.id}`);
+      }
     } finally {
       setLoading(false);
       clearGlobalLoading();
     }
+  }, [clearGlobalLoading, router, setGlobalLoading]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let stream: MediaStream | null = null;
+    let frameId = 0;
+
+    async function startScanner() {
+      const BarcodeDetector = (window as unknown as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector;
+      if (!BarcodeDetector || !navigator.mediaDevices?.getUserMedia) return;
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        if (cancelled || !videoRef.current) return;
+        videoRef.current.srcObject = stream;
+        setCameraReady(true);
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+        async function tick() {
+          if (cancelled || autoScanningRef.current || !videoRef.current) return;
+
+          try {
+            const codes = await detector.detect(videoRef.current);
+            const detected = codes.find((code) => code.rawValue)?.rawValue?.trim();
+            if (detected) {
+              autoScanningRef.current = true;
+              setQrCode(detected);
+              await createScanSession(detected, true);
+              return;
+            }
+          } catch {
+            // Keep manual QR entry as the reliable fallback when native detection fails.
+          }
+
+          frameId = window.requestAnimationFrame(tick);
+        }
+
+        frameId = window.requestAnimationFrame(tick);
+      } catch {
+        setCameraReady(false);
+      }
+    }
+
+    void startScanner();
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frameId);
+      stream?.getTracks().forEach((track) => track.stop());
+    };
+  }, [createScanSession]);
+
+  function verifyBin() {
+    void createScanSession(qrCode);
   }
 
   function continueToCapture() {
@@ -56,8 +127,9 @@ export function ScanForm() {
         <div className="grid min-h-[560px] place-items-center bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] p-6 text-[#151d18] [background-size:24px_24px]">
           <div className="w-full max-w-sm">
             <div className="relative aspect-square rounded-[34px] border-2 border-[#007a3d] bg-white p-5 shadow-[0_22px_70px_rgba(0,106,61,0.12)]">
-              <div className="grid h-full place-items-center rounded-[26px] border border-dashed border-[#bdcabe] bg-[#edf6ed]">
-                <QrCode className="text-[#007a3d]" size={96} />
+              <div className="relative grid h-full place-items-center overflow-hidden rounded-[26px] border border-dashed border-[#bdcabe] bg-[#edf6ed]">
+                <video ref={videoRef} autoPlay muted playsInline className={`absolute inset-0 size-full object-cover transition ${cameraReady ? "opacity-100" : "opacity-0"}`} />
+                {!cameraReady ? <QrCode className="text-[#007a3d]" size={96} /> : null}
               </div>
               <span className="absolute left-5 top-5 size-11 rounded-tl-3xl border-l-4 border-t-4 border-[#007a3d]" />
               <span className="absolute right-5 top-5 size-11 rounded-tr-3xl border-r-4 border-t-4 border-[#007a3d]" />

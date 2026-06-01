@@ -2,7 +2,9 @@ import dynamic from "next/dynamic";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type BinRow = Database["public"]["Tables"]["bins"]["Row"];
+type PointRuleRow = Database["public"]["Tables"]["point_rules"]["Row"];
 type RewardRow = Database["public"]["Tables"]["reward_items"]["Row"];
+type WasteType = PointRuleRow["waste_type"];
 
 type UserManagementUser = {
   id: string;
@@ -22,6 +24,10 @@ export const DynamicAdminDashboardMotion = dynamic(() =>
 
 export const DynamicBinManagementActions = dynamic<{ bin?: BinRow; variant?: "compact" | "toolbar" }>(() =>
   import("@/components/admin/bin-management-actions").then((mod) => mod.BinManagementActions),
+);
+
+export const DynamicPointRuleManagementActions = dynamic<{ rule?: PointRuleRow; wasteType: WasteType }>(() =>
+  import("@/components/admin/point-rule-management-actions").then((mod) => mod.PointRuleManagementActions),
 );
 
 export const DynamicReviewActions = dynamic<{ submissionId: string }>(() => import("@/components/admin/review-actions").then((mod) => mod.ReviewActions));

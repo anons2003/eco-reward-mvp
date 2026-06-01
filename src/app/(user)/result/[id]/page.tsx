@@ -3,8 +3,12 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Coins, Cpu, Leaf, MapPin, Recycle, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { seaTechService } from "@/application/services/seatech-service";
 import type { SubmissionStatus } from "@/core/entities/types";
+import { createClient } from "@/infrastructure/supabase/server";
+import type { Database } from "@/infrastructure/supabase/database.types";
+
+type SubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "bin_id" | "image_url" | "ai_result" | "status" | "points" | "reason" | "risk_flags" | "created_at">;
+type BinRow = Pick<Database["public"]["Tables"]["bins"]["Row"], "id" | "name" | "location_name">;
 
 function statusCopy(status: SubmissionStatus) {
   if (status === "approved") return { title: "Đã xác minh thành công", body: "Lượt gửi hợp lệ và điểm đã được cộng vào ví.", Icon: CheckCircle2, tone: "text-[#007a3d]", bg: "bg-[#d8f5df]" };
@@ -12,13 +16,46 @@ function statusCopy(status: SubmissionStatus) {
   return { title: "Lượt gửi bị từ chối", body: "Lượt gửi không đạt điều kiện nhận điểm.", Icon: AlertTriangle, tone: "text-[#93000a]", bg: "bg-[#ffdad6]" };
 }
 
+function aiResult(row: SubmissionRow) {
+  return row.ai_result && typeof row.ai_result === "object" && !Array.isArray(row.ai_result) ? row.ai_result : {};
+}
+
+function wasteTypeLabel(value: unknown) {
+  if (value === "manual_review") return "Duyệt thủ công";
+  if (typeof value !== "string") return "Chưa xác định";
+
+  const labels: Record<string, string> = {
+    plastic_bottle: "Chai nhựa",
+    metal_can: "Lon kim loại",
+    paper: "Giấy",
+    cardboard: "Bìa carton",
+    glass_bottle: "Chai thủy tinh",
+    organic: "Hữu cơ",
+    hazardous: "Nguy hại",
+    unknown: "Chưa xác định",
+  };
+  return labels[value] ?? value.replaceAll("_", " ");
+}
+
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const submission = seaTechService.getSubmission(id);
-  if (!submission) notFound();
+  const supabase = await createClient();
+  const { data: submissionData, error } = await supabase
+    .from("submissions")
+    .select("id,bin_id,image_url,ai_result,status,points,reason,risk_flags,created_at")
+    .eq("id", id)
+    .single();
 
-  const confidence = Math.round(submission.aiResult.confidence * 100);
-  const wasteType = submission.aiResult.wasteType.replaceAll("_", " ");
+  if (error || !submissionData) notFound();
+
+  const submission = submissionData as SubmissionRow;
+  const { data: binData } = await supabase.from("bins").select("id,name,location_name").eq("id", submission.bin_id).maybeSingle();
+  const bin = binData as BinRow | null;
+
+  const result = aiResult(submission);
+  const resultMode = typeof result.mode === "string" ? result.mode : undefined;
+  const confidence = typeof result.confidence === "number" ? Math.round(result.confidence * 100) : 0;
+  const wasteType = wasteTypeLabel(typeof result.wasteType === "string" ? result.wasteType : resultMode);
   const status = statusCopy(submission.status);
   const StatusIcon = status.Icon;
 
@@ -41,7 +78,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
         <div className="space-y-5">
           <div className="overflow-hidden rounded-[34px] border border-[#d9e5da] bg-white/86 shadow-[0_22px_70px_rgba(21,29,24,0.08)]">
             <div className="relative min-h-[420px] bg-[#edf6ed]">
-              <Image alt={`Ảnh phân tích ${wasteType}`} className="object-contain p-8 transition duration-500" fill sizes="(min-width: 1024px) 720px, 100vw" src={submission.imageUrl} unoptimized={submission.imageUrl.startsWith("data:")} />
+              <Image alt={`Ảnh phân tích ${wasteType}`} className="object-contain p-8 transition duration-500" fill sizes="(min-width: 1024px) 720px, 100vw" src={submission.image_url} unoptimized={submission.image_url.startsWith("data:")} />
               <div className="absolute bottom-5 left-5 right-5 rounded-[26px] border border-white/40 bg-white/88 p-4 shadow-[0_16px_42px_rgba(21,29,24,0.12)] backdrop-blur">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -50,7 +87,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
                     </span>
                     <div>
                       <p className="font-black text-[#151d18]">{status.title}</p>
-                      <p className="mt-1 text-sm font-semibold text-[#5d6a60]">{new Date(submission.createdAt).toLocaleString("vi-VN")}</p>
+                      <p className="mt-1 text-sm font-semibold text-[#5d6a60]">{new Date(submission.created_at).toLocaleString("vi-VN")}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -66,7 +103,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[#6e7a70]">Trạng thái giao dịch</h2>
             <div className="mt-6 grid gap-6">
               <TimelineItem title="Rác đã được bỏ vào thùng" body="Thùng thông minh đã ghi nhận phiên QR và vật phẩm." active />
-              <TimelineItem title="AI phân tích & phê duyệt" body={`Xác nhận: ${wasteType} • ${confidence}% độ tin cậy.`} active={submission.status !== "rejected"} />
+              <TimelineItem title="Kiểm duyệt thủ công" body={submission.status === "pending_review" ? "Ảnh đã được ghi nhận và đang chờ admin duyệt." : `Xác nhận: ${wasteType}${confidence ? ` • ${confidence}% độ tin cậy.` : "."}`} active={submission.status !== "rejected"} />
               <TimelineItem title="Điểm thưởng đã cộng" body={`${submission.points} điểm được thêm vào ví SeaTech.`} active={submission.status === "approved"} last />
             </div>
           </section>
@@ -80,7 +117,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-[#d8f5df] px-3 py-1 text-xs font-black text-[#007a3d]">
                 <ShieldCheck size={15} />
-                AI Verified
+                {submission.status === "pending_review" ? "Manual Review" : "Verified"}
               </span>
             </div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[#6e7a70]">Loại rác phát hiện</p>
@@ -88,20 +125,20 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             <div className="mt-5">
               <div className="mb-2 flex justify-between text-sm font-black">
                 <span className="text-[#5d6a60]">Độ tin cậy AI</span>
-                <span className="text-[#007a3d]">{confidence}%</span>
+                <span className="text-[#007a3d]">{confidence ? `${confidence}%` : "N/A"}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-[#edf6ed]">
                 <div className="h-full rounded-full bg-[linear-gradient(90deg,#006496,#007a3d)]" style={{ width: `${confidence}%` }} />
               </div>
             </div>
-            <p className="mt-5 rounded-[22px] bg-[#f3fcf3] p-4 text-sm font-semibold leading-6 text-[#5d6a60]">{submission.aiResult.notes ?? status.body}</p>
+            <p className="mt-5 rounded-[22px] bg-[#f3fcf3] p-4 text-sm font-semibold leading-6 text-[#5d6a60]">{submission.reason || status.body}</p>
           </section>
 
           <section className="rounded-[30px] border border-[#d9e5da] bg-white/84 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
             <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[#6e7a70]">Vị trí & Thiết bị</h2>
             <div className="mt-4 grid gap-3">
-              <InfoRow icon={Recycle} title="Bin #BIN-001" body="Model: SmartRecycle V2" />
-              <InfoRow icon={MapPin} title="Sảnh A - Tòa nhà SeaTech Center" body="Trong bán kính GPS hợp lệ." />
+              <InfoRow icon={Recycle} title={bin?.name ?? `Bin ${submission.bin_id.slice(0, 8)}`} body={`Mã bin: ${submission.bin_id.slice(0, 8)}`} />
+              <InfoRow icon={MapPin} title={bin?.location_name ?? "Chưa có vị trí"} body="Phiên quét QR đã được gắn với lượt gửi này." />
             </div>
           </section>
 
@@ -118,11 +155,11 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             <div className="absolute -right-14 -top-14 size-48 rounded-full bg-white/10 blur-3xl" />
           </section>
 
-          {submission.riskFlags.length ? (
+          {submission.risk_flags.length ? (
             <section className="rounded-[26px] bg-[#fff7e6] p-5">
               <p className="font-black text-[#92400E]">Tín hiệu cần chú ý</p>
               <ul className="mt-2 list-disc pl-5 text-sm leading-6 text-[#5d6a60]">
-                {submission.riskFlags.map((flag) => (
+                {submission.risk_flags.map((flag) => (
                   <li key={flag}>{flag}</li>
                 ))}
               </ul>

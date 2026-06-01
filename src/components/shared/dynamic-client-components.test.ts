@@ -8,6 +8,7 @@ const dynamicModule = "src/components/shared/dynamic-client-components.tsx";
 const directClientIslandImports = [
   "@/components/admin/admin-dashboard-motion",
   "@/components/admin/bin-management-actions",
+  "@/components/admin/point-rule-management-actions",
   "@/components/admin/review-actions",
   "@/components/admin/reward-management-actions",
   "@/components/admin/user-management-actions",
