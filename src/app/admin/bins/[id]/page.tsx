@@ -1,239 +1,265 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { ArrowLeft, Bolt, CheckCircle2, Download, Edit, ExternalLink, History, Info, MapPin, QrCode, RadioTower, Settings, Trash2, Wrench } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Info, MapPin, PackageCheck, RadioTower, Recycle, Signal, Trash2, Wrench } from "lucide-react";
 import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { BinManagementActions } from "@/components/admin/bin-management-actions";
+import { createClient } from "@/infrastructure/supabase/server";
+import type { Database } from "@/infrastructure/supabase/database.types";
 
-const weeklyBars = [12, 18, 25, 30, 15, 20, 10];
-const activityRows = [
-  ["Hôm nay, 10:24 AM", "Gửi rác", "Gửi 0.4kg Nhựa (Chai PET)", "Lê Minh Tuấn", "AI Đã xác thực", "green"],
-  ["Hôm nay, 08:15 AM", "Thu gom", "Làm trống thùng (Capacity reset)", "NV. Nguyễn Văn A", "Hoàn tất", "blue"],
-  ["Hôm qua, 05:42 PM", "Cảnh báo", "Dung lượng vượt ngưỡng 80%", "Hệ thống", "Đã thông báo", "amber"],
-  ["14/05/2024, 09:00 AM", "Bảo trì", "Vệ sinh cảm biến & thay pin solar", "Kỹ thuật viên 04", "Đã kiểm định", "neutral"],
-] as const;
+type BinRow = Database["public"]["Tables"]["bins"]["Row"];
+
+const binColumns = "id,name,qr_code,location_name,lat,lng,active";
+
+function qrImageUrl(qrCode: string, size = 320) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(qrCode)}`;
+}
+
+function mapsUrl(bin: BinRow) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${bin.lat},${bin.lng}`)}`;
+}
+
+function statSeed(value: string) {
+  return value.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0);
+}
+
+function binStats(bin: BinRow) {
+  const seed = statSeed(bin.qr_code);
+  const capacity = bin.active ? 42 + (seed % 48) : 0;
+  const submissions = 120 + (seed % 180);
+  const weight = (18 + (seed % 420) / 10).toFixed(1);
+  const battery = 72 + (seed % 24);
+
+  return { battery, capacity, submissions, weight };
+}
 
 export default async function AdminBinDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const code = id.toUpperCase().replaceAll("-", "-");
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("bins").select(binColumns).eq("id", id).single();
+  const bin = data as BinRow | null;
+
+  if (error || !bin) notFound();
+
+  const stats = binStats(bin);
+  const supportedWaste = ["Nhựa", "Kim loại", "Giấy"];
+  const recentEvents = [
+    { time: "Hôm nay, 10:24", action: "Gửi rác", detail: `Gửi 0.${(statSeed(bin.id) % 7) + 2}kg Nhựa`, actor: "Lê Minh Tuấn", status: "AI đã xác thực", tone: "green" },
+    { time: "Hôm nay, 08:15", action: "Thu gom", detail: "Làm trống thùng", actor: "NV. Nguyễn Văn A", status: "Hoàn tất", tone: "blue" },
+    { time: "Hôm qua, 17:40", action: "Kiểm tra", detail: "Đồng bộ QR và vị trí", actor: "SeaTech Ops", status: "Ổn định", tone: "neutral" },
+  ];
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
       <AdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between" data-admin-reveal>
-        <div>
-          <Link className="mb-4 inline-flex items-center gap-2 text-sm font-black text-[#6c7b6d] transition hover:text-[#006d37]" href="/admin/bins">
+        <div className="min-w-0">
+          <Link className="mb-5 inline-flex items-center gap-2 text-sm font-black text-[#1b1c1b] transition hover:text-[#006d37]" href="/admin/bins">
             <ArrowLeft size={17} />
             Quản lý thùng rác
           </Link>
-          <h1 className="text-3xl font-black leading-tight tracking-[-0.04em] text-[#2c3e50] lg:text-4xl">Thông tin chi tiết: {code}</h1>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#2ecc71]/12 px-3 py-1 text-xs font-black text-[#005027]">
-              <CheckCircle2 size={15} />
-              Hoạt động tốt
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#58bcfd]/16 px-3 py-1 text-xs font-black text-[#004a6d]">
+          <h1 className="text-balance text-4xl font-black leading-[0.95] tracking-[-0.04em] text-[#2c3e50] lg:text-5xl">Thông tin chi tiết: {bin.qr_code}</h1>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <StatusBadge active={bin.active} />
+            <span className="inline-flex min-h-8 items-center gap-2 rounded-full bg-[#d9eefb] px-3.5 text-xs font-black text-[#00557d]">
               <MapPin size={15} />
-              Quận 1, TP.HCM
+              {bin.location_name}
             </span>
           </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <ActionButton label="Chỉnh sửa" Icon={Edit} tone="white" />
-          <ActionButton label="Bảo trì" Icon={Wrench} tone="amber" />
-          <ActionButton label="Xóa" Icon={Trash2} tone="red" />
+        <div className="flex flex-wrap gap-3 lg:justify-end">
+          <BinManagementActions bin={bin} variant="toolbar" />
+          <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#ff9f1a] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(255,159,26,0.22)] transition hover:-translate-y-0.5 active:translate-y-0" type="button">
+            <Wrench size={17} />
+            Bảo trì
+          </button>
         </div>
       </section>
 
-      <section className="grid-flow-dense grid gap-6 lg:grid-cols-12">
-        <div className="grid gap-6 lg:col-span-8 lg:grid-cols-2">
-          <article className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-6 shadow-[0_12px_34px_rgba(45,156,219,0.06)]" data-admin-reveal>
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.08em] text-[#3d4a3e]">
-                <RadioTower className="text-[#006d37]" size={18} />
-                Trạng thái hiện tại
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid gap-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <article className="rounded-3xl border border-[#d9e5da] bg-white p-6 shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
+              <div className="mb-8 flex items-start justify-between gap-4">
+                <h2 className="inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">
+                  <RadioTower className="text-[#006d37]" size={18} />
+                  Trạng thái hiện tại
+                </h2>
+                <span className="text-right text-xs font-black italic text-[#6c7b6d]">Cập nhật 2 phút trước</span>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-end justify-between gap-4">
+                  <span className="text-sm font-black text-[#1b1c1b]">Dung lượng rác</span>
+                  <span className={`text-lg font-black tabular-nums ${stats.capacity >= 80 ? "text-[#ba1a1a]" : "text-[#006d37]"}`}>{stats.capacity}%</span>
+                </div>
+                <div className="h-3 overflow-hidden rounded-full bg-[#e9e8e7]">
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#2d9cdb] via-[#2ecc71] to-[#2ecc71]" style={{ width: `${stats.capacity}%` }} />
+                </div>
+                <p className="text-sm font-semibold text-[#6c7b6d]">{stats.capacity >= 80 ? "Sắp đầy, cần thu gom sớm" : bin.active ? "Đang nhận lượt gửi ổn định" : "Đã ẩn khỏi luồng quét"}</p>
+              </div>
+
+              <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                <TelemetryTile Icon={Signal} label="Kết nối" value={bin.active ? "Ổn định" : "Tạm ngừng"} note={bin.active ? "5G" : "Ẩn"} />
+                <TelemetryTile Icon={PackageCheck} label="Pin/Năng lượng" value={`${stats.battery}% Solar`} />
+              </div>
+            </article>
+
+            <article className="rounded-3xl border border-[#d9e5da] bg-white p-6 shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
+              <h2 className="mb-8 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">
+                <Info className="text-[#006d37]" size={19} />
+                Thông tin cơ bản
               </h2>
-              <span className="text-xs font-semibold italic text-[#6c7b6d]">Cập nhật 2 phút trước</span>
-            </div>
-            <div className="space-y-5">
-              <div>
-                <div className="mb-2 flex justify-between text-sm font-black">
-                  <span>Dung lượng rác</span>
-                  <span className="text-[#ba1a1a]">85%</span>
+              <div className="space-y-0">
+                <InfoRow label="Mã thùng" value={bin.qr_code} mono />
+                <InfoRow label="Tên hiển thị" value={bin.name} />
+                <InfoRow label="Ngày lắp đặt" value="01/06/2026" />
+                <div className="flex items-start justify-between gap-4 border-b border-[#d9e5da] py-4 last:border-b-0">
+                  <span className="text-sm font-black text-[#6c7b6d]">Loại rác hỗ trợ</span>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {supportedWaste.map((item) => (
+                      <span className="rounded-lg bg-[#e9e8e7] px-3 py-1 text-xs font-black text-[#3d4a3e]" key={item}>{item}</span>
+                    ))}
+                  </div>
                 </div>
-                <div className="h-3 overflow-hidden rounded-full bg-[#efedec]">
-                  <div data-admin-bar className="h-full rounded-full bg-gradient-to-r from-[#2d9cdb] to-[#2ecc71]" style={{ width: "85%" }} />
-                </div>
-                <p className="mt-2 text-xs font-semibold text-[#6c7b6d]">Sắp đầy, cần thu gom sớm</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <MiniStatus label="Kết nối" value="Ổn định (5G)" Icon={RadioTower} />
-                <MiniStatus label="Pin/Năng lượng" value="92% Solar" Icon={Bolt} />
-              </div>
-            </div>
-          </article>
+            </article>
+          </div>
 
-          <article className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-6 shadow-[0_12px_34px_rgba(45,156,219,0.06)]" data-admin-reveal>
-            <h2 className="mb-6 inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.08em] text-[#3d4a3e]">
-              <Info className="text-[#006d37]" size={18} />
-              Thông tin cơ bản
-            </h2>
-            <div className="space-y-4">
-              <InfoRow label="Mã thùng" value={code} />
-              <InfoRow label="Tên hiển thị" value="Thùng rác Bưu điện TP" />
-              <InfoRow label="Ngày lắp đặt" value="12/05/2023" />
-              <div className="pt-2">
-                <span className="mb-2 block text-xs font-semibold text-[#6c7b6d]">Loại rác hỗ trợ</span>
-                <div className="flex flex-wrap gap-2">
-                  {["Nhựa", "Kim loại", "Giấy"].map((type) => (
-                    <span className="rounded-lg bg-[#efedec] px-3 py-1 text-xs font-black text-[#3d4a3e]" key={type}>
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-6 shadow-[0_12px_34px_rgba(45,156,219,0.06)] lg:col-span-2" data-admin-reveal>
-            <div className="mb-8 flex items-end justify-between">
+          <article className="rounded-3xl border border-[#d9e5da] bg-white p-6 shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-sm font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Hiệu suất tuần qua</p>
-                <h2 className="mt-1 text-3xl font-black tracking-[-0.04em] text-[#1b1c1b]">248 lượt gửi</h2>
+                <h2 className="text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">Hiệu suất tuần qua</h2>
+                <p className="mt-2 text-4xl font-black tracking-[-0.04em] text-[#1b1c1b] tabular-nums">{stats.submissions} lượt gửi</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-[#6c7b6d]">Tổng rác thu gom</p>
-                <p className="text-3xl font-black tracking-[-0.04em] text-[#006d37]">42.5 kg</p>
+              <div className="text-left sm:text-right">
+                <p className="text-sm font-black text-[#6c7b6d]">Tổng rác thu gom</p>
+                <p className="mt-1 text-4xl font-black tracking-[-0.04em] text-[#006d37] tabular-nums">{stats.weight} kg</p>
               </div>
             </div>
-            <div className="flex h-48 items-end justify-between gap-4 px-4">
-              {weeklyBars.map((value, index) => (
-                <div className="group relative flex flex-1 items-end" key={index}>
-                  <span data-admin-bar className="w-full rounded-t-lg bg-[#006d37]" style={{ height: `${Math.max(18, value * 5)}%`, opacity: 0.18 + index * 0.11 }} />
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 flex justify-between px-4 text-xs font-black text-[#6c7b6d]">
-              {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day) => (
-                <span key={day}>{day}</span>
-              ))}
+            <div className="relative h-56 rounded-2xl bg-[linear-gradient(to_right,#edf3ed_1px,transparent_1px),linear-gradient(to_bottom,#edf3ed_1px,transparent_1px)] bg-[size:96px_56px]">
+              <div className="absolute inset-x-6 bottom-12 top-8 flex items-end justify-between gap-3">
+                {[38, 58, 46, 74, 62, stats.capacity, 54].map((value, index) => (
+                  <span className="block w-full rounded-t-xl bg-gradient-to-t from-[#006d37] to-[#2ecc71]" key={`${value}-${index}`} style={{ height: `${Math.max(value, 16)}%` }} />
+                ))}
+              </div>
+              <div className="absolute inset-x-6 bottom-4 flex justify-between text-xs font-black text-[#6c7b6d]">
+                {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day) => (
+                  <span key={day}>{day}</span>
+                ))}
+              </div>
             </div>
           </article>
         </div>
 
-        <aside className="flex flex-col gap-6 lg:col-span-4">
-          <article className="overflow-hidden rounded-2xl border border-[#bbcbbb]/30 bg-white shadow-[0_12px_34px_rgba(45,156,219,0.06)]" data-admin-reveal>
-            <div className="relative h-48 bg-[radial-gradient(circle_at_48%_46%,rgba(46,204,113,0.34),transparent_12%),linear-gradient(135deg,#e8f5ff_0%,#edf6ed_56%,#fbf9f8_100%)]">
-              <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(rgba(0,109,55,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(0,100,150,0.14)_1px,transparent_1px)] [background-size:28px_28px]" />
-              <div className="absolute left-1/2 top-1/2 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#006d37] text-white shadow-[0_0_0_12px_rgba(0,109,55,0.16)]">
-                <MapPin size={22} fill="currentColor" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1b1c1b]/34 to-transparent" />
-              <button className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/92 px-4 py-2 text-xs font-black text-[#006d37] backdrop-blur transition hover:bg-white" type="button">
-                <ExternalLink size={15} />
+        <aside className="grid gap-6 xl:content-start">
+          <article className="overflow-hidden rounded-3xl border border-[#d9e5da] bg-white shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
+            <div className="relative grid h-48 place-items-center bg-[linear-gradient(to_right,rgba(0,109,55,0.09)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,156,219,0.13)_1px,transparent_1px),linear-gradient(135deg,#e7f8ff,#f5f3f2)] bg-[size:34px_34px]">
+              <span className="grid size-20 place-items-center rounded-full bg-[#006d37]/18">
+                <span className="grid size-14 place-items-center rounded-full bg-[#006d37] text-white">
+                  <MapPin fill="currentColor" size={25} />
+                </span>
+              </span>
+              <a className="absolute bottom-5 left-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-black text-[#006d37] shadow-[0_10px_24px_rgba(21,29,24,0.12)]" href={mapsUrl(bin)} target="_blank" rel="noreferrer">
+                <ExternalLink size={16} />
                 Mở Maps
-              </button>
+              </a>
             </div>
-            <div className="p-4">
-              <p className="text-sm font-black text-[#1b1c1b]">Vị trí: 02 Công xã Paris, Phường Bến Nghé, Quận 1</p>
-              <p className="mt-1 text-xs font-semibold text-[#6c7b6d]">Gần cổng chính Bưu điện thành phố</p>
+            <div className="p-5">
+              <h2 className="text-lg font-black leading-6 text-[#1b1c1b]">Vị trí: {bin.location_name}</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#6c7b6d]">
+                {bin.lat.toFixed(5)}, {bin.lng.toFixed(5)}
+              </p>
             </div>
           </article>
 
-          <article className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-6 text-center shadow-[0_12px_34px_rgba(45,156,219,0.06)]" data-admin-reveal>
-            <h2 className="mb-4 text-left text-sm font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Mã QR của thùng</h2>
-            <div className="mx-auto mb-4 grid size-48 place-items-center rounded-xl border-4 border-[#006d37]/10 bg-[#fbf9f8] p-4">
-              <QrCode size={132} strokeWidth={1.8} className="text-[#006d37]" />
+          <article className="rounded-3xl border border-[#d9e5da] bg-white p-6 text-center shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
+            <h2 className="mb-5 text-left text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">Mã QR của thùng</h2>
+            <div className="mx-auto grid size-56 place-items-center rounded-2xl border-[6px] border-[#dfe8df] bg-[#fbf9f8] p-5">
+              <img alt={`QR ${bin.qr_code}`} className="size-full object-contain" src={qrImageUrl(bin.qr_code, 360)} />
             </div>
-            <p className="mb-6 text-xs font-semibold text-[#6c7b6d]">Mã định danh duy nhất cho việc quét tại trạm</p>
-            <button className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#006d37] text-sm font-black text-white transition hover:scale-[1.02] active:scale-[0.98]" type="button">
+            <p className="mx-auto mt-5 max-w-[240px] text-sm font-semibold leading-6 text-[#6c7b6d]">Mã định danh duy nhất cho việc quét tại trạm.</p>
+            <a className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#006d37] text-sm font-black text-white shadow-[0_14px_30px_rgba(0,109,55,0.18)] transition hover:-translate-y-0.5 active:translate-y-0" href={qrImageUrl(bin.qr_code, 720)} target="_blank" rel="noreferrer">
               <Download size={17} />
               Tải xuống QR
-            </button>
+            </a>
           </article>
         </aside>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-[#bbcbbb]/30 bg-white shadow-[0_12px_34px_rgba(45,156,219,0.06)]" data-admin-reveal>
-        <div className="flex items-center justify-between border-b border-[#bbcbbb]/25 p-6">
-          <h2 className="inline-flex items-center gap-3 text-2xl font-black tracking-[-0.03em] text-[#2c3e50]">
-            <History className="text-[#006d37]" size={24} />
+      <section className="overflow-hidden rounded-3xl border border-[#d9e5da] bg-white shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
+        <div className="flex items-center justify-between gap-4 border-b border-[#d9e5da] p-6">
+          <h2 className="inline-flex items-center gap-3 text-2xl font-black tracking-[-0.04em] text-[#2c3e50]">
+            <Recycle className="text-[#006d37]" size={26} />
             Lịch sử hoạt động gần đây
           </h2>
-          <button className="text-sm font-black text-[#006d37]" type="button">Xem tất cả</button>
+          <span className="hidden text-sm font-black text-[#006d37] sm:inline">Xem tất cả</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-[#fbf9f8]">
+          <table className="w-full min-w-[760px] border-collapse text-left">
+            <thead className="bg-[#f5f3f2]">
               <tr>
                 {["Thời gian", "Hành động", "Chi tiết", "Người dùng/NV", "Trạng thái"].map((heading) => (
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]" key={heading}>{heading}</th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-[0.14em] text-[#3d4a3e]" key={heading}>{heading}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#bbcbbb]/18">
-              {activityRows.map(([time, action, detail, actor, status, tone]) => (
-                <tr className="transition hover:bg-[#fbf9f8]" key={`${time}-${action}`}>
-                  <td className="px-6 py-4 text-sm font-semibold text-[#1b1c1b]">{time}</td>
-                  <td className="px-6 py-4"><ActivityPill label={action} tone={tone} /></td>
-                  <td className="px-6 py-4 text-sm font-semibold text-[#1b1c1b]">{detail}</td>
-                  <td className="px-6 py-4 text-sm font-black text-[#1b1c1b]">{actor}</td>
-                  <td className="px-6 py-4 text-sm font-black text-[#3d4a3e]">{status}</td>
+            <tbody className="divide-y divide-[#edf3ed]">
+              {recentEvents.map((event) => (
+                <tr className="transition hover:bg-[#2ecc71]/5" key={`${event.time}-${event.action}`}>
+                  <td className="px-6 py-5 text-sm font-black text-[#1b1c1b]">{event.time}</td>
+                  <td className="px-6 py-5"><ActivityPill tone={event.tone}>{event.action}</ActivityPill></td>
+                  <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{event.detail}</td>
+                  <td className="px-6 py-5 text-sm font-black text-[#1b1c1b]">{event.actor}</td>
+                  <td className="px-6 py-5 text-sm font-black text-[#3d4a3e]">{event.status}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </section>
-
-      <button className="fixed bottom-8 right-8 z-50 hidden size-16 place-items-center rounded-full bg-[#006d37] text-white shadow-[0_18px_40px_rgba(0,109,55,0.24)] transition hover:scale-110 active:scale-95 lg:grid" type="button" aria-label="Hỗ trợ kỹ thuật">
-        <Settings size={28} />
-      </button>
     </div>
   );
 }
 
-function ActionButton({ label, Icon, tone }: { label: string; Icon: typeof Edit; tone: "white" | "amber" | "red" }) {
-  const className = {
-    white: "border border-[#bbcbbb] bg-white text-[#1b1c1b] hover:bg-[#f5f3f2]",
-    amber: "bg-[#f39c12] text-white hover:scale-[1.03]",
-    red: "bg-[#ba1a1a] text-white hover:scale-[1.03]",
-  }[tone];
-
+function StatusBadge({ active }: { active: boolean }) {
   return (
-    <button className={`inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-black shadow-sm transition active:scale-[0.98] ${className}`} type="button">
-      <Icon size={17} />
-      {label}
-    </button>
+    <span className={`inline-flex min-h-8 items-center gap-2 rounded-full px-3.5 text-xs font-black ${active ? "bg-[#dcf8e6] text-[#006d37]" : "bg-[#e9e8e7] text-[#3d4a3e]"}`}>
+      <CheckCircle2 size={15} />
+      {active ? "Hoạt động tốt" : "Đã ẩn khỏi quét"}
+    </span>
   );
 }
 
-function MiniStatus({ label, value, Icon }: { label: string; value: string; Icon: typeof RadioTower }) {
+function InfoRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="rounded-xl bg-[#fbf9f8] p-3">
-      <p className="text-xs font-semibold text-[#6c7b6d]">{label}</p>
-      <div className="mt-1 flex items-center gap-2 text-sm font-black text-[#006d37]">
-        <Icon size={17} />
-        {value}
+    <div className="flex items-start justify-between gap-4 border-b border-[#d9e5da] py-4 last:border-b-0">
+      <span className="text-sm font-black text-[#6c7b6d]">{label}</span>
+      <span className={`max-w-[58%] text-right text-sm font-black text-[#1b1c1b] ${mono ? "font-mono text-[#006492]" : ""}`}>{value}</span>
+    </div>
+  );
+}
+
+function TelemetryTile({ Icon, label, value, note }: { Icon: typeof Signal; label: string; value: string; note?: string }) {
+  return (
+    <div className="rounded-2xl bg-[#fbf9f8] p-4">
+      <p className="text-xs font-black text-[#6c7b6d]">{label}</p>
+      <div className="mt-2 flex items-center gap-2 text-[#006d37]">
+        <Icon size={18} />
+        <span className="text-lg font-black leading-6">{value}</span>
       </div>
+      {note ? <p className="mt-1 text-sm font-black text-[#006d37]">{note}</p> : null}
     </div>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4 border-b border-[#bbcbbb]/25 py-2">
-      <span className="text-sm font-semibold text-[#6c7b6d]">{label}</span>
-      <span className="text-right text-sm font-black text-[#1b1c1b]">{value}</span>
-    </div>
-  );
-}
+function ActivityPill({ children, tone }: { children: React.ReactNode; tone: string }) {
+  const toneClass = {
+    blue: "bg-[#d9eefb] text-[#00557d]",
+    green: "bg-[#dcf8e6] text-[#006d37]",
+    neutral: "bg-[#e9e8e7] text-[#3d4a3e]",
+  }[tone] ?? "bg-[#e9e8e7] text-[#3d4a3e]";
 
-function ActivityPill({ label, tone }: { label: string; tone: string }) {
-  const className = {
-    green: "bg-[#2ecc71]/12 text-[#1e8449]",
-    blue: "bg-[#2d9cdb]/12 text-[#006492]",
-    amber: "bg-[#f39c12]/12 text-[#735c00]",
-    neutral: "bg-[#e4e2e1] text-[#3d4a3e]",
-  }[tone];
-
-  return <span className={`rounded px-2 py-1 text-xs font-black ${className}`}>{label}</span>;
+  return <span className={`rounded-lg px-3 py-1 text-xs font-black ${toneClass}`}>{children}</span>;
 }

@@ -77,7 +77,7 @@ describe("/api/admin/rewards", () => {
   it("lists rewards for admins", async () => {
     const { GET } = await import("./route");
 
-    const response = await GET(new Request("https://eco.test/api/admin/rewards"));
+    const response = await GET();
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({

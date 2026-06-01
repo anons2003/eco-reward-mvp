@@ -71,6 +71,8 @@ export type Database = {
           points: number;
           reason: string;
           risk_flags: string[];
+          reviewed_at: string | null;
+          reviewed_by: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["submissions"]["Row"]>;

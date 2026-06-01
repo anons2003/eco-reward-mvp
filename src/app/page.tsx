@@ -328,7 +328,7 @@ function DesktopHome() {
 
 function MobileHome() {
   return (
-    <div className="block bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px] text-[#071b12] md:hidden">
+    <div className="block overflow-x-hidden bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px] text-[#071b12] md:hidden">
       <header className="landing-nav fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#d9e5da] bg-white/82 px-5 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <details className="group relative">
@@ -357,26 +357,27 @@ function MobileHome() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden px-5 pb-20 pt-28">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_0%,rgba(143,248,182,0.35),transparent_38%)] opacity-90" />
-        <div className="landing-mobile-hero flex flex-col items-center gap-6 text-center">
-          <h1 className="text-[48px] font-black leading-[48px] tracking-[-0.055em] text-[#071b12]">
-            Phân loại đúng. Nhận điểm xanh.
+      <section className="relative overflow-hidden px-4 pb-16 pt-24">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_0%,rgba(143,248,182,0.42),transparent_40%)] opacity-90" />
+        <div className="landing-mobile-hero flex flex-col items-center gap-5 text-center">
+          <h1 className="max-w-[360px] text-[44px] font-black leading-[44px] tracking-[-0.045em] text-[#071b12] min-[390px]:text-[50px] min-[390px]:leading-[50px]">
+            Phân loại đúng.
+            <span className="block text-[#007a3d]">Nhận điểm xanh.</span>
           </h1>
-          <p className="text-base font-semibold leading-7 text-[#3e4941]">
+          <p className="max-w-[330px] text-base font-semibold leading-7 text-[#3e4941]">
             QR, ảnh chụp và AI giúp mỗi lượt gửi trở thành điểm thưởng có thể kiểm chứng.
           </p>
-          <div className="w-full max-w-sm overflow-hidden rounded-[28px] border border-[#103d28] bg-[#071b12] p-3 shadow-[0_22px_60px_rgba(7,27,18,0.22)]">
-            <div className="rounded-[22px] bg-white/[0.06] p-4 text-left">
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#8ff8b6]">Phiên gửi sẵn sàng</p>
-              <div className="mt-4 grid gap-3">
-                {["Quét QR", "Chụp ảnh", "Cộng điểm"].map((item, index) => (
-                  <div className="flex items-center justify-between rounded-2xl bg-white/[0.08] p-3" key={item}>
-                    <span className="font-black text-white">{item}</span>
-                    <span className="grid size-7 place-items-center rounded-full bg-[#8ff8b6] text-xs font-black text-[#071b12]">{index + 1}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="w-full max-w-[390px] rounded-[32px] border border-[#0d3b25]/18 bg-white/58 p-2 shadow-[0_24px_70px_rgba(7,27,18,0.18)] backdrop-blur">
+            <div className="overflow-hidden rounded-[26px] border border-[#103d28]/30 bg-[#071b12]">
+              <Image
+                alt="Giao diện vận hành SeaTech hiển thị ảnh phân loại rác và trạng thái điểm thưởng"
+                className="h-auto w-full"
+                height={1792}
+                priority
+                sizes="100vw"
+                src="/seatech/hero-board.jpg"
+                width={2560}
+              />
             </div>
           </div>
           <div className="mt-4 flex w-full flex-col gap-3">
