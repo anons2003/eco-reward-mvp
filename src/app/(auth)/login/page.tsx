@@ -37,7 +37,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 type="email"
               />
             </span>
-            <FieldHelper id="email-helper">Dùng email đã đăng ký với EcoReward.</FieldHelper>
+            <FieldHelper id="email-helper">Dùng email đã đăng ký với SeaTech.</FieldHelper>
           </label>
 
           <label className="block text-sm font-black text-[#151d18]" htmlFor="password">

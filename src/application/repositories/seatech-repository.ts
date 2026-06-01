@@ -14,7 +14,7 @@ export type DashboardStats = {
   pointsIssued: number;
 };
 
-export type EcoRewardRepository = {
+export type SeaTechRepository = {
   getDashboardStats(): DashboardStats;
   getDemoUser(role?: "user" | "admin"): Profile;
   getProfile(idValue: string): Profile;

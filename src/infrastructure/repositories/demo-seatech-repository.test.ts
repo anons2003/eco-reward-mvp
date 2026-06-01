@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createScanSession, createSubmission, getSubmission, reviewSubmission } from "./demo-eco-reward-repository";
+import { createScanSession, createSubmission, getSubmission, reviewSubmission } from "./demo-seatech-repository";
 
-describe("demoEcoRewardRepository integration flow", () => {
+describe("demoSeaTechRepository integration flow", () => {
   it("creates a scan session from a valid QR and creates an approved submission", async () => {
     const scan = createScanSession({ qrCode: "ECO-BIN-A1", lat: 10.7769, lng: 106.7009 });
 

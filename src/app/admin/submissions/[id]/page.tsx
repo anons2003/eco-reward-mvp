@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import { ReviewActions } from "@/components/admin/review-actions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 import { PageHeader } from "@/components/shared/eco-ui";
 
 export default async function AdminSubmissionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const submission = ecoRewardService.getSubmission(id);
+  const submission = seaTechService.getSubmission(id);
   if (!submission) notFound();
-  const bin = ecoRewardService.listBins().find((row) => row.id === submission.binId);
+  const bin = seaTechService.listBins().find((row) => row.id === submission.binId);
 
   return (
     <div className="space-y-6">

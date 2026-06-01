@@ -66,7 +66,7 @@ export default async function WalletPage() {
         <div className="relative overflow-hidden rounded-[34px] bg-[linear-gradient(135deg,#007a3d_0%,#008f4a_58%,#007a3d_100%)] p-6 text-white shadow-[0_24px_70px_rgba(0,106,61,0.22)] md:min-h-[300px] md:p-10">
           <div className="relative z-10 flex h-full flex-col justify-between gap-8">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.18em] text-white/78">Số dư Eco-Points</p>
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-white/78">Số dư điểm SeaTech</p>
               <h2 className="mt-3 text-6xl font-black tracking-[-0.06em] md:text-7xl">
                 {points.toLocaleString("vi-VN")} <span className="text-2xl font-bold tracking-normal text-white/78">Pts</span>
               </h2>
@@ -209,7 +209,7 @@ export default async function WalletPage() {
 
       <section className="grid gap-5 lg:grid-cols-2">
         <PromoCard title="X2 Điểm Nhựa" body="Nhận gấp đôi điểm khi phân loại chai nhựa trong tuần này." href="/scan" cta="Tham gia ngay" icon={Recycle} tone="green" />
-        <PromoCard title={nextReward?.title ?? "Đổi túi vải Canvas Eco"} body={nextReward?.description ?? "Sử dụng EcoPoint để nhận phần thưởng xanh từ đối tác."} href={nextReward ? `/rewards/${nextReward.id}` : "/rewards"} cta="Đổi ngay" icon={ShoppingBag} tone="blue" />
+        <PromoCard title={nextReward?.title ?? "Đổi túi vải Canvas xanh"} body={nextReward?.description ?? "Sử dụng điểm SeaTech để nhận phần thưởng xanh từ đối tác."} href={nextReward ? `/rewards/${nextReward.id}` : "/rewards"} cta="Đổi ngay" icon={ShoppingBag} tone="blue" />
       </section>
     </div>
   );

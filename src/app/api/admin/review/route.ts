@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { submissionId?: string; decision?: "approved" | "rejected"; reason?: string };
@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "submissionId, decision và reason là bắt buộc." }, { status: 400 });
   }
 
-  const result = ecoRewardService.reviewSubmission({
+  const result = seaTechService.reviewSubmission({
     submissionId: body.submissionId,
     decision: body.decision,
     reason: body.reason,

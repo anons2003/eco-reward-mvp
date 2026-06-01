@@ -2,12 +2,12 @@ import { env } from "@/infrastructure/config/env";
 import type { AuditLog, Bin, PointTransaction, Profile, RewardItem, ScanSession, Submission } from "@/core/entities/types";
 import { analyzeImage } from "@/application/ai/analyze-image";
 import { calculateSubmissionDecision } from "@/core/fraud/risk-score";
-import type { EcoRewardRepository } from "@/application/repositories/eco-reward-repository";
+import type { SeaTechRepository } from "@/application/repositories/seatech-repository";
 
 const now = () => new Date().toISOString();
 const id = (prefix: string) => `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 
-type DemoEcoRewardStore = {
+type DemoSeaTechStore = {
   profiles: Profile[];
   bins: Bin[];
   scanSessions: ScanSession[];
@@ -18,7 +18,7 @@ type DemoEcoRewardStore = {
 };
 
 declare global {
-  var __ecoRewardDemoStore: DemoEcoRewardStore | undefined;
+  var __seaTechDemoStore: DemoSeaTechStore | undefined;
 }
 
 const initialProfiles: Profile[] = [
@@ -33,7 +33,7 @@ const initialProfiles: Profile[] = [
   {
     id: "demo-admin",
     email: "admin@example.com",
-    fullName: "Admin Eco",
+    fullName: "Admin SeaTech",
     role: "admin",
     points: 0,
     trustScore: 100,
@@ -131,8 +131,8 @@ const initialRewardItems: RewardItem[] = [
 const initialAuditLogs: AuditLog[] = [];
 
 const store =
-  globalThis.__ecoRewardDemoStore ??
-  (globalThis.__ecoRewardDemoStore = {
+  globalThis.__seaTechDemoStore ??
+  (globalThis.__seaTechDemoStore = {
     profiles: initialProfiles,
     bins: initialBins,
     scanSessions: initialScanSessions,
@@ -301,7 +301,7 @@ export function listAuditLogs() {
   return [...auditLogs];
 }
 
-export const demoEcoRewardRepository = {
+export const demoSeaTechRepository = {
   getDashboardStats,
   getDemoUser,
   getProfile,
@@ -315,4 +315,4 @@ export const demoEcoRewardRepository = {
   createScanSession,
   createSubmission,
   reviewSubmission,
-} satisfies EcoRewardRepository;
+} satisfies SeaTechRepository;

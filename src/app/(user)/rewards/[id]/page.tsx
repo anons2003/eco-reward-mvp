@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Leaf, PackageCheck, Share2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 import { rewardCatalog } from "@/components/user/rewards-catalog";
 
 export default async function RewardDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -9,7 +9,7 @@ export default async function RewardDetailPage({ params }: { params: Promise<{ i
   const item = rewardCatalog.find((reward) => reward.id === id);
   if (!item) notFound();
 
-  const user = ecoRewardService.getDemoUser("user");
+  const user = seaTechService.getDemoUser("user");
   const afterRedeem = Math.max(user.points - item.points, 0);
   const canRedeem = user.points >= item.points;
 
@@ -37,7 +37,7 @@ export default async function RewardDetailPage({ params }: { params: Promise<{ i
           <div className="relative min-h-[320px] overflow-hidden rounded-[2rem] bg-[#d8f5df] shadow-[0_18px_42px_rgba(21,29,24,0.12)] md:min-h-[520px]">
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${item.image})` }} />
             <div className="absolute left-4 top-4 rounded-full bg-[#09864f] px-3 py-1.5 text-[11px] font-black uppercase text-white shadow-sm">
-              {item.category === "Quà tặng" ? "Eco-choice" : item.category}
+              {item.category === "Quà tặng" ? "SeaTech choice" : item.category}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -57,7 +57,7 @@ export default async function RewardDetailPage({ params }: { params: Promise<{ i
         <aside className="space-y-5">
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full bg-[#d8f5df] px-3 py-1 text-[11px] font-black uppercase text-[#006a3d]">Cực hot</span>
-            <span className="rounded-full bg-[#e3f2ff] px-3 py-1 text-[11px] font-black uppercase text-[#006496]">Eco-shop exclusive</span>
+            <span className="rounded-full bg-[#e3f2ff] px-3 py-1 text-[11px] font-black uppercase text-[#006496]">SeaTech shop exclusive</span>
             <span className="rounded-full bg-[#fff3c4] px-3 py-1 text-[11px] font-black uppercase text-[#755b00]">Còn lại: {item.stock}</span>
           </div>
 

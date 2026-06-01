@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Coins, Cpu, Leaf, MapPin, Recycle, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 import type { SubmissionStatus } from "@/core/entities/types";
 
 function statusCopy(status: SubmissionStatus) {
@@ -14,7 +14,7 @@ function statusCopy(status: SubmissionStatus) {
 
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const submission = ecoRewardService.getSubmission(id);
+  const submission = seaTechService.getSubmission(id);
   if (!submission) notFound();
 
   const confidence = Math.round(submission.aiResult.confidence * 100);
@@ -55,7 +55,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
                   </div>
                   <div className="text-right">
                     <p className="text-3xl font-black tracking-[-0.04em] text-[#007a3d]">+{submission.points}</p>
-                    <p className="text-xs font-black text-[#007a3d]">EcoPoint</p>
+                    <p className="text-xs font-black text-[#007a3d]">Điểm SeaTech</p>
                   </div>
                 </div>
               </div>
@@ -67,7 +67,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             <div className="mt-6 grid gap-6">
               <TimelineItem title="Rác đã được bỏ vào thùng" body="Thùng thông minh đã ghi nhận phiên QR và vật phẩm." active />
               <TimelineItem title="AI phân tích & phê duyệt" body={`Xác nhận: ${wasteType} • ${confidence}% độ tin cậy.`} active={submission.status !== "rejected"} />
-              <TimelineItem title="Điểm thưởng đã cộng" body={`${submission.points} điểm được thêm vào ví EcoReward.`} active={submission.status === "approved"} last />
+              <TimelineItem title="Điểm thưởng đã cộng" body={`${submission.points} điểm được thêm vào ví SeaTech.`} active={submission.status === "approved"} last />
             </div>
           </section>
         </div>
@@ -101,7 +101,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[#6e7a70]">Vị trí & Thiết bị</h2>
             <div className="mt-4 grid gap-3">
               <InfoRow icon={Recycle} title="Bin #BIN-001" body="Model: SmartRecycle V2" />
-              <InfoRow icon={MapPin} title="Sảnh A - Tòa nhà EcoCenter" body="Trong bán kính GPS hợp lệ." />
+              <InfoRow icon={MapPin} title="Sảnh A - Tòa nhà SeaTech Center" body="Trong bán kính GPS hợp lệ." />
             </div>
           </section>
 

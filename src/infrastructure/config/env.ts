@@ -1,5 +1,5 @@
 export const env = {
-  appName: process.env.APP_NAME ?? "Eco-Reward",
+  appName: process.env.APP_NAME ?? "SeaTech",
   appUrl: process.env.APP_URL ?? "http://localhost:3000",
   qrSessionTtlSeconds: Number(process.env.QR_SESSION_TTL_SECONDS ?? "120"),
   maxSubmissionsPerUserPerDay: Number(process.env.MAX_SUBMISSIONS_PER_USER_PER_DAY ?? "10"),

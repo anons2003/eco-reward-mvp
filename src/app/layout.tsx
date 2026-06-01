@@ -5,7 +5,7 @@ import { GlobalLoadingProvider } from "@/components/shared/loading-ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Eco-Reward",
+  title: "SeaTech",
   description: "Tích điểm xanh khi phân loại rác đúng cách.",
 };
 

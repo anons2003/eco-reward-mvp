@@ -22,7 +22,7 @@ export function TopBar({ admin = false }: { admin?: boolean }) {
           <span className="grid size-10 place-items-center rounded-2xl border border-[#bdcabe] bg-[#d8f5df] text-[#007a3d]">
             <Leaf size={22} />
           </span>
-          <span className="hidden sm:inline">Eco-Reward</span>
+          <span className="hidden sm:inline">SeaTech</span>
         </Link>
         <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm font-bold text-[#5d6a60]">
           {links.map(([href, label, Icon]) => (

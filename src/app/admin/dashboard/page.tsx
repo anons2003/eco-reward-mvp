@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, BarChart3, CheckCircle2, Clock3, Coins, type LucideIcon, RadioTower, ShieldCheck, XCircle } from "lucide-react";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/eco-ui";
 
 export default function AdminDashboardPage() {
-  const stats = ecoRewardService.getDashboardStats();
-  const latest = ecoRewardService.listSubmissions().slice(0, 5);
+  const stats = seaTechService.getDashboardStats();
+  const latest = seaTechService.listSubmissions().slice(0, 5);
   const approvalRate = Math.round((stats.approved / Math.max(stats.totalSubmissions, 1)) * 100);
   const cards: Array<[string, number | string, LucideIcon, string]> = [
     ["Tổng lượt gửi", stats.totalSubmissions, BarChart3, "Tất cả phiên đã tạo"],

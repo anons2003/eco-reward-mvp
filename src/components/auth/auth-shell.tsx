@@ -16,7 +16,7 @@ const highlights = [
   { title: "Tích điểm", body: "Theo dõi trong ví xanh", Icon: Wallet },
 ];
 
-export function AuthShell({ eyebrow, title, body, children, sideTitle = "Hành động xanh, điểm thưởng thật.", sideBody = "Eco-Reward giúp ghi nhận từng lượt phân loại rác bằng QR, ảnh chụp và điểm xanh trong một trải nghiệm gọn gàng." }: AuthShellProps) {
+export function AuthShell({ eyebrow, title, body, children, sideTitle = "Hành động xanh, điểm thưởng thật.", sideBody = "SeaTech giúp ghi nhận từng lượt phân loại rác bằng QR, ảnh chụp và điểm xanh trong một trải nghiệm gọn gàng." }: AuthShellProps) {
   return (
     <main className="min-h-screen bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] px-4 py-5 text-[#151d18] [background-size:24px_24px] sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-40px)] w-full max-w-6xl items-center">
@@ -29,7 +29,7 @@ export function AuthShell({ eyebrow, title, body, children, sideTitle = "Hành �
                   <span className="grid size-12 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d] ring-1 ring-[#bdcabe]/50">
                     <Leaf size={26} />
                   </span>
-                  EcoReward
+                  SeaTech
                 </Link>
                 <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#3e4941]">Tích điểm xanh</span>
               </div>
@@ -62,7 +62,7 @@ export function AuthShell({ eyebrow, title, body, children, sideTitle = "Hành �
                   <span className="grid size-12 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d] ring-1 ring-[#bdcabe]/50">
                     <Leaf size={26} />
                   </span>
-                  <span className="text-xl font-black tracking-[-0.03em] text-[#007a3d]">EcoReward</span>
+                  <span className="text-xl font-black tracking-[-0.03em] text-[#007a3d]">SeaTech</span>
                 </div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#007a3d]">{eyebrow}</p>
                 <h2 className="mt-3 text-[40px] font-black leading-[46px] tracking-[-0.05em] text-[#151d18] sm:text-5xl sm:leading-[54px]">{title}</h2>

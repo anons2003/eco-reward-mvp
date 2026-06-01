@@ -19,13 +19,13 @@ export const rewardCatalog: RewardCatalogItem[] = [
     stock: 38,
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuBXH3Y0t7aHLj_gNDuh4gPp78auQVD-Z7bNOOzLwjGU4XJE7VQGAg-I8tbnzUTtEzErQS1lqujRDIq0_KztgUIaCr7y5lkInp4yVcbGgZ644N6gMeL4W4ji8hVVmUwGwX5NP7rfHwU4uiiGKAFVx_VoHT07_bqYieNERohTk1FOUwwj6DaLHjQVN9o23F8eWw3Jzj_JSMCDaU1-ErieT9D1tMDJVQYBEm9qUBrg2k749tgtx84AjjFYBEx_6Y51aDeAhtRUkLFf1McG",
-    description: "Voucher đồ uống áp dụng tại cửa hàng đối tác trong chương trình Eco-Reward.",
+    description: "Voucher đồ uống áp dụng tại cửa hàng đối tác trong chương trình SeaTech.",
     impact: "Khuyến khích thói quen phân loại rác mỗi ngày.",
     badge: "Voucher",
   },
   {
-    id: "eco-tote",
-    title: "Túi vải Eco-friendly",
+    id: "seatech-tote",
+    title: "Túi vải thân thiện môi trường",
     category: "Quà tặng",
     points: 200,
     stock: 45,
@@ -55,7 +55,7 @@ export const rewardCatalog: RewardCatalogItem[] = [
     stock: 64,
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuD6vmcYSZI-OzVx_TP3wvnnr2pRKy2xWlZCbkXhxWhKiT_r-f8_K774I5M1BgfLpRV8Qdp-3tPSpO2Bwb2GIm8zlc9lApjQwCtQhrA6Ejict3DtEfVNl5455k0ZoeS8EgKNwlTEx3aUCUbJE_mS5hJtuI93TpXCsntGC1Z3bM5ZYe3nAfQHoPQZQ4T363jgvejmsO_WU4NDzo8TrZupTIfW0t-hq9L8KMALY6c-ybY6kfqVkc6VDWEScBAqMgbImTDnFjTkIcVN8TLv",
-    description: "Voucher tiện ích dùng tại chuỗi cửa hàng đối tác trong hệ sinh thái Eco-Reward.",
+    description: "Voucher tiện ích dùng tại chuỗi cửa hàng đối tác trong hệ sinh thái SeaTech.",
     impact: "Đổi ưu đãi nhỏ từ thói quen xanh hằng ngày.",
     badge: "Voucher",
   },

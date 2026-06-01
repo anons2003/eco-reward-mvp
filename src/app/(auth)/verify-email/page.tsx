@@ -23,7 +23,7 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
     <AuthShell
       eyebrow="Xác thực email"
       title="Kiểm tra hộp thư"
-      body="Bạn cần xác thực email trước khi đăng nhập và sử dụng ví điểm EcoReward."
+      body="Bạn cần xác thực email trước khi đăng nhập và sử dụng ví điểm SeaTech."
       sideTitle="Một bước cuối để bảo vệ tài khoản."
       sideBody="Liên kết xác thực giúp đảm bảo điểm thưởng, lịch sử gửi rác và hồ sơ cá nhân thuộc đúng người dùng."
     >

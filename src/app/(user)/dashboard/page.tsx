@@ -4,6 +4,7 @@ import {
   Award,
   Coins,
   Gift,
+  History as HistoryIcon,
   Leaf,
   MapPin,
   QrCode,
@@ -81,6 +82,19 @@ export default async function DashboardPage() {
         <FeaturedRewardCard className="hidden xl:block" />
       </section>
 
+      <nav aria-label="Lối tắt dashboard" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:hidden">
+        {[
+          { href: "#recent", label: "Gần đây", Icon: HistoryIcon },
+          { href: "#impact", label: "Tác động", Icon: Award },
+          { href: "#rewards-fit", label: "Ưu đãi", Icon: Gift },
+        ].map(({ href, label, Icon }) => (
+          <a className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-[#d9e5da] bg-white/88 px-4 text-sm font-black text-[#071b12] shadow-[0_8px_22px_rgba(21,29,24,0.05)]" href={href} key={href}>
+            <Icon className="text-[#007a3d]" size={16} />
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <section>
         <h2 className="mb-3 px-1 text-xl font-black tracking-[-0.04em] text-[#151d18] md:hidden">Tác động của bạn</h2>
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -94,7 +108,7 @@ export default async function DashboardPage() {
       <FeaturedRewardCard className="xl:hidden" />
 
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+        <div className="order-2 rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)] lg:order-1">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Xu hướng tích cực</h2>
@@ -116,7 +130,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+        <div className="order-1 rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)] lg:order-2" id="recent">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Gần đây</h2>
             <Link className="text-xs font-black text-[#007a3d]" href="/history">
@@ -172,7 +186,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
+        <div className="rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]" id="rewards-fit">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-black tracking-[-0.03em] text-[#151d18]">Ưu đãi phù hợp</h2>
             <Link className="inline-flex items-center gap-1 text-sm font-black text-[#007a3d]" href="/rewards">

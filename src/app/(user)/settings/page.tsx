@@ -30,8 +30,11 @@ function SettingRow({ Icon, title, body, enabled = true }: { Icon: typeof Bell; 
 }
 
 export default async function SettingsPage() {
-  const { avatarUrl, displayName, user } = await getUserShell();
+  const { avatarUrl, displayName, profile, user } = await getUserShell();
   const email = user.email ?? "minh.nguyen@email.com";
+  const phone = profile?.phone ?? "";
+  const location = profile?.location ?? "";
+  const bio = profile?.bio ?? "";
 
   return (
     <>
@@ -44,10 +47,10 @@ export default async function SettingsPage() {
           <Link className="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-black text-[#151d18] ring-1 ring-[#bdcabe] transition hover:bg-[#edf6ed]" href="/profile">
             Hủy bỏ
           </Link>
-          <button className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d]" type="button">
+          <PendingSubmitButton className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d] disabled:cursor-wait disabled:opacity-80" form="profile-settings-form" pendingLabel="Đang lưu..." type="submit">
             <Save size={17} />
             Lưu thay đổi
-          </button>
+          </PendingSubmitButton>
         </div>
       </section>
 
@@ -60,7 +63,7 @@ export default async function SettingsPage() {
         </aside>
 
         <div className="space-y-6">
-          <section className="rounded-[2rem] border border-[#bdcabe]/60 bg-white p-5 shadow-[0_2px_8px_rgba(21,29,24,0.05)] md:p-6">
+          <form action="/api/profile" className="rounded-[2rem] border border-[#bdcabe]/60 bg-white p-5 shadow-[0_2px_8px_rgba(21,29,24,0.05)] md:p-6" id="profile-settings-form" method="post">
             <div className="mb-5 flex items-center gap-2">
               <UserRound className="text-[#007a3d]" size={19} />
               <h2 className="text-lg font-black text-[#151d18]">Thiết lập tài khoản</h2>
@@ -68,18 +71,32 @@ export default async function SettingsPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941]">
                 Họ và tên
-                <input className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={displayName} />
+                <input autoComplete="name" className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={displayName} maxLength={120} name="fullName" required />
               </label>
               <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941]">
                 Số điện thoại
-                <input className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue="090 123 4567" />
+                <input autoComplete="tel" className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={phone} maxLength={32} name="phone" placeholder="Chưa cập nhật" />
               </label>
               <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941] md:col-span-2">
                 Email
-                <input className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={email} />
+                <input className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#6e7a70] outline-none" defaultValue={email} readOnly />
+              </label>
+              <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941] md:col-span-2">
+                Khu vực / nhóm
+                <input autoComplete="address-level2" className="h-11 rounded-full border border-[#bdcabe] bg-[#edf6ed] px-4 text-sm font-semibold normal-case tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={location} maxLength={140} name="location" placeholder="Ví dụ: Đà Nẵng • Biệt đội xanh" />
+              </label>
+              <label className="grid gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#3e4941] md:col-span-2">
+                Giới thiệu ngắn
+                <textarea className="min-h-24 resize-none rounded-[24px] border border-[#bdcabe] bg-[#edf6ed] px-4 py-3 text-sm font-semibold normal-case leading-6 tracking-normal text-[#151d18] outline-none focus:border-[#007a3d]" defaultValue={bio} maxLength={220} name="bio" placeholder="Chia sẻ mục tiêu xanh của bạn" />
               </label>
             </div>
-          </section>
+            <div className="mt-5 hidden md:block">
+              <PendingSubmitButton className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white transition hover:bg-[#006a3d] disabled:cursor-wait disabled:opacity-80" pendingLabel="Đang lưu..." type="submit">
+                <Save size={17} />
+                Lưu hồ sơ
+              </PendingSubmitButton>
+            </div>
+          </form>
 
           <section className="rounded-[2rem] border border-[#bdcabe]/60 bg-white p-5 shadow-[0_2px_8px_rgba(21,29,24,0.05)] md:p-6">
             <div className="mb-5 flex items-center gap-2">
@@ -134,7 +151,7 @@ export default async function SettingsPage() {
               <h2 className="text-lg font-black text-[#151d18]">Thông báo</h2>
             </div>
             <SettingRow Icon={Bell} title="Thông báo đẩy" body="Nhận cập nhật tức thời về hoạt động xanh và điểm thưởng." />
-            <SettingRow Icon={Mail} title="Báo cáo Email hàng tuần" body="Tóm tắt hoạt động EcoReward và thành tích của bạn." enabled={false} />
+            <SettingRow Icon={Mail} title="Báo cáo Email hàng tuần" body="Tóm tắt hoạt động SeaTech và thành tích của bạn." enabled={false} />
           </section>
 
           <section className="rounded-[2rem] border border-[#bdcabe]/60 bg-white px-5 shadow-[0_2px_8px_rgba(21,29,24,0.05)] md:px-6">
@@ -164,9 +181,9 @@ export default async function SettingsPage() {
         <Link className="inline-flex min-h-12 items-center justify-center rounded-full bg-white text-sm font-black text-[#151d18] ring-1 ring-[#bdcabe]" href="/profile">
           Hủy bỏ
         </Link>
-        <button className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#007a3d] text-sm font-black text-white" type="button">
+        <PendingSubmitButton className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#007a3d] text-sm font-black text-white disabled:cursor-wait disabled:opacity-80" form="profile-settings-form" pendingLabel="Đang lưu..." type="submit">
           Lưu thay đổi
-        </button>
+        </PendingSubmitButton>
       </section>
 
       <form action="/api/auth/logout" method="post" className="md:hidden">

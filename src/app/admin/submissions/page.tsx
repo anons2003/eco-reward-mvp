@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Filter, Search, SlidersHorizontal } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PageHeader } from "@/components/shared/eco-ui";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 
 export default async function AdminSubmissionsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const params = await searchParams;
-  const submissions = ecoRewardService.listSubmissions(params.status);
-  const pendingCount = ecoRewardService.listSubmissions("pending_review").length;
+  const submissions = seaTechService.listSubmissions(params.status);
+  const pendingCount = seaTechService.listSubmissions("pending_review").length;
 
   return (
     <div className="space-y-6">

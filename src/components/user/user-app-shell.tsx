@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Gift, HelpCircle, History, Home, Leaf, LogOut, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, ChevronDown, Gift, HelpCircle, History, Home, Leaf, LogOut, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
@@ -62,8 +62,8 @@ export function UserAppShell({
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-[#d9e5da] bg-[#edf6ed] px-3 py-4 lg:flex">
           <div className="px-3 py-2">
             <Link className="block" href="/dashboard">
-              <h1 className="text-2xl font-black tracking-[-0.04em] text-[#007a3d]">EcoReward</h1>
-              <p className="mt-1 text-xs font-semibold text-[#6e7a70]">Vibrant Eco-Tech</p>
+              <h1 className="text-2xl font-black tracking-[-0.04em] text-[#007a3d]">SeaTech</h1>
+              <p className="mt-1 text-xs font-semibold text-[#6e7a70]">Vibrant SeaTech</p>
             </Link>
           </div>
 
@@ -119,13 +119,46 @@ export function UserAppShell({
 
           <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-[#f3fcf3]/95 px-4 backdrop-blur md:hidden">
             <Link className="text-sm font-black tracking-[-0.03em] text-[#007a3d]" href="/dashboard">
-              EcoReward
+              SeaTech
             </Link>
             <div className="flex items-center gap-2">
               <button aria-label="Thông báo" className="grid size-9 place-items-center rounded-full transition hover:bg-[#e7f0e7]" type="button">
                 <Bell className="text-[#3e4941]" size={19} />
               </button>
-              <UserAvatar className="ring-0" name={firstName} size="sm" src={avatarUrl} />
+              <details className="group relative">
+                <summary className="flex cursor-pointer list-none items-center gap-1 rounded-full py-1 pl-1 pr-2 outline-none transition hover:bg-[#e7f0e7] focus-visible:ring-2 focus-visible:ring-[#007a3d]/25 [&::-webkit-details-marker]:hidden">
+                  <UserAvatar className="ring-white" name={firstName} size="sm" src={avatarUrl} />
+                  <ChevronDown className="text-[#3e4941] transition group-open:rotate-180" size={14} />
+                  <span className="sr-only">Mở menu tài khoản</span>
+                </summary>
+                <div className="absolute right-0 top-12 w-72 overflow-hidden rounded-[26px] border border-[#d9e5da] bg-white shadow-[0_22px_60px_rgba(7,27,18,0.18)]">
+                  <div className="bg-[#f3fcf3] p-4">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar className="ring-white" name={displayName} size="md" src={avatarUrl} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-[#071b12]">{displayName}</p>
+                        <p className="mt-1 text-xs font-bold text-[#5d6a60]">{points.toLocaleString("vi-VN")} điểm xanh</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-1 p-2">
+                    <Link className="flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-black text-[#071b12] transition hover:bg-[#edf6ed]" href="/profile">
+                      <User size={17} />
+                      Hồ sơ cá nhân
+                    </Link>
+                    <Link className="flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-black text-[#071b12] transition hover:bg-[#edf6ed]" href="/settings">
+                      <Settings size={17} />
+                      Cài đặt tài khoản
+                    </Link>
+                    <form action="/api/auth/logout" method="post">
+                      <button className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-3 text-sm font-black text-[#ba1a1a] transition hover:bg-[#ffdad6]/45" type="submit">
+                        <LogOut size={17} />
+                        Đăng xuất
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </details>
             </div>
           </header>
 

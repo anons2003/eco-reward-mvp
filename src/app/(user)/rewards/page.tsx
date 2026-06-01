@@ -9,7 +9,7 @@ import {
   Ticket,
   WalletCards,
 } from "lucide-react";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 import { rewardCatalog, type RewardCatalogItem } from "@/components/user/rewards-catalog";
 
 const categories = ["Tất cả", "Voucher", "Quà tặng", "Đóng góp", "Dịch vụ"];
@@ -72,7 +72,7 @@ function RewardCard({ item, points }: { item: RewardCatalogItem; points: number 
 }
 
 export default function RewardsPage() {
-  const user = ecoRewardService.getDemoUser("user");
+  const user = seaTechService.getDemoUser("user");
   const affordableCount = rewardCatalog.filter((reward) => user.points >= reward.points).length;
 
   return (
@@ -82,7 +82,7 @@ export default function RewardsPage() {
           <p className="text-sm font-black uppercase tracking-[0.14em] text-[#007a3d]">Đổi thưởng</p>
           <h1 className="mt-2 text-4xl font-black tracking-[-0.04em] text-[#151d18] md:text-5xl">Phần thưởng xanh</h1>
           <p className="mt-3 max-w-2xl text-base font-semibold leading-7 text-[#4c5a50]">
-            Sử dụng EcoPoint để nhận ưu đãi từ đối tác, đổi quà thân thiện môi trường hoặc đóng góp cho các chiến dịch xanh.
+            Sử dụng điểm SeaTech để nhận ưu đãi từ đối tác, đổi quà thân thiện môi trường hoặc đóng góp cho các chiến dịch xanh.
           </p>
         </div>
       </section>
@@ -93,7 +93,7 @@ export default function RewardsPage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black uppercase text-white">
                 <WalletCards size={16} />
-                Ví điểm Eco
+                Ví điểm SeaTech
               </div>
               <p className="mt-5 text-5xl font-black tracking-[-0.05em] md:mt-6 md:text-6xl">{user.points.toLocaleString("vi-VN")} pts</p>
               <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-white/85">

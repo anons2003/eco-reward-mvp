@@ -13,7 +13,6 @@ import {
   Menu,
   MessageCircle,
   QrCode,
-  Recycle,
   Star,
   TreePine,
   Trophy,
@@ -55,21 +54,21 @@ const desktopRewards = [
 const mobileRewards = [
   {
     title: "Cà phê Thủ Công",
-    points: "500 EcoPoints",
+    points: "500 điểm SeaTech",
     icon: Coffee,
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuBpXWBe8U5pF4v-l8o2qOBTYwDoNficD2tFuluvjSjkZ8__ZgyzxkvdgTWccIkhlkhYhNpUx6JCwa2sOtAaLCzpzVTGm7IlhrauEfBZD3KxN6eLDo6eiPt78A7HOpkFcUS3ib4WmsDgW7yBT-bFjnsRDERxr6PVQ8YBwdq-S2LCVqUDE4_n5gwxpAgjEJxiY-Rkrex4v0JBbPQzVJ0M_OnRvn2kWCgBUxONk4RtX4gF8N9kQzkZpsFCUTvFhwHAcia88fHTNKD4574G",
   },
   {
     title: "Vé Xem Phim",
-    points: "1,200 EcoPoints",
+    points: "1,200 điểm SeaTech",
     icon: Film,
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuDM5unryQpER6Ie177S9Hx6sJ6txOLomPM-6dXM6TEvuZB9TB3hYT8BAQdqv3c3KaI1CYAC17Bu-oVlXSzDiqyfmijHurnzffp8T9uW9mEx2UgS1omMNyeOqRDIh2A0yTjlJImYZkjKrX2yXVXvBZeATrqZUNE9qyuXKcuxcsDt2-2dxa3GwO4iCOQgQCxE6yk6PimtnZE5CuNPh-LQB2PIDRHc2hnkUkeTX5ChY7sRqXAzr3yarE2EjTbec8uOs3yh_NxoSFl06n3w",
   },
   {
     title: "Trồng Rừng",
-    points: "2,000 EcoPoints",
+    points: "2,000 điểm SeaTech",
     icon: TreePine,
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuD1CV20IRCvEF_B5T5_50mLYpEOiljH-7NKvLhPn3G3oTbmhZ3NKFbcfrwrKceeDbVbplkAajCrlIlwRamLmjAG9OeQW3UCnoacsmVZWDh6xRgrRtNcBLpsChsOpq2UjykbqtELWglXT9wwLtQKGEJFm0A_068gsTEh70ZVZyQ16j8toij-PAqyCwtd9GSi65ID86GZtIOwM9yquLdhVXDti66ckeGekyulmqkel9KMShcsclWYgWJI3fLvfssVpWiTHZysZh3tTBMP",
@@ -83,9 +82,9 @@ const desktopSteps = [
 ] as const;
 
 const mobileSteps = [
-  [QrCode, "Quét mã QR", "Tìm các thùng rác thông minh Eco-Reward gần bạn và quét mã để bắt đầu."],
+  [QrCode, "Quét mã QR", "Tìm các thùng rác thông minh SeaTech gần bạn và quét mã để bắt đầu."],
   [Camera, "Chụp ảnh rác", "Ghi lại khoảnh khắc bạn phân loại rác đúng cách để hệ thống AI xác nhận."],
-  [Gift, "Nhận thưởng", "Nhận ngay EcoPoints và đổi lấy những phần quà giá trị từ đối tác của chúng tôi."],
+  [Gift, "Nhận thưởng", "Nhận ngay điểm SeaTech và đổi lấy những phần quà giá trị từ đối tác của chúng tôi."],
 ] as const;
 
 export default function HomePage() {
@@ -112,7 +111,7 @@ function DesktopHome() {
             <span className="grid size-10 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d] ring-1 ring-[#bdcabe]/60">
               <Leaf size={22} />
             </span>
-            Eco-Reward
+            SeaTech
           </Link>
           <div className="hidden items-center space-x-8 lg:flex">
             <a className="text-sm font-black text-[#151d18] transition hover:text-[#007a3d]" href="#desktop-steps">
@@ -146,7 +145,7 @@ function DesktopHome() {
               <span className="block text-[#007a3d]">Nhận điểm xanh.</span>
             </h1>
             <p className="mx-auto mb-10 max-w-2xl text-lg font-semibold leading-8 text-[#3e4941] lg:mx-0">
-              Eco-Reward biến QR, ảnh chụp và kiểm duyệt AI thành một dòng điểm minh bạch cho người dùng, đối tác và đội vận hành.
+              SeaTech biến QR, ảnh chụp và kiểm duyệt AI thành một dòng điểm minh bạch cho người dùng, đối tác và đội vận hành.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
               <Link className="rounded-full bg-[#007a3d] px-10 py-4 text-sm font-black text-white shadow-[0_16px_34px_rgba(0,106,61,0.24)] transition hover:-translate-y-0.5 hover:bg-[#006a35]" href="/login" style={{ color: "#ffffff" }}>
@@ -169,67 +168,22 @@ function DesktopHome() {
               ))}
             </div>
           </div>
-          <div className="landing-hero-media relative">
-            <div className="overflow-hidden rounded-[34px] border border-[#103d28] bg-[#071b12] p-4 shadow-[0_28px_90px_rgba(7,27,18,0.28)]">
-              <div className="rounded-[26px] border border-white/10 bg-[#0d2418] p-4">
-                <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-[#8ff8b6]">Live review queue</p>
-                    <p className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">EcoReward Ops</p>
-                  </div>
-                  <span className="rounded-full bg-[#8ff8b6] px-3 py-1 text-xs font-black text-[#071b12]">98.2% trust</span>
-                </div>
-                <div className="grid gap-3">
-                  {[
-                    ["ECO-BIN-A1", "Chai nhựa PET", "+35 pts", "Đã duyệt"],
-                    ["ECO-BIN-B2", "Giấy tái chế", "+20 pts", "AI chắc chắn"],
-                    ["ECO-BIN-C4", "Lon nhôm", "+45 pts", "Cần kiểm tra"],
-                  ].map(([bin, waste, points, status]) => (
-                    <div className="grid grid-cols-[1fr_auto] gap-4 rounded-3xl border border-white/10 bg-white/[0.06] p-4" key={bin}>
-                      <div>
-                        <p className="font-mono text-xs font-bold text-white/45">{bin}</p>
-                        <p className="mt-1 text-lg font-black text-white">{waste}</p>
-                        <p className="mt-2 text-xs font-bold text-[#8ff8b6]">{status}</p>
-                      </div>
-                      <p className="text-xl font-black text-[#8ff8b6]">{points}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  <div className="rounded-3xl bg-[#8ff8b6] p-4 text-[#071b12]">
-                    <p className="text-3xl font-black">1.2M</p>
-                    <p className="text-xs font-black">vật phẩm</p>
-                  </div>
-                  <div className="rounded-3xl bg-white/[0.08] p-4 text-white">
-                    <p className="text-3xl font-black">45k</p>
-                    <p className="text-xs font-bold text-white/55">kg CO2</p>
-                  </div>
-                  <div className="rounded-3xl bg-white/[0.08] p-4 text-white">
-                    <p className="text-3xl font-black">15k</p>
-                    <p className="text-xs font-bold text-white/55">cây xanh</p>
-                  </div>
-                </div>
+          <div className="landing-hero-media relative mx-auto w-full max-w-[680px] lg:mx-0">
+            <div className="relative rounded-[38px] border border-[#0d3b25]/15 bg-white/58 p-3 shadow-[0_30px_90px_rgba(7,27,18,0.22)] backdrop-blur">
+              <div className="absolute left-8 top-8 z-10 hidden items-center gap-2 rounded-full border border-white/60 bg-white/88 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#007a3d] shadow-[0_14px_32px_rgba(7,27,18,0.12)] backdrop-blur xl:flex">
+                <span className="size-2 rounded-full bg-[#007a3d]" />
+                SeaTech live
               </div>
-            </div>
-            <div className="landing-hero-float absolute -right-5 top-10 hidden w-48 rounded-[26px] border border-[#d9e5da] bg-white p-4 shadow-[0_20px_50px_rgba(21,29,24,0.14)] xl:block">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#007a3d]">Quận 1</p>
-              <p className="mt-2 text-3xl font-black tracking-[-0.05em] text-[#071b12]">842</p>
-              <p className="text-sm font-bold text-[#5d6a60]">lượt gửi hợp lệ tuần này</p>
-              <div className="mt-4 flex h-12 items-end gap-1">
-                {[42, 68, 52, 84, 74, 96, 88].map((height, index) => (
-                  <span className="flex h-full flex-1 items-end rounded-full bg-[#d8f5df]" key={index}>
-                    <span className="block w-full rounded-full bg-[#007a3d]" style={{ height: `${height}%` }} />
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="landing-hero-float absolute -bottom-5 -left-5 flex items-center gap-4 rounded-[26px] border border-[#d9e5da] bg-white/92 p-5 shadow-[0_20px_50px_rgba(21,29,24,0.14)] backdrop-blur">
-              <div className="grid size-12 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d]">
-                <Recycle size={24} />
-              </div>
-              <div>
-                <p className="text-sm font-black text-[#071b12]">+500 điểm đã xác nhận</p>
-                <p className="text-xs font-bold text-[#5d6a60]">Không cần nhập tay</p>
+              <div className="overflow-hidden rounded-[30px] border border-[#103d28]/30 bg-[#071b12]">
+                <Image
+                  alt="Giao diện vận hành SeaTech hiển thị lượt phân loại rác, điểm thưởng và thống kê tác động"
+                  className="h-auto w-full"
+                  height={1792}
+                  priority
+                  sizes="(min-width: 1024px) 680px, 92vw"
+                  src="/seatech/hero-board.jpg"
+                  width={2560}
+                />
               </div>
             </div>
           </div>
@@ -395,7 +349,7 @@ function MobileHome() {
             </nav>
           </details>
           <Link className="text-2xl font-black tracking-[-0.03em] text-[#007a3d]" href="/">
-            EcoReward
+            SeaTech
           </Link>
         </div>
         <div className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-[#bdcabe] bg-[#d8f5df]">
@@ -515,7 +469,7 @@ function Footer() {
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-12 md:grid-cols-4">
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-2xl font-black text-[#007a3d]">
-            <Leaf size={26} /> Eco-Reward
+            <Leaf size={26} /> SeaTech
           </div>
           <p className="font-semibold leading-7 text-[#5d6a60]">Hệ thống phần thưởng sinh thái hàng đầu Việt Nam. Biến mỗi hành động nhỏ thành giá trị xanh bền vững.</p>
         </div>
@@ -553,7 +507,7 @@ function Footer() {
         </div>
       </div>
       <div className="mx-auto mt-16 flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-[#d9e5da] pt-8 text-sm font-semibold text-[#5d6a60] md:flex-row">
-        <p>© 2024 Eco-Reward System. Tất cả quyền được bảo lưu.</p>
+        <p>© 2024 SeaTech. Tất cả quyền được bảo lưu.</p>
         <div className="flex gap-3">
           <span>Tiếng Việt</span>
           <Earth size={18} />

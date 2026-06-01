@@ -1,9 +1,9 @@
 import { MapPin, QrCode, RadioTower } from "lucide-react";
 import { PageHeader } from "@/components/shared/eco-ui";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 
 export default function AdminBinsPage() {
-  const bins = ecoRewardService.listBins();
+  const bins = seaTechService.listBins();
 
   return (
     <div className="space-y-6">

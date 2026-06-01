@@ -92,7 +92,7 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
           <h2 className="mt-3 text-4xl font-black tracking-[-0.05em] text-[#093719]">AI đang kiểm tra vật phẩm</h2>
           <p className="mx-auto mt-3 max-w-xl font-semibold leading-7 text-[#5d6a60]">Hệ thống đang nhận diện loại rác, đánh giá độ rõ nét và tính điểm phù hợp.</p>
           <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
-            {["Kiểm tra phiên QR", "Nhận diện vật phẩm", "Tính EcoPoint"].map((label) => (
+            {["Kiểm tra phiên QR", "Nhận diện vật phẩm", "Tính điểm SeaTech"].map((label) => (
               <div className="rounded-[22px] border border-[#d9e5da] bg-[#f3fcf3] p-4" key={label}>
                 <CheckCircle2 className="text-[#007a3d]" size={20} />
                 <p className="mt-3 text-sm font-black text-[#151d18]">{label}</p>

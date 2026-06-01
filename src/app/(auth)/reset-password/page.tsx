@@ -8,7 +8,7 @@ export default function ResetPasswordPage() {
     <AuthShell
       eyebrow="Khôi phục mật khẩu"
       title="Tạo mật khẩu mới"
-      body="Nhập mật khẩu mới cho tài khoản EcoReward sau khi email khôi phục đã được xác minh."
+      body="Nhập mật khẩu mới cho tài khoản SeaTech sau khi email khôi phục đã được xác minh."
       sideTitle="Bảo vệ ví điểm xanh của bạn."
       sideBody="Sau khi đổi mật khẩu, phiên khôi phục sẽ được đăng xuất và bạn đăng nhập lại bằng mật khẩu mới."
     >

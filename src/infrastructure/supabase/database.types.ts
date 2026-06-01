@@ -10,6 +10,9 @@ export type Database = {
           full_name: string;
           avatar_url: string | null;
           avatar_object_key: string | null;
+          phone: string | null;
+          location: string | null;
+          bio: string | null;
           role: "user" | "admin";
           points: number;
           trust_score: number;

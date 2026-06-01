@@ -58,6 +58,11 @@ function messageForRoute(pathname: string, params: URLSearchParams): ToastMessag
   }
 
   if (pathname === "/settings") {
+    const profile = params.get("profile");
+    if (profile === "success") return { tone: "success", body: "Hồ sơ cá nhân đã được cập nhật." };
+    if (profile === "missing_name") return { tone: "error", body: "Vui lòng nhập họ và tên." };
+    if (profile === "update_failed") return { tone: "error", body: "Chưa thể cập nhật hồ sơ. Vui lòng thử lại." };
+
     const avatar = params.get("avatar");
     if (avatar === "success") return { tone: "success", body: "Ảnh đại diện đã được cập nhật." };
     if (avatar === "missing_file") return { tone: "error", body: "Vui lòng chọn ảnh đại diện." };

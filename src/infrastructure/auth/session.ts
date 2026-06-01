@@ -4,7 +4,7 @@ import { avatarUrlFromMetadata } from "@/infrastructure/auth/avatar";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
-export type UserShellProfile = Pick<Database["public"]["Tables"]["profiles"]["Row"], "full_name" | "points" | "avatar_url" | "trust_score">;
+export type UserShellProfile = Pick<Database["public"]["Tables"]["profiles"]["Row"], "full_name" | "points" | "avatar_url" | "trust_score" | "phone" | "location" | "bio">;
 
 export const getSupabaseServerClient = cache(async () => createClient());
 
@@ -18,7 +18,7 @@ export const getCurrentUser = cache(async () => {
 
 export const getUserShellProfile = cache(async (userId: string) => {
   const supabase = await getSupabaseServerClient();
-  const { data } = await supabase.from("profiles").select("full_name,points,avatar_url,trust_score").eq("id", userId).single();
+  const { data } = await supabase.from("profiles").select("full_name,points,avatar_url,trust_score,phone,location,bio").eq("id", userId).single();
   return data as UserShellProfile | null;
 });
 
@@ -38,7 +38,7 @@ export async function getUserShell() {
   return {
     user,
     profile,
-    displayName: profile?.full_name ?? user.email ?? "Eco user",
+    displayName: profile?.full_name ?? user.email ?? "SeaTech user",
     avatarUrl: profile?.avatar_url ?? fallbackAvatar,
     points: profile?.points ?? 0,
   };

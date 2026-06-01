@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 
 export async function GET() {
-  return NextResponse.json({ submissions: ecoRewardService.listSubmissions() });
+  return NextResponse.json({ submissions: seaTechService.listSubmissions() });
 }
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "scanSessionId và imageUrl là bắt buộc." }, { status: 400 });
   }
 
-  const submission = await ecoRewardService.createSubmission({
+  const submission = await seaTechService.createSubmission({
     scanSessionId: body.scanSessionId,
     imageUrl: body.imageUrl,
   });

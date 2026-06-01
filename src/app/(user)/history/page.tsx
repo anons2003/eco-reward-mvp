@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Coins, Filter, Gift, Leaf, Recycle, ShoppingBag, Sparkles, TreePine, XCircle, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 import type { Submission, SubmissionStatus } from "@/core/entities/types";
 
 const redemptionRows = [
   {
     id: "redeem-canvas-bag",
-    title: "Đổi túi vải Canvas Eco",
+    title: "Đổi túi vải Canvas xanh",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     points: -120,
     category: "Cửa hàng",
@@ -28,8 +28,8 @@ function statusTone(status: SubmissionStatus) {
 }
 
 export default function HistoryPage() {
-  const user = ecoRewardService.getDemoUser("user");
-  const submissions = ecoRewardService.listUserSubmissions(user.id);
+  const user = seaTechService.getDemoUser("user");
+  const submissions = seaTechService.listUserSubmissions(user.id);
   const approved = submissions.filter((submission) => submission.status === "approved");
   const pending = submissions.filter((submission) => submission.status === "pending_review");
   const pointsEarned = approved.reduce((total, submission) => total + submission.points, 0);

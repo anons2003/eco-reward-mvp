@@ -18,7 +18,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
                 <span className="grid size-12 place-items-center rounded-2xl bg-[#8ff8b6] text-[#00391f]">
                   <Recycle size={26} />
                 </span>
-                EcoReward Admin
+                SeaTech Admin
               </Link>
 
               <div>
@@ -57,7 +57,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
                   <span className="grid size-12 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d] ring-1 ring-[#bdcabe]/50">
                     <Recycle size={26} />
                   </span>
-                  <span className="text-xl font-black tracking-[-0.03em] text-[#007a3d]">EcoReward Admin</span>
+                  <span className="text-xl font-black tracking-[-0.03em] text-[#007a3d]">SeaTech Admin</span>
                 </div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#007a3d]">Đăng nhập quản trị</p>
                 <h1 className="mt-3 text-[40px] font-black leading-[46px] tracking-[-0.05em] text-[#151d18] sm:text-5xl sm:leading-[54px]">Vào bảng điều khiển</h1>

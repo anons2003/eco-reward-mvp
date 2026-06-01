@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { ecoRewardService } from "@/application/services/eco-reward-service";
+import { seaTechService } from "@/application/services/seatech-service";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { qrCode?: string; lat?: number; lng?: number };
-  const result = ecoRewardService.createScanSession({
+  const result = seaTechService.createScanSession({
     qrCode: body.qrCode ?? "",
     lat: body.lat,
     lng: body.lng,
