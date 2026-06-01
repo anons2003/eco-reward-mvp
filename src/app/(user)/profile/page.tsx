@@ -21,7 +21,7 @@ function StatCard({ Icon, label, value, unit }: { Icon: typeof WalletCards; labe
 
 export default async function ProfilePage() {
   const { avatarUrl, displayName, points, profile, user } = await getUserShell();
-  const email = user.email ?? "alex.johnson@eco-future.com";
+  const email = user.email ?? "nguyen.an@seatech.app";
   const phone = profile?.phone ?? "Chưa cập nhật";
   const location = profile?.location ?? "Chưa cập nhật";
   const bio = profile?.bio ?? "Hành động nhỏ, tác động lớn. Cùng nhau xây dựng thế giới xanh hơn!";

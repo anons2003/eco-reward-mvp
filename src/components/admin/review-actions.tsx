@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X } from "lucide-react";
+import { Check, ShieldCheck, X } from "lucide-react";
+import { AdminCard } from "@/components/admin/admin-ui";
 import { LoadingButtonContent, useGlobalLoading } from "@/components/shared/loading-ui";
 
 export function ReviewActions({ submissionId }: { submissionId: string }) {
@@ -28,27 +29,39 @@ export function ReviewActions({ submissionId }: { submissionId: string }) {
   }
 
   return (
-    <div className="eco-card rounded-[28px] p-6">
-      <h2 className="text-xl font-black text-[#071b12]">Quyết định kiểm duyệt</h2>
-      <p className="mt-2 text-sm font-semibold leading-6 text-[#5d6a60]">Ghi lý do ngắn, rõ và có thể truy vết trước khi cấp hoặc từ chối điểm.</p>
-      <label className="mt-4 block text-sm font-bold text-[#5d6a60]" htmlFor="reason">
+    <AdminCard className="h-fit p-5 lg:sticky lg:top-24 lg:p-6">
+      <div className="flex items-start gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#d8f5df] text-[#006d37]">
+          <ShieldCheck size={20} />
+        </span>
+        <div>
+          <h2 className="text-xl font-black text-[#1b1c1b]">Quyết định kiểm duyệt</h2>
+          <p className="mt-1 text-sm font-semibold leading-6 text-[#6e7a70]">Ghi lý do ngắn, rõ và có thể truy vết trước khi cấp hoặc từ chối điểm.</p>
+        </div>
+      </div>
+      <label className="mt-5 block text-sm font-black text-[#3e4941]" htmlFor="reason">
         Lý do
       </label>
-      <textarea className="input mt-2 min-h-24" id="reason" value={reason} onChange={(event) => setReason(event.target.value)} />
+      <textarea
+        className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-[#d9e5da] bg-[#fbf9f8] px-4 py-3 text-sm font-semibold leading-6 text-[#1b1c1b] outline-none transition placeholder:text-[#8a938c] focus:border-[#006d37] focus:ring-2 focus:ring-[#006d37]/20"
+        id="reason"
+        value={reason}
+        onChange={(event) => setReason(event.target.value)}
+      />
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <button className="btn-primary" disabled={loading || !reason.trim()} onClick={() => submit("approved")} type="button">
+        <button className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#006d37] px-4 text-sm font-black text-white shadow-[0_14px_30px_rgba(0,109,55,0.18)] transition hover:bg-[#005d34] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55" disabled={loading || !reason.trim()} onClick={() => submit("approved")} type="button">
           <LoadingButtonContent loading={loading} loadingLabel="Đang xử lý...">
             <Check size={18} />
             Duyệt
           </LoadingButtonContent>
         </button>
-        <button className="btn-secondary border-[#ffd7d7] bg-[#fff7f7] text-[#B91C1C]" disabled={loading || !reason.trim()} onClick={() => submit("rejected")} type="button">
+        <button className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#ba1a1a]/18 bg-[#ffdad6]/35 px-4 text-sm font-black text-[#ba1a1a] transition hover:bg-[#ffdad6]/55 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55" disabled={loading || !reason.trim()} onClick={() => submit("rejected")} type="button">
           <LoadingButtonContent loading={loading} loadingLabel="Đang xử lý...">
             <X size={18} />
             Từ chối
           </LoadingButtonContent>
         </button>
       </div>
-    </div>
+    </AdminCard>
   );
 }

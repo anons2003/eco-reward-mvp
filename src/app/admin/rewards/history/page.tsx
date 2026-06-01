@@ -1,0 +1,224 @@
+import { Download, Filter, MoreVertical } from "lucide-react";
+import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+
+const redemptionRows = [
+  {
+    date: "14/10/2023",
+    time: "14:35:22",
+    name: "Nguyễn Văn Lộc",
+    email: "loc.nv@gmail.com",
+    initials: "NL",
+    reward: "Voucher Starbucks - 50k",
+    points: 5000,
+    code: "STB-8829-XL",
+    status: "Thành công",
+    tone: "success",
+  },
+  {
+    date: "14/10/2023",
+    time: "12:10:05",
+    name: "Trần Minh Hiếu",
+    email: "hieutm98@yahoo.com",
+    initials: "TH",
+    reward: "Thẻ cào Vinaphone - 100k",
+    points: 10000,
+    code: "VNP-7712-MK",
+    status: "Đã dùng",
+    tone: "used",
+  },
+  {
+    date: "13/10/2023",
+    time: "21:55:40",
+    name: "Phạm Quỳnh Anh",
+    email: "quynhanh.p@work.co",
+    initials: "QA",
+    reward: "GrabFood Discount 30k",
+    points: 3000,
+    code: "Không khả dụng",
+    status: "Đã hủy",
+    tone: "cancelled",
+  },
+  {
+    date: "13/10/2023",
+    time: "18:22:12",
+    name: "Lê Duy",
+    email: "duyle99@gmail.com",
+    initials: "LD",
+    reward: "Shopee Voucher - 20k",
+    points: 2000,
+    code: "SHP-0012-ZZ",
+    status: "Thành công",
+    tone: "success",
+  },
+];
+
+const totalRedeemed = redemptionRows.reduce((sum, row) => sum + row.points, 0);
+
+export default function AdminRewardHistoryPage() {
+  return (
+    <div className="w-full max-w-full space-y-8 overflow-x-hidden">
+      <AdminDashboardMotion />
+
+      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
+        <div className="max-w-4xl">
+          <h1 className="text-3xl font-black leading-tight tracking-[-0.04em] text-[#2c3e50] lg:text-4xl">Lịch sử đổi thưởng</h1>
+          <p className="mt-2 max-w-3xl text-base font-semibold leading-7 text-[#3d4a3e]">Quản lý và theo dõi các giao dịch quà tặng từ cộng đồng SeaTech.</p>
+        </div>
+        <button className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-[#006d37] px-6 text-sm font-black text-white shadow-[0_16px_34px_rgba(0,109,55,0.18)] transition hover:scale-[1.03] active:scale-[0.98]" type="button">
+          <Download size={18} />
+          Xuất báo cáo CSV
+        </button>
+      </section>
+
+      <section className="grid-flow-dense grid gap-6 lg:grid-cols-12">
+        <div className="min-w-0 rounded-2xl border border-[#bbcbbb]/45 bg-white/75 p-5 shadow-[0_12px_34px_rgba(45,156,219,0.06)] backdrop-blur-md lg:col-span-8" data-admin-reveal>
+          <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(150px,170px)_minmax(150px,170px)_44px] xl:items-end">
+            <label className="grid min-w-0 gap-2 md:col-span-2 xl:col-span-1">
+              <span className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Khoảng thời gian</span>
+              <span className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                <input className="h-11 min-w-0 rounded-xl border border-[#bbcbbb] bg-[#fbf9f8] px-3 text-sm font-bold text-[#1b1c1b] outline-none focus:ring-2 focus:ring-[#2d9cdb]/20" type="date" />
+                <span className="hidden text-sm font-semibold text-[#6c7b6d] sm:inline">đến</span>
+                <input className="h-11 min-w-0 rounded-xl border border-[#bbcbbb] bg-[#fbf9f8] px-3 text-sm font-bold text-[#1b1c1b] outline-none focus:ring-2 focus:ring-[#2d9cdb]/20" type="date" />
+              </span>
+            </label>
+            <label className="grid min-w-0 gap-2">
+              <span className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Trạng thái</span>
+              <select className="h-11 min-w-0 rounded-xl border border-[#bbcbbb] bg-[#fbf9f8] px-3 text-sm font-bold text-[#1b1c1b] outline-none focus:ring-2 focus:ring-[#2d9cdb]/20">
+                <option>Tất cả trạng thái</option>
+                <option>Thành công</option>
+                <option>Đã dùng</option>
+                <option>Đã hủy</option>
+              </select>
+            </label>
+            <label className="grid min-w-0 gap-2">
+              <span className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Loại phần thưởng</span>
+              <select className="h-11 min-w-0 rounded-xl border border-[#bbcbbb] bg-[#fbf9f8] px-3 text-sm font-bold text-[#1b1c1b] outline-none focus:ring-2 focus:ring-[#2d9cdb]/20">
+                <option>Tất cả loại</option>
+                <option>Voucher Ăn uống</option>
+                <option>Voucher Mua sắm</option>
+                <option>Điểm thưởng</option>
+              </select>
+            </label>
+            <button className="grid size-11 place-items-center self-end rounded-xl bg-[#e9e8e7] text-[#006d37] transition hover:bg-[#006d37] hover:text-white" type="button" aria-label="Lọc">
+              <Filter size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-[#bbcbbb]/45 bg-white/75 p-6 shadow-[0_12px_34px_rgba(45,156,219,0.06)] backdrop-blur-md lg:col-span-4" data-admin-reveal>
+          <div className="relative z-10">
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Tổng điểm đã đổi</p>
+            <h2 className="mt-2 text-5xl font-black leading-none tracking-[-0.06em] text-[#006d37]">{totalRedeemed.toLocaleString("vi-VN")}</h2>
+            <p className="mt-2 text-sm font-bold text-[#2ecc71]">+12% so với tháng trước</p>
+          </div>
+          <div className="absolute -bottom-10 -right-6 size-36 rounded-full bg-[#2ecc71]/10" />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-[#bbcbbb]/30 bg-white shadow-[0_14px_38px_rgba(45,156,219,0.08)]" data-admin-reveal>
+        <div className="hidden overflow-x-auto lg:block">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-[#bbcbbb]/35 bg-[#f5f3f2]">
+                {["Thời gian", "Người dùng", "Phần thưởng", "Điểm đã trừ", "Mã voucher", "Trạng thái", "Hành động"].map((heading) => (
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]" key={heading}>
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#bbcbbb]/18">
+              {redemptionRows.map((row) => (
+                <tr className="transition hover:scale-[0.997] hover:bg-[#f5f3f2]/70" key={`${row.code}-${row.time}`}>
+                  <td className="px-6 py-5">
+                    <div className="text-sm font-black text-[#1b1c1b]">{row.date}</div>
+                    <div className="text-xs font-semibold text-[#6c7b6d]">{row.time}</div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <UserCell initials={row.initials} name={row.name} email={row.email} />
+                  </td>
+                  <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{row.reward}</td>
+                  <td className="px-6 py-5 text-sm font-black text-[#e74c3c]">- {row.points.toLocaleString("vi-VN")} pts</td>
+                  <td className="px-6 py-5">
+                    {row.code === "Không khả dụng" ? <span className="text-sm italic text-[#dbdad9]">{row.code}</span> : <code className="rounded bg-[#fbf9f8] px-2 py-1 font-mono text-sm font-black text-[#006d37]">{row.code}</code>}
+                  </td>
+                  <td className="px-6 py-5">
+                    <StatusPill status={row.status} tone={row.tone} />
+                  </td>
+                  <td className="px-6 py-5">
+                    <button className="text-[#6c7b6d] transition hover:text-[#006d37]" type="button" aria-label="Thêm hành động">
+                      <MoreVertical size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="grid gap-3 p-3 lg:hidden">
+          {redemptionRows.map((row) => (
+            <article className="rounded-2xl border border-[#bbcbbb]/35 bg-white p-4 shadow-[0_10px_24px_rgba(45,156,219,0.06)]" key={`${row.code}-${row.time}`}>
+              <div className="flex items-start justify-between gap-3">
+                <UserCell initials={row.initials} name={row.name} email={row.email} />
+                <StatusPill status={row.status} tone={row.tone} />
+              </div>
+              <p className="mt-4 text-sm font-black text-[#1b1c1b]">{row.reward}</p>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs font-bold text-[#6c7b6d]">
+                <span>
+                  {row.date}
+                  <br />
+                  {row.time}
+                </span>
+                <span className="text-right text-[#e74c3c]">- {row.points.toLocaleString("vi-VN")} pts</span>
+              </div>
+              <div className="mt-3 rounded-xl bg-[#fbf9f8] px-3 py-2 font-mono text-xs font-black text-[#006d37]">{row.code}</div>
+            </article>
+          ))}
+        </div>
+
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#bbcbbb]/35 bg-[#f5f3f2]/45 px-6 py-4 md:flex-row">
+          <span className="text-sm font-semibold text-[#3d4a3e]">Hiển thị 1 - 4 của 1,248 giao dịch</span>
+          <div className="flex items-center gap-2">
+            {[1, 2, 3].map((page) => (
+              <button className={`grid size-10 place-items-center rounded-lg text-sm font-black ${page === 1 ? "bg-[#006d37] text-white" : "border border-[#bbcbbb] text-[#3d4a3e] hover:bg-white"}`} key={page} type="button">
+                {page}
+              </button>
+            ))}
+            <span className="px-1 text-sm font-black text-[#6c7b6d]">...</span>
+            <button className="grid size-10 place-items-center rounded-lg border border-[#bbcbbb] text-sm font-black text-[#3d4a3e] hover:bg-white" type="button">
+              42
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function UserCell({ initials, name, email }: { initials: string; name: string; email: string }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#cae6ff] text-xs font-black text-[#001e2f]">{initials}</span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-black text-[#1b1c1b]">{name}</span>
+        <span className="block truncate text-xs font-semibold text-[#6c7b6d]">{email}</span>
+      </span>
+    </div>
+  );
+}
+
+function StatusPill({ status, tone }: { status: string; tone: string }) {
+  const className = {
+    success: "bg-[#2ecc71]/18 text-[#005027]",
+    used: "bg-[#2d9cdb]/12 text-[#2d9cdb]",
+    cancelled: "bg-[#ffdad6]/50 text-[#ba1a1a]",
+  }[tone];
+
+  return (
+    <span className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-black ${className}`}>
+      <span className="size-1.5 rounded-full bg-current" />
+      {status}
+    </span>
+  );
+}

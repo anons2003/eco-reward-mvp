@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { TopBar } from "@/components/shared/top-bar";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
-type AdminProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
+type AdminProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role" | "full_name" | "avatar_url">;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/admin/login");
   }
 
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const { data } = await supabase.from("profiles").select("role,full_name,avatar_url").eq("id", user.id).single();
   const profile = data as AdminProfileRow | null;
 
   if (profile?.role !== "admin") {
@@ -23,9 +23,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="eco-shell min-h-screen">
-      <TopBar admin />
-      <main className="mx-auto min-h-screen max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
-    </div>
+    <AdminShell avatarUrl={profile.avatar_url} displayName={profile.full_name || user.email || "Admin"}>
+      {children}
+    </AdminShell>
   );
 }
