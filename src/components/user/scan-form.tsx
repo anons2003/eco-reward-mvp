@@ -27,7 +27,7 @@ export function ScanForm() {
       const response = await fetch("/api/scan-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qrCode, lat: 10.7769, lng: 106.7009 }),
+        body: JSON.stringify({ qr_code: qrCode, lat: 10.7769, lng: 106.7009 }),
       });
       const nextPayload = (await response.json()) as ScanPayload;
 

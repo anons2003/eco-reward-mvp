@@ -62,7 +62,7 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
       const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scanSessionId, imageUrl }),
+        body: JSON.stringify({ scan_session_id: scanSessionId, image_url: imageUrl }),
       });
       const payload = (await response.json()) as { submission?: { id: string }; error?: string };
 
