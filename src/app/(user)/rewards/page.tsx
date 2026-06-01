@@ -1,39 +1,31 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  ChevronRight,
-  History,
-  Leaf,
-  Lock,
-  Sparkles,
-  Ticket,
-  WalletCards,
-} from "lucide-react";
-import { seaTechService } from "@/application/services/seatech-service";
-import { rewardCatalog, type RewardCatalogItem } from "@/components/user/rewards-catalog";
+import { ArrowRight, ChevronRight, History, Leaf, Lock, Sparkles, Ticket, WalletCards } from "lucide-react";
+import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
+import type { Database } from "@/infrastructure/supabase/database.types";
+
+type RewardRow = Database["public"]["Tables"]["reward_items"]["Row"];
 
 const categories = ["Tất cả", "Voucher", "Quà tặng", "Đóng góp", "Dịch vụ"];
 
-const categoryStyles: Record<RewardCatalogItem["category"], string> = {
+const categoryStyles: Record<RewardRow["category"], string> = {
   Voucher: "bg-[#e3f2ff] text-[#006496]",
   "Quà tặng": "bg-[#d8f5df] text-[#006a3d]",
   "Đóng góp": "bg-[#fff3c4] text-[#755b00]",
   "Dịch vụ": "bg-[#f1e8ff] text-[#6741a1]",
 };
 
-function RewardCard({ item, points }: { item: RewardCatalogItem; points: number }) {
-  const canRedeem = points >= item.points;
+function RewardCard({ item, points }: { item: RewardRow; points: number }) {
+  const canRedeem = points >= item.points_required && item.stock > 0;
 
   return (
     <article className="group overflow-hidden rounded-[32px] border border-[#d7e2d8] bg-white shadow-[0_10px_30px_rgba(21,29,24,0.07)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_42px_rgba(21,29,24,0.12)]">
       <Link className="block focus:outline-none focus:ring-4 focus:ring-[#b7e8c0]" href={`/rewards/${item.id}`}>
         <div className="relative aspect-[4/3] overflow-hidden bg-[#e9f5ea]">
-          <div
-            className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105"
-            style={{ backgroundImage: `url(${item.image})` }}
-          />
+          {item.image_url ? <div className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${item.image_url})` }} /> : null}
+          <div className={`absolute inset-0 ${item.image_url ? "opacity-25" : ""} bg-[radial-gradient(circle_at_35%_30%,rgba(46,204,113,0.30),transparent_32%),linear-gradient(135deg,#d8f5df,#e3f2ff)]`} />
+          <Leaf className="absolute bottom-5 right-5 text-[#007a3d]/20" size={118} />
           <div className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-black uppercase text-[#151d18] shadow-sm backdrop-blur">
-            {item.badge ?? item.category}
+            {item.partner}
           </div>
           <div className={`absolute right-4 top-4 rounded-full px-3 py-1.5 text-[11px] font-black uppercase shadow-sm ${categoryStyles[item.category]}`}>
             {item.category}
@@ -50,11 +42,11 @@ function RewardCard({ item, points }: { item: RewardCatalogItem; points: number 
           <div className="mt-5 flex items-center justify-between rounded-2xl border border-[#d7e2d8] bg-[#f7fbf7] px-4 py-3">
             <div>
               <p className="text-[11px] font-black uppercase text-[#647066]">Cần đổi</p>
-              <p className="text-lg font-black text-[#151d18]">{item.points.toLocaleString("vi-VN")} pts</p>
+              <p className="text-lg font-black text-[#151d18]">{item.points_required.toLocaleString("vi-VN")} pts</p>
             </div>
             <div className="text-right">
               <p className="text-[11px] font-black uppercase text-[#647066]">Còn lại</p>
-              <p className="text-lg font-black text-[#151d18]">{item.stock}</p>
+              <p className="text-lg font-black text-[#151d18]">{item.stock.toLocaleString("vi-VN")}</p>
             </div>
           </div>
           <div
@@ -62,7 +54,7 @@ function RewardCard({ item, points }: { item: RewardCatalogItem; points: number 
               canRedeem ? "bg-[#007a3d] text-white group-hover:bg-[#006a3d]" : "bg-[#e7f0e7] text-[#3e4941]"
             }`}
           >
-            {canRedeem ? "Đổi ngay" : "Chưa đủ điểm"}
+            {canRedeem ? "Đổi ngay" : item.stock <= 0 ? "Hết hàng" : "Chưa đủ điểm"}
             {canRedeem ? <ArrowRight size={18} /> : <ChevronRight size={18} />}
           </div>
         </div>
@@ -71,9 +63,12 @@ function RewardCard({ item, points }: { item: RewardCatalogItem; points: number 
   );
 }
 
-export default function RewardsPage() {
-  const user = seaTechService.getDemoUser("user");
-  const affordableCount = rewardCatalog.filter((reward) => user.points >= reward.points).length;
+export default async function RewardsPage() {
+  const { points } = await getUserShell();
+  const supabase = await getSupabaseServerClient();
+  const { data } = await supabase.from("reward_items").select("id,title,description,points_required,stock,active,category,partner,image_url,expires_at,created_at").eq("active", true).order("points_required", { ascending: true });
+  const rewards = (data ?? []) as RewardRow[];
+  const affordableCount = rewards.filter((reward) => points >= reward.points_required && reward.stock > 0).length;
 
   return (
     <div className="space-y-6">
@@ -95,24 +90,17 @@ export default function RewardsPage() {
                 <WalletCards size={16} />
                 Ví điểm SeaTech
               </div>
-              <p className="mt-5 text-5xl font-black tracking-[-0.05em] md:mt-6 md:text-6xl">{user.points.toLocaleString("vi-VN")} pts</p>
+              <p className="mt-5 text-5xl font-black tracking-[-0.05em] md:mt-6 md:text-6xl">{points.toLocaleString("vi-VN")} pts</p>
               <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-white/85">
                 Bạn có thể đổi ngay {affordableCount} phần thưởng. Tiếp tục phân loại rác để mở khóa thêm voucher và quà tặng mới.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-black text-[#006a3d] transition hover:bg-[#f3fcf3]"
-                href="/history"
-                style={{ color: "#006a3d" }}
-              >
+              <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-black text-[#006a3d] transition hover:bg-[#f3fcf3]" href="/wallet" style={{ color: "#006a3d" }}>
                 <History size={18} />
-                Xem lịch sử
+                Xem ví điểm
               </Link>
-              <Link
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/12 px-5 text-sm font-black text-white ring-1 ring-white/25 transition hover:bg-white/18"
-                href="/scan"
-              >
+              <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/12 px-5 text-sm font-black text-white ring-1 ring-white/25 transition hover:bg-white/18" href="/scan">
                 <Sparkles size={18} />
                 Tích điểm
               </Link>
@@ -122,7 +110,7 @@ export default function RewardsPage() {
           <div className="hidden min-w-[240px] grid-cols-2 gap-3 rounded-[28px] bg-white/12 p-3 ring-1 ring-white/20 sm:grid">
             <div className="rounded-2xl bg-white/12 p-4">
               <Leaf size={18} />
-              <p className="mt-3 text-2xl font-black">{rewardCatalog.length}</p>
+              <p className="mt-3 text-2xl font-black">{rewards.length}</p>
               <p className="text-xs font-bold text-white/75">Phần thưởng</p>
             </div>
             <div className="rounded-2xl bg-white/12 p-4">
@@ -151,10 +139,17 @@ export default function RewardsPage() {
       </section>
 
       <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {rewardCatalog.map((reward) => (
-          <RewardCard item={reward} key={reward.id} points={user.points} />
+        {rewards.map((reward) => (
+          <RewardCard item={reward} key={reward.id} points={points} />
         ))}
       </section>
+
+      {rewards.length === 0 ? (
+        <section className="rounded-[32px] border border-[#d7e2d8] bg-white p-10 text-center shadow-[0_10px_30px_rgba(21,29,24,0.07)]">
+          <p className="text-lg font-black text-[#151d18]">Chưa có phần thưởng đang mở.</p>
+          <p className="mt-2 text-sm font-semibold text-[#4c5a50]">Quay lại sau khi admin phát hành voucher mới.</p>
+        </section>
+      ) : null}
     </div>
   );
 }

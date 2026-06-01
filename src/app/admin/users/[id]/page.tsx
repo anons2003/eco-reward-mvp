@@ -1,38 +1,27 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Bell, CalendarDays, Edit, Eye, Gift, ImageIcon, Lock, Mail, MapPin, Phone, Recycle, Send, ShieldCheck, ShieldAlert, TrendingUp, UserRound, WalletCards, type LucideIcon } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowLeft, CalendarDays, Eye, Gift, ImageIcon, Mail, MapPin, Phone, Recycle, ShieldCheck, ShieldAlert, TrendingUp, UserRound, WalletCards, type LucideIcon } from "lucide-react";
 import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { UserManagementActions } from "@/components/admin/user-management-actions";
+import { createClient } from "@/infrastructure/supabase/server";
+import type { Database } from "@/infrastructure/supabase/database.types";
 
-const userProfile = {
-  name: "Nguyễn Văn An",
-  email: "an.nguyen@email.com",
-  phone: "+84 901 234 567",
-  location: "Quận 1, TP. Hồ Chí Minh",
-  joinedAt: "12/05/2023",
+type ProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "email" | "full_name" | "avatar_url" | "phone" | "location" | "bio" | "role" | "status" | "points" | "trust_score" | "created_at">;
+type SubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "status" | "points" | "reason" | "risk_flags" | "created_at" | "image_url" | "ai_result">;
+type MetricTone = "green" | "blue" | "greenSolid" | "red";
+type PillTone = "blue" | "amber" | "green" | "red";
+
+const wasteTypeLabel: Record<string, string> = {
+  plastic_bottle: "Chai nhựa",
+  metal_can: "Lon kim loại",
+  paper: "Giấy",
+  cardboard: "Bìa carton",
+  glass_bottle: "Chai thủy tinh",
+  organic: "Hữu cơ",
+  hazardous: "Nguy hại",
+  unknown: "Chưa rõ",
 };
-
-const metrics = [
-  { label: "Tổng lượt phân loại", value: "1,248", note: "+12% tháng này", Icon: Recycle, tone: "green" },
-  { label: "Tổng điểm hiện có", value: "45,600", note: "Hạng Vàng", Icon: WalletCards, tone: "blue" },
-  { label: "Độ uy tín", value: "95/100", note: "Rất cao", Icon: ShieldCheck, tone: "greenSolid" },
-  { label: "Cảnh báo", value: "02", note: "Lần cuối: 15 ngày trước", Icon: ShieldAlert, tone: "red" },
-] as const;
-
-const submissions = [
-  {
-    type: "Nhựa (PET)",
-    date: "Hôm nay, 10:45",
-    points: 150,
-    status: "AI Xác minh",
-    tone: "blue",
-  },
-  {
-    type: "Giấy / Carton",
-    date: "Hôm qua, 16:20",
-    points: 80,
-    status: "Đã duyệt",
-    tone: "amber",
-  },
-];
 
 const tabs: Array<{ label: string; Icon: LucideIcon; active: boolean }> = [
   { label: "Lịch sử lượt gửi", Icon: Recycle, active: true },
@@ -42,6 +31,37 @@ const tabs: Array<{ label: string; Icon: LucideIcon; active: boolean }> = [
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const supabase = await createClient();
+
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("id,email,full_name,avatar_url,phone,location,bio,role,status,points,trust_score,created_at")
+    .eq("id", id)
+    .single();
+
+  const profile = profileData as ProfileRow | null;
+
+  if (profileError || !profile) {
+    notFound();
+  }
+
+  const { data: submissionData } = await supabase
+    .from("submissions")
+    .select("id,status,points,reason,risk_flags,created_at,image_url,ai_result")
+    .eq("user_id", id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const submissions = (submissionData ?? []) as SubmissionRow[];
+  const displayName = profile.full_name || profile.email;
+  const warningCount = submissions.filter((submission) => submission.risk_flags.length > 0).length;
+  const status = profileStatusMeta(profile.status);
+  const metrics: Array<{ label: string; value: string; note: string; Icon: LucideIcon; tone: MetricTone }> = [
+    { label: "Lượt gửi gần đây", value: formatNumber(submissions.length), note: "10 lượt mới nhất", Icon: Recycle, tone: "green" },
+    { label: "Tổng điểm hiện có", value: formatNumber(profile.points), note: "Số dư ví hiện tại", Icon: WalletCards, tone: "blue" },
+    { label: "Độ uy tín", value: `${profile.trust_score}/100`, note: status.note, Icon: ShieldCheck, tone: profile.status === "blocked" ? "red" : "greenSolid" },
+    { label: "Cảnh báo", value: formatNumber(warningCount), note: warningCount > 0 ? "Có lượt cần rà soát" : "Không có cảnh báo gần đây", Icon: ShieldAlert, tone: "red" },
+  ];
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
@@ -61,21 +81,19 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <ArrowLeft size={17} />
               Quay lại
             </Link>
-            <h1 className="text-3xl font-black tracking-[-0.04em] text-[#1b1c1b] lg:text-4xl">{userProfile.name}</h1>
-            <p className="mt-1 text-xs font-bold text-[#6c7b6d]">Mã người dùng: {id.replace("seatech", "#SEA").toUpperCase()}</p>
+            <h1 className="text-3xl font-black tracking-[-0.04em] text-[#1b1c1b] lg:text-4xl">{displayName}</h1>
+            <p className="mt-1 text-xs font-bold text-[#6c7b6d]">Mã người dùng: {profile.id}</p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-[#3d4a3e]">
-              <ProfileFact Icon={CalendarDays} text={`Tham gia: ${userProfile.joinedAt}`} />
-              <ProfileFact Icon={Mail} text={userProfile.email} />
-              <ProfileFact Icon={Phone} text={userProfile.phone} />
-              <ProfileFact Icon={MapPin} text={userProfile.location} />
+              <ProfileFact Icon={CalendarDays} text={`Tham gia: ${formatDate(profile.created_at)}`} />
+              <ProfileFact Icon={Mail} text={profile.email} />
+              <ProfileFact Icon={Phone} text={profile.phone || "Chưa cập nhật SĐT"} />
+              <ProfileFact Icon={MapPin} text={profile.location || "Chưa cập nhật khu vực"} />
             </div>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <ActionButton Icon={Send} label="Gửi thông báo" tone="green" />
-          <ActionButton Icon={Edit} label="Điều chỉnh điểm" tone="blue" />
-          <ActionButton Icon={Lock} label="Khóa tài khoản" tone="red" />
+          <UserManagementActions user={profile} />
         </div>
       </section>
 
@@ -109,19 +127,19 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             </thead>
             <tbody>
               {submissions.map((submission) => (
-                <tr className="group border-b border-[#bbcbbb]/25 transition hover:bg-[#f5f3f2]/70" key={submission.type}>
+                <tr className="group border-b border-[#bbcbbb]/25 transition hover:bg-[#f5f3f2]/70" key={submission.id}>
                   <td className="px-4 py-4">
-                    <ProofVisual tone={submission.tone} />
+                    <ProofVisual imageUrl={submission.image_url} label={wasteLabelFromAiResult(submission.ai_result)} tone={submissionTone(submission.status)} />
                   </td>
                   <td className="px-4 py-4">
-                    <WastePill label={submission.type} tone={submission.tone} />
+                    <WastePill label={wasteLabelFromAiResult(submission.ai_result)} tone={submissionTone(submission.status)} />
                   </td>
-                  <td className="px-4 py-4 text-sm font-semibold text-[#6c7b6d]">{submission.date}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-[#6c7b6d]">{formatDateTime(submission.created_at)}</td>
                   <td className="px-4 py-4 text-sm font-black text-[#2ecc71]">+{submission.points}</td>
                   <td className="px-4 py-4">
-                    <span className="inline-flex items-center gap-2 text-sm font-black text-[#2ecc71]">
-                      <span className="size-2 rounded-full bg-[#2ecc71]" />
-                      {submission.status}
+                    <span className={`inline-flex items-center gap-2 text-sm font-black ${submissionStatusClass(submission.status)}`}>
+                      <span className="size-2 rounded-full bg-current" />
+                      {submissionStatusLabel(submission.status)}
                     </span>
                   </td>
                   <td className="px-4 py-4">
@@ -131,23 +149,35 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                   </td>
                 </tr>
               ))}
+              {submissions.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-12 text-center text-sm font-black text-[#6c7b6d]" colSpan={6}>
+                    Người dùng này chưa có lượt gửi nào.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
 
         <div className="grid gap-3 p-4 lg:hidden">
           {submissions.map((submission) => (
-            <article className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-4 shadow-[0_10px_24px_rgba(45,156,219,0.06)]" key={submission.type}>
+            <article className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-4 shadow-[0_10px_24px_rgba(45,156,219,0.06)]" key={submission.id}>
               <div className="flex gap-3">
-                <ProofVisual tone={submission.tone} large />
+                <ProofVisual imageUrl={submission.image_url} label={wasteLabelFromAiResult(submission.ai_result)} tone={submissionTone(submission.status)} large />
                 <div className="min-w-0 flex-1">
-                  <WastePill label={submission.type} tone={submission.tone} />
-                  <p className="mt-2 text-xs font-semibold text-[#6c7b6d]">{submission.date}</p>
+                  <WastePill label={wasteLabelFromAiResult(submission.ai_result)} tone={submissionTone(submission.status)} />
+                  <p className="mt-2 text-xs font-semibold text-[#6c7b6d]">{formatDateTime(submission.created_at)}</p>
                   <p className="mt-1 text-sm font-black text-[#2ecc71]">+{submission.points} điểm</p>
+                  <button className="mt-3 inline-flex items-center gap-2 text-xs font-black text-[#006d37]" type="button">
+                    Xem chi tiết
+                    <Eye size={14} />
+                  </button>
                 </div>
               </div>
             </article>
           ))}
+          {submissions.length === 0 ? <p className="rounded-2xl border border-[#bbcbbb]/30 bg-white p-6 text-center text-sm font-black text-[#6c7b6d]">Người dùng này chưa có lượt gửi nào.</p> : null}
         </div>
       </section>
     </div>
@@ -163,22 +193,7 @@ function ProfileFact({ Icon, text }: { Icon: LucideIcon; text: string }) {
   );
 }
 
-function ActionButton({ Icon, label, tone }: { Icon: LucideIcon; label: string; tone: "green" | "blue" | "red" }) {
-  const className = {
-    green: "bg-[#2ecc71] shadow-[#2ecc71]/20",
-    blue: "bg-[#2d9cdb] shadow-[#2d9cdb]/20",
-    red: "bg-[#e74c3c] shadow-[#e74c3c]/20",
-  }[tone];
-
-  return (
-    <button className={`inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-black text-white shadow-lg transition hover:scale-[1.03] active:scale-[0.98] ${className}`} type="button">
-      <Icon size={17} />
-      {label}
-    </button>
-  );
-}
-
-function MetricCard({ label, value, note, Icon, tone }: { label: string; value: string; note: string; Icon: LucideIcon; tone: "green" | "blue" | "greenSolid" | "red" }) {
+function MetricCard({ label, value, note, Icon, tone }: { label: string; value: string; note: string; Icon: LucideIcon; tone: MetricTone }) {
   const toneClass = {
     green: "bg-[#2ecc71]/10 text-[#2ecc71]",
     blue: "bg-[#2d9cdb]/10 text-[#2d9cdb]",
@@ -205,21 +220,101 @@ function MetricCard({ label, value, note, Icon, tone }: { label: string; value: 
   );
 }
 
-function WastePill({ label, tone }: { label: string; tone: string }) {
+function WastePill({ label, tone }: { label: string; tone: PillTone }) {
   const className = {
     blue: "bg-[#58bcfd]/18 text-[#004a6d]",
     amber: "bg-[#f39c12]/18 text-[#735c00]",
+    green: "bg-[#2ecc71]/14 text-[#006d37]",
+    red: "bg-[#ffdad6]/55 text-[#ba1a1a]",
   }[tone];
 
   return <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-black uppercase ${className}`}>{label}</span>;
 }
 
-function ProofVisual({ tone, large = false }: { tone: string; large?: boolean }) {
+function ProofVisual({ imageUrl, label, tone, large = false }: { imageUrl: string; label: string; tone: PillTone; large?: boolean }) {
   const className = tone === "amber" ? "bg-[linear-gradient(135deg,#fff7e6,#edf6ed)]" : "bg-[linear-gradient(135deg,#e8f5ff,#edf6ed)]";
 
   return (
     <span className={`grid shrink-0 place-items-center overflow-hidden rounded-lg shadow-sm transition-transform group-hover:scale-105 ${large ? "h-16 w-20 rounded-xl" : "h-12 w-16"} ${className}`}>
-      <ImageIcon className="text-[#006d37]" size={large ? 24 : 20} />
+      {imageUrl ? <Image alt={`Ảnh minh chứng ${label}`} className="h-full w-full object-cover" height={large ? 64 : 48} src={imageUrl} width={large ? 80 : 64} /> : <ImageIcon className="text-[#006d37]" size={large ? 24 : 20} />}
     </span>
   );
+}
+
+function profileStatusMeta(status: ProfileRow["status"]) {
+  if (status === "blocked") return { note: "Tài khoản đang bị chặn" };
+  if (status === "deleted") return { note: "Hồ sơ đã xóa" };
+  return { note: "Tài khoản đang hoạt động" };
+}
+
+function submissionStatusLabel(status: SubmissionRow["status"]) {
+  const labels: Record<SubmissionRow["status"], string> = {
+    approved: "Đã duyệt",
+    pending_review: "Chờ duyệt",
+    rejected: "Từ chối",
+  };
+
+  return labels[status] ?? status;
+}
+
+function submissionStatusClass(status: SubmissionRow["status"]) {
+  const classes: Record<SubmissionRow["status"], string> = {
+    approved: "text-[#2ecc71]",
+    pending_review: "text-[#bd7700]",
+    rejected: "text-[#ba1a1a]",
+  };
+
+  return classes[status] ?? "text-[#6c7b6d]";
+}
+
+function submissionTone(status: SubmissionRow["status"]): PillTone {
+  if (status === "approved") return "green";
+  if (status === "rejected") return "red";
+  return "amber";
+}
+
+function wasteLabelFromAiResult(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "Chưa rõ";
+
+  const record = value as Record<string, unknown>;
+  const wasteType = typeof record.wasteType === "string" ? record.wasteType : typeof record.waste_type === "string" ? record.waste_type : "";
+
+  if (!wasteType) return "Chưa rõ";
+  return wasteTypeLabel[wasteType] ?? wasteType.replaceAll("_", " ");
+}
+
+function formatNumber(value: number) {
+  return value.toLocaleString("vi-VN");
+}
+
+function parseDate(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) return null;
+
+  try {
+    const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  } catch {
+    return null;
+  }
+}
+
+function formatDate(value: unknown) {
+  const date = parseDate(value);
+  if (!date) return "Chưa rõ";
+
+  return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+}
+
+function formatDateTime(value: unknown) {
+  const date = parseDate(value);
+  if (!date) return "Chưa rõ";
+
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }

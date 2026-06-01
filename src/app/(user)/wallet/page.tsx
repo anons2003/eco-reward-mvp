@@ -167,11 +167,13 @@ export default async function WalletPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#d9e5da]">
-                {transactions.map((transaction) => (
+                {transactions.map((transaction) => {
+                  const isDebit = transaction.points < 0;
+                  return (
                   <tr className="transition hover:bg-[#f3fcf3]" key={transaction.id}>
                     <td className="py-4">
                       <div className="flex items-center gap-3">
-                        <span className="grid size-9 place-items-center rounded-xl bg-[#d8f5df] text-[#007a3d]">
+                        <span className={`grid size-9 place-items-center rounded-xl ${isDebit ? "bg-[#e3f2ff] text-[#006496]" : "bg-[#d8f5df] text-[#007a3d]"}`}>
                           <Sparkles size={18} />
                         </span>
                         <span className="text-sm font-black text-[#151d18]">{transaction.reason}</span>
@@ -179,20 +181,23 @@ export default async function WalletPage() {
                     </td>
                     <td className="py-4 text-sm font-semibold text-[#5d6a60]">{new Date(transaction.created_at).toLocaleDateString("vi-VN")}</td>
                     <td className="py-4">
-                      <span className="rounded-full bg-[#edf6ed] px-3 py-1 text-xs font-black text-[#5d6a60]">NHẬN ĐIỂM</span>
+                      <span className="rounded-full bg-[#edf6ed] px-3 py-1 text-xs font-black text-[#5d6a60]">{isDebit ? "ĐỔI THƯỞNG" : "NHẬN ĐIỂM"}</span>
                     </td>
-                    <td className="py-4 text-right text-sm font-black text-[#007a3d]">+{transaction.points} Pts</td>
+                    <td className={`py-4 text-right text-sm font-black ${isDebit ? "text-[#006496]" : "text-[#007a3d]"}`}>{transaction.points > 0 ? "+" : ""}{transaction.points} Pts</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
           <div className="mt-5 grid gap-3 md:hidden">
-            {transactions.map((transaction) => (
+            {transactions.map((transaction) => {
+              const isDebit = transaction.points < 0;
+              return (
               <div className="flex items-center justify-between gap-3 rounded-[22px] border border-[#d9e5da] bg-white p-4" key={transaction.id}>
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d]">
+                  <span className={`grid size-10 shrink-0 place-items-center rounded-2xl ${isDebit ? "bg-[#e3f2ff] text-[#006496]" : "bg-[#d8f5df] text-[#007a3d]"}`}>
                     <Coins size={18} />
                   </span>
                   <div className="min-w-0">
@@ -200,9 +205,10 @@ export default async function WalletPage() {
                     <p className="text-xs font-semibold text-[#5d6a60]">{new Date(transaction.created_at).toLocaleDateString("vi-VN")}</p>
                   </div>
                 </div>
-                <p className="shrink-0 font-black text-[#007a3d]">+{transaction.points}</p>
+                <p className={`shrink-0 font-black ${isDebit ? "text-[#006496]" : "text-[#007a3d]"}`}>{transaction.points > 0 ? "+" : ""}{transaction.points}</p>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

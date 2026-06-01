@@ -1,60 +1,26 @@
 import { Download, Filter, MoreVertical } from "lucide-react";
 import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { createClient } from "@/infrastructure/supabase/server";
 
-const redemptionRows = [
-  {
-    date: "14/10/2023",
-    time: "14:35:22",
-    name: "Nguyễn Văn Lộc",
-    email: "loc.nv@gmail.com",
-    initials: "NL",
-    reward: "Voucher Starbucks - 50k",
-    points: 5000,
-    code: "STB-8829-XL",
-    status: "Thành công",
-    tone: "success",
-  },
-  {
-    date: "14/10/2023",
-    time: "12:10:05",
-    name: "Trần Minh Hiếu",
-    email: "hieutm98@yahoo.com",
-    initials: "TH",
-    reward: "Thẻ cào Vinaphone - 100k",
-    points: 10000,
-    code: "VNP-7712-MK",
-    status: "Đã dùng",
-    tone: "used",
-  },
-  {
-    date: "13/10/2023",
-    time: "21:55:40",
-    name: "Phạm Quỳnh Anh",
-    email: "quynhanh.p@work.co",
-    initials: "QA",
-    reward: "GrabFood Discount 30k",
-    points: 3000,
-    code: "Không khả dụng",
-    status: "Đã hủy",
-    tone: "cancelled",
-  },
-  {
-    date: "13/10/2023",
-    time: "18:22:12",
-    name: "Lê Duy",
-    email: "duyle99@gmail.com",
-    initials: "LD",
-    reward: "Shopee Voucher - 20k",
-    points: 2000,
-    code: "SHP-0012-ZZ",
-    status: "Thành công",
-    tone: "success",
-  },
-];
+type RedemptionRow = {
+  id: string;
+  points_spent: number;
+  status: string;
+  created_at: string;
+  profiles: { full_name: string; email: string } | null;
+  reward_items: { title: string } | null;
+};
 
-const totalRedeemed = redemptionRows.reduce((sum, row) => sum + row.points, 0);
+export default async function AdminRewardHistoryPage() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reward_redemptions")
+    .select("id,points_spent,status,created_at,profiles(full_name,email),reward_items(title)")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const rows = (data ?? []) as unknown as RedemptionRow[];
+  const totalRedeemed = rows.reduce((sum, row) => sum + row.points_spent, 0);
 
-export default function AdminRewardHistoryPage() {
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
       <AdminDashboardMotion />
@@ -85,18 +51,18 @@ export default function AdminRewardHistoryPage() {
               <span className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Trạng thái</span>
               <select className="h-11 min-w-0 rounded-xl border border-[#bbcbbb] bg-[#fbf9f8] px-3 text-sm font-bold text-[#1b1c1b] outline-none focus:ring-2 focus:ring-[#2d9cdb]/20">
                 <option>Tất cả trạng thái</option>
-                <option>Thành công</option>
-                <option>Đã dùng</option>
-                <option>Đã hủy</option>
+                <option>issued</option>
+                <option>used</option>
+                <option>cancelled</option>
               </select>
             </label>
             <label className="grid min-w-0 gap-2">
               <span className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Loại phần thưởng</span>
               <select className="h-11 min-w-0 rounded-xl border border-[#bbcbbb] bg-[#fbf9f8] px-3 text-sm font-bold text-[#1b1c1b] outline-none focus:ring-2 focus:ring-[#2d9cdb]/20">
                 <option>Tất cả loại</option>
-                <option>Voucher Ăn uống</option>
-                <option>Voucher Mua sắm</option>
-                <option>Điểm thưởng</option>
+                <option>Voucher</option>
+                <option>Quà tặng</option>
+                <option>Đóng góp</option>
               </select>
             </label>
             <button className="grid size-11 place-items-center self-end rounded-xl bg-[#e9e8e7] text-[#006d37] transition hover:bg-[#006d37] hover:text-white" type="button" aria-label="Lọc">
@@ -109,7 +75,7 @@ export default function AdminRewardHistoryPage() {
           <div className="relative z-10">
             <p className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Tổng điểm đã đổi</p>
             <h2 className="mt-2 text-5xl font-black leading-none tracking-[-0.06em] text-[#006d37]">{totalRedeemed.toLocaleString("vi-VN")}</h2>
-            <p className="mt-2 text-sm font-bold text-[#2ecc71]">+12% so với tháng trước</p>
+            <p className="mt-2 text-sm font-bold text-[#2ecc71]">{rows.length.toLocaleString("vi-VN")} giao dịch</p>
           </div>
           <div className="absolute -bottom-10 -right-6 size-36 rounded-full bg-[#2ecc71]/10" />
         </div>
@@ -128,22 +94,22 @@ export default function AdminRewardHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#bbcbbb]/18">
-              {redemptionRows.map((row) => (
-                <tr className="transition hover:scale-[0.997] hover:bg-[#f5f3f2]/70" key={`${row.code}-${row.time}`}>
+              {rows.map((row) => (
+                <tr className="transition hover:scale-[0.997] hover:bg-[#f5f3f2]/70" key={row.id}>
                   <td className="px-6 py-5">
-                    <div className="text-sm font-black text-[#1b1c1b]">{row.date}</div>
-                    <div className="text-xs font-semibold text-[#6c7b6d]">{row.time}</div>
+                    <div className="text-sm font-black text-[#1b1c1b]">{new Date(row.created_at).toLocaleDateString("vi-VN")}</div>
+                    <div className="text-xs font-semibold text-[#6c7b6d]">{new Date(row.created_at).toLocaleTimeString("vi-VN")}</div>
                   </td>
                   <td className="px-6 py-5">
-                    <UserCell initials={row.initials} name={row.name} email={row.email} />
+                    <UserCell name={row.profiles?.full_name ?? "Người dùng"} email={row.profiles?.email ?? "Không rõ email"} />
                   </td>
-                  <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{row.reward}</td>
-                  <td className="px-6 py-5 text-sm font-black text-[#e74c3c]">- {row.points.toLocaleString("vi-VN")} pts</td>
+                  <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{row.reward_items?.title ?? "Phần thưởng"}</td>
+                  <td className="px-6 py-5 text-sm font-black text-[#e74c3c]">- {row.points_spent.toLocaleString("vi-VN")} pts</td>
                   <td className="px-6 py-5">
-                    {row.code === "Không khả dụng" ? <span className="text-sm italic text-[#dbdad9]">{row.code}</span> : <code className="rounded bg-[#fbf9f8] px-2 py-1 font-mono text-sm font-black text-[#006d37]">{row.code}</code>}
+                    <code className="rounded bg-[#fbf9f8] px-2 py-1 font-mono text-sm font-black text-[#006d37]">MVP-{row.id.slice(0, 8).toUpperCase()}</code>
                   </td>
                   <td className="px-6 py-5">
-                    <StatusPill status={row.status} tone={row.tone} />
+                    <StatusPill status={row.status} />
                   </td>
                   <td className="px-6 py-5">
                     <button className="text-[#6c7b6d] transition hover:text-[#006d37]" type="button" aria-label="Thêm hành động">
@@ -157,38 +123,33 @@ export default function AdminRewardHistoryPage() {
         </div>
 
         <div className="grid gap-3 p-3 lg:hidden">
-          {redemptionRows.map((row) => (
-            <article className="rounded-2xl border border-[#bbcbbb]/35 bg-white p-4 shadow-[0_10px_24px_rgba(45,156,219,0.06)]" key={`${row.code}-${row.time}`}>
+          {rows.map((row) => (
+            <article className="rounded-2xl border border-[#bbcbbb]/35 bg-white p-4 shadow-[0_10px_24px_rgba(45,156,219,0.06)]" key={row.id}>
               <div className="flex items-start justify-between gap-3">
-                <UserCell initials={row.initials} name={row.name} email={row.email} />
-                <StatusPill status={row.status} tone={row.tone} />
+                <UserCell name={row.profiles?.full_name ?? "Người dùng"} email={row.profiles?.email ?? "Không rõ email"} />
+                <StatusPill status={row.status} />
               </div>
-              <p className="mt-4 text-sm font-black text-[#1b1c1b]">{row.reward}</p>
+              <p className="mt-4 text-sm font-black text-[#1b1c1b]">{row.reward_items?.title ?? "Phần thưởng"}</p>
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs font-bold text-[#6c7b6d]">
-                <span>
-                  {row.date}
-                  <br />
-                  {row.time}
-                </span>
-                <span className="text-right text-[#e74c3c]">- {row.points.toLocaleString("vi-VN")} pts</span>
+                <span>{new Date(row.created_at).toLocaleString("vi-VN")}</span>
+                <span className="text-right text-[#e74c3c]">- {row.points_spent.toLocaleString("vi-VN")} pts</span>
               </div>
-              <div className="mt-3 rounded-xl bg-[#fbf9f8] px-3 py-2 font-mono text-xs font-black text-[#006d37]">{row.code}</div>
+              <div className="mt-3 rounded-xl bg-[#fbf9f8] px-3 py-2 font-mono text-xs font-black text-[#006d37]">MVP-{row.id.slice(0, 8).toUpperCase()}</div>
             </article>
           ))}
         </div>
 
+        {rows.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-base font-black text-[#1b1c1b]">Chưa có giao dịch đổi thưởng.</p>
+            <p className="mt-2 text-sm font-semibold text-[#6c7b6d]">Các lượt đổi điểm của user sẽ xuất hiện tại đây.</p>
+          </div>
+        ) : null}
+
         <div className="flex flex-col items-center justify-between gap-4 border-t border-[#bbcbbb]/35 bg-[#f5f3f2]/45 px-6 py-4 md:flex-row">
-          <span className="text-sm font-semibold text-[#3d4a3e]">Hiển thị 1 - 4 của 1,248 giao dịch</span>
+          <span className="text-sm font-semibold text-[#3d4a3e]">Hiển thị {rows.length.toLocaleString("vi-VN")} giao dịch gần nhất</span>
           <div className="flex items-center gap-2">
-            {[1, 2, 3].map((page) => (
-              <button className={`grid size-10 place-items-center rounded-lg text-sm font-black ${page === 1 ? "bg-[#006d37] text-white" : "border border-[#bbcbbb] text-[#3d4a3e] hover:bg-white"}`} key={page} type="button">
-                {page}
-              </button>
-            ))}
-            <span className="px-1 text-sm font-black text-[#6c7b6d]">...</span>
-            <button className="grid size-10 place-items-center rounded-lg border border-[#bbcbbb] text-sm font-black text-[#3d4a3e] hover:bg-white" type="button">
-              42
-            </button>
+            <span className="grid size-10 place-items-center rounded-lg bg-[#006d37] text-sm font-black text-white">1</span>
           </div>
         </div>
       </section>
@@ -196,7 +157,8 @@ export default function AdminRewardHistoryPage() {
   );
 }
 
-function UserCell({ initials, name, email }: { initials: string; name: string; email: string }) {
+function UserCell({ name, email }: { name: string; email: string }) {
+  const initials = name.slice(0, 1).toUpperCase();
   return (
     <div className="flex min-w-0 items-center gap-3">
       <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#cae6ff] text-xs font-black text-[#001e2f]">{initials}</span>
@@ -208,13 +170,8 @@ function UserCell({ initials, name, email }: { initials: string; name: string; e
   );
 }
 
-function StatusPill({ status, tone }: { status: string; tone: string }) {
-  const className = {
-    success: "bg-[#2ecc71]/18 text-[#005027]",
-    used: "bg-[#2d9cdb]/12 text-[#2d9cdb]",
-    cancelled: "bg-[#ffdad6]/50 text-[#ba1a1a]",
-  }[tone];
-
+function StatusPill({ status }: { status: string }) {
+  const className = status === "issued" ? "bg-[#2ecc71]/18 text-[#005027]" : status === "used" ? "bg-[#2d9cdb]/12 text-[#2d9cdb]" : "bg-[#ffdad6]/50 text-[#ba1a1a]";
   return (
     <span className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-black ${className}`}>
       <span className="size-1.5 rounded-full bg-current" />

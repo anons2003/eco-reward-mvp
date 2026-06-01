@@ -1,24 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Bell, ClipboardList, FileText, Gift, HelpCircle, History, Home, Leaf, LogOut, MapPin, Menu, Search, Settings, ShieldAlert, Trash2, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, ClipboardList, FileText, Gift, HelpCircle, History, Home, Leaf, LogOut, MapPin, Menu, Search, Settings, ShieldAlert, Trash2, Users, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
-const navItems: Array<{ href: string; label: string; Icon: LucideIcon; match: string }> = [
-  { href: "/admin/dashboard", label: "Tổng quan", Icon: Home, match: "/admin/dashboard" },
-  { href: "/admin/rewards", label: "Quà tặng", Icon: Gift, match: "/admin/rewards" },
-  { href: "/admin/rewards/history", label: "Đổi thưởng", Icon: History, match: "/admin/rewards/history" },
-  { href: "/admin/submissions", label: "Lượt gửi", Icon: FileText, match: "/admin/submissions" },
-  { href: "/admin/submissions/review", label: "Hàng chờ", Icon: ClipboardList, match: "/admin/submissions/review" },
-  { href: "/admin/fraud-alerts", label: "Cảnh báo", Icon: ShieldAlert, match: "/admin/fraud-alerts" },
-  { href: "/admin/reports", label: "Báo cáo", Icon: BarChart3, match: "/admin/reports" },
-  { href: "/admin/audit-logs", label: "Nhật ký", Icon: ClipboardList, match: "/admin/audit-logs" },
-  { href: "/admin/bins", label: "Thùng rác", Icon: Trash2, match: "/admin/bins" },
-  { href: "/admin/locations", label: "Địa điểm", Icon: MapPin, match: "/admin/locations" },
-  { href: "/admin/users", label: "Người dùng", Icon: Users, match: "/admin/users" },
-  { href: "/admin/points", label: "Cấu hình điểm", Icon: Settings, match: "/admin/points" },
-  { href: "/admin/settings", label: "Hệ thống", Icon: Settings, match: "/admin/settings" },
+type NavItem = { href: string; label: string; Icon: LucideIcon; match: string };
+
+const navGroups: Array<{ label: string; items: NavItem[] }> = [
+  {
+    label: "Điều hành",
+    items: [
+      { href: "/admin/dashboard", label: "Tổng quan", Icon: Home, match: "/admin/dashboard" },
+      { href: "/admin/reports", label: "Báo cáo", Icon: BarChart3, match: "/admin/reports" },
+    ],
+  },
+  {
+    label: "Kiểm duyệt",
+    items: [
+      { href: "/admin/submissions", label: "Lượt gửi", Icon: FileText, match: "/admin/submissions" },
+      { href: "/admin/submissions/review", label: "Hàng chờ", Icon: ClipboardList, match: "/admin/submissions/review" },
+      { href: "/admin/fraud-alerts", label: "Cảnh báo", Icon: ShieldAlert, match: "/admin/fraud-alerts" },
+    ],
+  },
+  {
+    label: "Tài sản",
+    items: [
+      { href: "/admin/bins", label: "Thùng rác", Icon: Trash2, match: "/admin/bins" },
+      { href: "/admin/locations", label: "Địa điểm", Icon: MapPin, match: "/admin/locations" },
+    ],
+  },
+  {
+    label: "Quà tặng",
+    items: [
+      { href: "/admin/rewards", label: "Danh mục quà", Icon: Gift, match: "/admin/rewards" },
+      { href: "/admin/rewards/history", label: "Lịch sử đổi", Icon: History, match: "/admin/rewards/history" },
+    ],
+  },
+  {
+    label: "Quản trị",
+    items: [
+      { href: "/admin/users", label: "Người dùng", Icon: Users, match: "/admin/users" },
+      { href: "/admin/points", label: "Cấu hình điểm", Icon: Settings, match: "/admin/points" },
+      { href: "/admin/settings", label: "Hệ thống", Icon: Settings, match: "/admin/settings" },
+      { href: "/admin/audit-logs", label: "Nhật ký", Icon: ClipboardList, match: "/admin/audit-logs" },
+    ],
+  },
 ];
 
 const mobileItems = [
@@ -66,21 +93,35 @@ export function AdminShell({
             </span>
           </Link>
 
-          <nav className="mt-9 space-y-1">
-            {navItems.map(({ href, label, Icon, match }) => {
-              const active = isActive(pathname, match);
+          <nav className="mt-7 space-y-2">
+            {navGroups.map((group) => {
+              const groupActive = group.items.some((item) => isActive(pathname, item.match));
 
               return (
-                <Link
-                  className={`flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${
-                    active ? "bg-[#2ecc71] text-[#00391f]" : "text-[#3e4941] hover:bg-[#efedec] hover:text-[#006d37]"
-                  }`}
-                  href={href}
-                  key={label}
-                >
-                  <Icon size={17} />
-                  <span>{label}</span>
-                </Link>
+                <details className="group rounded-2xl" open={groupActive} key={group.label}>
+                  <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 text-[11px] font-black uppercase tracking-[0.12em] text-[#6e7a70] outline-none transition hover:bg-[#efedec] focus-visible:ring-2 focus-visible:ring-[#006d37]/20 [&::-webkit-details-marker]:hidden">
+                    <span>{group.label}</span>
+                    <ChevronDown className="shrink-0 transition group-open:rotate-180" size={15} />
+                  </summary>
+                  <div className="mt-1 space-y-1 pl-2">
+                  {group.items.map(({ href, label, Icon, match }) => {
+                    const active = isActive(pathname, match);
+
+                    return (
+                      <Link
+                        className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${
+                          active ? "bg-[#2ecc71] text-[#00391f]" : "text-[#3e4941] hover:bg-[#efedec] hover:text-[#006d37]"
+                        }`}
+                        href={href}
+                        key={label}
+                      >
+                        <Icon size={16} />
+                        <span>{label}</span>
+                      </Link>
+                    );
+                  })}
+                  </div>
+                </details>
               );
             })}
           </nav>

@@ -14,10 +14,16 @@ export type Database = {
           location: string | null;
           bio: string | null;
           role: "user" | "admin";
+          status: "active" | "blocked" | "deleted";
           points: number;
           trust_score: number;
+          created_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };
+        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {
+          id: string;
+          email: string;
+          full_name: string;
+        };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
         Relationships: [];
       };
@@ -115,6 +121,10 @@ export type Database = {
           points_required: number;
           stock: number;
           active: boolean;
+          category: "Voucher" | "Quà tặng" | "Đóng góp" | "Dịch vụ";
+          partner: string;
+          image_url: string | null;
+          expires_at: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["reward_items"]["Row"]> & {
@@ -156,8 +166,23 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Functions: {
+      redeem_reward: {
+        Args: { reward_id: string };
+        Returns: {
+          redemption_id: string;
+          reward_item_id: string;
+          points_spent: number;
+          remaining_points: number;
+          remaining_stock: number;
+        };
+      };
+    };
+    Enums: {
+      profile_status: "active" | "blocked" | "deleted";
+      submission_status: "approved" | "pending_review" | "rejected";
+      user_role: "user" | "admin";
+    };
     CompositeTypes: Record<string, never>;
   };
 };
