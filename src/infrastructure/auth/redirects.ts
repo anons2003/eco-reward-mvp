@@ -31,6 +31,11 @@ export function appOrigin(request: Request) {
     return requestUrl.origin;
   }
 
+  const originFromRequest = requestOrigin(request);
+  if (originFromRequest) {
+    return originFromRequest;
+  }
+
   return (
     normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL) ??
     normalizeOrigin(process.env.APP_URL?.includes("localhost") ? undefined : process.env.APP_URL) ??
