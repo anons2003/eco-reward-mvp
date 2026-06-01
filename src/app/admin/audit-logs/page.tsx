@@ -1,5 +1,5 @@
 import { ArrowDownToLine, CheckCircle2, Eye, Filter, LockKeyhole, Search, ShieldAlert, ShieldCheck, UserCog, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 
 const logs = [
   { time: "14:25:02\n15/10/2023", admin: "Lê Hoàng Minh", role: "Quản trị viên", action: "Phê duyệt", target: "Chiến dịch 'Sống Xanh'", ip: "Công viên Quận 1", value: "Đã duyệt", tone: "green" },
@@ -17,7 +17,7 @@ const summary = [
 export default function AdminAuditLogsPage() {
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">

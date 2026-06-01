@@ -1,6 +1,5 @@
 import { CalendarDays, ChevronLeft, ChevronRight, Filter, Package, SlidersHorizontal } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
-import { RewardManagementActions } from "@/components/admin/reward-management-actions";
+import { DynamicAdminDashboardMotion, DynamicRewardManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -19,14 +18,14 @@ export default async function AdminRewardsPage() {
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">
           <h1 className="text-3xl font-black leading-tight tracking-[-0.04em] text-[#2c3e50] lg:text-4xl">Quản lý Quà tặng & Voucher</h1>
           <p className="mt-2 max-w-3xl text-base font-semibold leading-7 text-[#6c7b6d]">Theo dõi tồn kho, trạng thái xuất bản và hạn dùng phần thưởng cho cộng đồng SeaTech.</p>
         </div>
-        <RewardManagementActions />
+        <DynamicRewardManagementActions />
       </section>
 
       <section className="grid-flow-dense grid gap-4 lg:grid-cols-12">
@@ -165,7 +164,7 @@ function RewardAdminCard({ reward }: { reward: RewardRow }) {
 
         <div className="flex items-center justify-between gap-3 border-t border-[#bbcbbb]/35 pt-4">
           <span className="rounded-full bg-[#e9e8e7] px-3 py-1 text-xs font-black text-[#3d4a3e]">{reward.category}</span>
-          <RewardManagementActions reward={reward} />
+          <DynamicRewardManagementActions reward={reward} />
         </div>
       </div>
     </article>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, CalendarDays, Clock3, Coins, Download, FileText, Recycle, ShieldAlert, Trash2, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 import { seaTechService } from "@/application/services/seatech-service";
 
 const weeklyCollection = [
@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="hidden items-end justify-between lg:flex" data-admin-reveal>
         <div>

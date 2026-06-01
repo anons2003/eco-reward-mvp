@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowDownToLine, CheckCircle2, ChevronLeft, ChevronRight, Eye, FileCheck2, Plus, Search, SlidersHorizontal, XCircle, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -66,7 +66,7 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">

@@ -1,5 +1,5 @@
 import { BarChart3, ChevronLeft, ChevronRight, Edit, Grid2X2, List, MapPin, Navigation, Plus, Recycle, School, Store, Trees, Warehouse } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 
 const locations = [
   {
@@ -47,7 +47,7 @@ const locations = [
 export default function AdminLocationsPage() {
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">

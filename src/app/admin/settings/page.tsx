@@ -1,5 +1,5 @@
 import { Bell, Bot, CheckCircle2, Clock, Mail, MessageSquare, RefreshCw, RotateCcw, Save, ShieldCheck, Smartphone, Sparkles, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 
 const notificationRows = [
   { label: "Nhắc thưởng thành công", checked: true },
@@ -11,7 +11,7 @@ const notificationRows = [
 export default function AdminSettingsPage() {
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">

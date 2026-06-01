@@ -1,9 +1,8 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AlertTriangle, CalendarClock, Database, ImageIcon, MapPin, Recycle, ShieldCheck } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
 import { AdminCard, AdminMetric, AdminPageHeader, AdminStatusBadge } from "@/components/admin/admin-ui";
-import { ReviewActions } from "@/components/admin/review-actions";
+import { DynamicAdminDashboardMotion, DynamicReviewActions } from "@/components/shared/dynamic-client-components";
 import { seaTechService } from "@/application/services/seatech-service";
 
 const wasteTypeLabel: Record<string, string> = {
@@ -36,7 +35,7 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
 
   return (
     <div className="space-y-6">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <AdminPageHeader
         eyebrow="Chi tiết kiểm duyệt"
@@ -116,7 +115,7 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
           </div>
         </div>
 
-        <ReviewActions submissionId={submission.id} />
+        <DynamicReviewActions submissionId={submission.id} />
       </div>
     </div>
   );

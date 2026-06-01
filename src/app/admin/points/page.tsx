@@ -1,5 +1,5 @@
 import { Bot, Edit3, Leaf, RotateCcw, Save, Sparkles, Trash2, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 
 const pointCards = [
   { title: "Chai nhựa", description: "PET, HDPE và chai nhựa sạch sau phân loại.", value: 10, Icon: Trash2, tone: "blue" },
@@ -11,7 +11,7 @@ const pointCards = [
 export default function AdminPointsPage() {
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">

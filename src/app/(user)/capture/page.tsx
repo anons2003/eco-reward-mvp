@@ -1,4 +1,4 @@
-import { CaptureFlow } from "@/components/user/capture-flow";
+import { DynamicCaptureFlow } from "@/components/shared/dynamic-client-components";
 import { PageHeader } from "@/components/shared/eco-ui";
 
 export default async function CapturePage({ searchParams }: { searchParams: Promise<{ scanSessionId?: string }> }) {
@@ -8,7 +8,7 @@ export default async function CapturePage({ searchParams }: { searchParams: Prom
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader eyebrow="Bằng chứng ảnh" title="Chụp ảnh rác" body="Chụp trực tiếp bằng camera để giảm rủi ro dùng ảnh cũ hoặc gửi sai vật phẩm." />
-      <CaptureFlow scanSessionId={scanSessionId} />
+      <DynamicCaptureFlow scanSessionId={scanSessionId} />
     </div>
   );
 }

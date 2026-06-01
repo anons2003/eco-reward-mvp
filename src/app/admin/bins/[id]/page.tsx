@@ -2,8 +2,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Info, MapPin, PackageCheck, RadioTower, Recycle, Signal, Trash2, Wrench } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
-import { BinManagementActions } from "@/components/admin/bin-management-actions";
+import { DynamicAdminDashboardMotion, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -51,7 +50,7 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between" data-admin-reveal>
         <div className="min-w-0">
@@ -69,7 +68,7 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
           </div>
         </div>
         <div className="flex flex-wrap gap-3 lg:justify-end">
-          <BinManagementActions bin={bin} variant="toolbar" />
+          <DynamicBinManagementActions bin={bin} variant="toolbar" />
           <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#ff9f1a] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(255,159,26,0.22)] transition hover:-translate-y-0.5 active:translate-y-0" type="button">
             <Wrench size={17} />
             Bảo trì

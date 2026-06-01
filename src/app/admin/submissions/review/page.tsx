@@ -1,5 +1,5 @@
 import { Check, ChevronLeft, ChevronRight, Clock3, Filter, History, ImageIcon, MoreVertical, ShieldAlert, TrendingUp, X, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
+import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
 
 const reviewStats = [
   { label: "Tổng chờ duyệt", value: "24", note: "+12%", Icon: TrendingUp, tone: "red" },
@@ -17,7 +17,7 @@ const queueRows = [
 export default function AdminReviewQueuePage() {
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">

@@ -1,8 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Edit, Eye, Filter, MapPin, QrCode, Search, Trash2, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
-import { BinManagementActions } from "@/components/admin/bin-management-actions";
+import { DynamicAdminDashboardMotion, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -23,14 +22,14 @@ export default async function AdminBinsPage() {
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">
           <h1 className="text-3xl font-black leading-tight tracking-[-0.04em] text-[#2c3e50] lg:text-4xl">Quản lý Thùng rác</h1>
           <p className="mt-2 max-w-3xl text-base font-semibold leading-7 text-[#3d4a3e]">Tạo thùng, quản lý mã QR và bật/tắt thùng cho luồng quét của người dùng.</p>
         </div>
-        <BinManagementActions />
+        <DynamicBinManagementActions />
       </section>
 
       <section className="grid-flow-dense grid gap-6 md:grid-cols-3">
@@ -98,7 +97,7 @@ export default async function AdminBinsPage() {
                       <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(bin.qr_code, 512)} target="_blank" rel="noreferrer" title="Tải QR">
                         <QrCode size={18} />
                       </a>
-                      <BinManagementActions bin={bin} />
+                      <DynamicBinManagementActions bin={bin} />
                     </div>
                   </td>
                 </tr>
@@ -132,7 +131,7 @@ export default async function AdminBinsPage() {
                   <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(bin.qr_code, 512)} target="_blank" rel="noreferrer" title="Tải QR">
                     <QrCode size={18} />
                   </a>
-                  <BinManagementActions bin={bin} />
+                  <DynamicBinManagementActions bin={bin} />
                 </div>
               </div>
             </article>

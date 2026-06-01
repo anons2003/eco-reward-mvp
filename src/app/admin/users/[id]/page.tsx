@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Eye, Gift, ImageIcon, Mail, MapPin, Phone, Recycle, ShieldCheck, ShieldAlert, TrendingUp, UserRound, WalletCards, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
-import { UserManagementActions } from "@/components/admin/user-management-actions";
+import { DynamicAdminDashboardMotion, DynamicUserManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -65,7 +64,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between" data-admin-reveal>
         <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start">
@@ -93,7 +92,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <UserManagementActions user={profile} />
+          <DynamicUserManagementActions user={profile} />
         </div>
       </section>
 

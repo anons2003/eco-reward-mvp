@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Bell, Camera, Globe2, LockKeyhole, LogOut, Mail, MapPin, Save, Shield, UserRound } from "lucide-react";
+import { DynamicAvatarUploadForm } from "@/components/shared/dynamic-client-components";
 import { PendingSubmitButton } from "@/components/shared/loading-ui";
-import { AvatarUploadForm } from "@/components/user/avatar-upload-form";
 import { getUserShell } from "@/infrastructure/auth/session";
 
 function Toggle({ enabled = true }: { enabled?: boolean }) {
@@ -56,7 +56,7 @@ export default async function SettingsPage() {
 
       <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="rounded-[2rem] border border-[#bdcabe]/60 bg-white p-6 text-center shadow-[0_2px_8px_rgba(21,29,24,0.05)]">
-          <AvatarUploadForm avatarUrl={avatarUrl} displayName={displayName} />
+          <DynamicAvatarUploadForm avatarUrl={avatarUrl} displayName={displayName} />
           <h2 className="mt-4 text-xl font-black text-[#151d18]">{displayName}</h2>
           <p className="mt-1 text-sm font-semibold text-[#6e7a70]">{email}</p>
           <span className="mt-4 inline-flex rounded-full bg-[#d8f5df] px-3 py-1 text-xs font-black uppercase text-[#007a3d]">Thành viên Bạch kim</span>

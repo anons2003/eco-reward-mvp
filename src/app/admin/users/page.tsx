@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight, Eye, Filter, Search, ShieldAlert, TrendingUp, UserPlus, Users, WalletCards, type LucideIcon } from "lucide-react";
-import { AdminDashboardMotion } from "@/components/admin/admin-dashboard-motion";
-import { UserManagementActions } from "@/components/admin/user-management-actions";
+import { DynamicAdminDashboardMotion, DynamicUserManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -67,7 +66,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
-      <AdminDashboardMotion />
+      <DynamicAdminDashboardMotion />
 
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" data-admin-reveal>
         <div className="max-w-4xl">
@@ -75,7 +74,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
           <p className="mt-2 max-w-3xl text-base font-semibold leading-7 text-[#3d4a3e]">Theo dõi và quản lý cộng đồng tái chế SeaTech.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <UserManagementActions />
+          <DynamicUserManagementActions />
         </div>
       </section>
 
@@ -143,7 +142,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
                         <Link className="grid size-9 shrink-0 place-items-center rounded-lg text-[#2d9cdb] transition hover:bg-[#2d9cdb]/10 active:scale-90" href={`/admin/users/${user.id}`} title="Xem chi tiết" aria-label="Xem chi tiết">
                           <Eye size={18} />
                         </Link>
-                        <UserManagementActions user={user} />
+                        <DynamicUserManagementActions user={user} />
                       </div>
                     </td>
                   </tr>
@@ -183,7 +182,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
                     Chi tiết
                   </Link>
                   <div className="shrink-0">
-                    <UserManagementActions user={user} />
+                    <DynamicUserManagementActions user={user} />
                   </div>
                 </div>
               </article>

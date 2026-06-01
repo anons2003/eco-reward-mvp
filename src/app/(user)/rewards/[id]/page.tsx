@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Leaf, Share2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
-import { RewardRedeemButton } from "@/components/user/reward-redeem-button";
+import { DynamicRewardRedeemButton } from "@/components/shared/dynamic-client-components";
 import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -110,7 +110,7 @@ export default async function RewardDetailPage({ params }: { params: Promise<{ i
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e7f0e7]">
               <div className="h-full rounded-full bg-[#09864f]" style={{ width: `${Math.min((afterRedeem / Math.max(points, 1)) * 100, 100)}%` }} />
             </div>
-            <RewardRedeemButton rewardId={reward.id} canRedeem={canRedeem} />
+            <DynamicRewardRedeemButton rewardId={reward.id} canRedeem={canRedeem} />
           </section>
 
           <div className="rounded-3xl bg-[#fff3c4] p-4 text-sm font-semibold leading-6 text-[#3e4941]">
