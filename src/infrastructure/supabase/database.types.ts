@@ -33,12 +33,34 @@ export type Database = {
           name: string;
           qr_code: string;
           location_name: string;
+          location_id: string | null;
           lat: number;
           lng: number;
           active: boolean;
         };
         Insert: Partial<Database["public"]["Tables"]["bins"]["Row"]>;
         Update: Partial<Database["public"]["Tables"]["bins"]["Row"]>;
+      };
+      locations: {
+        Row: {
+          id: string;
+          name: string;
+          address: string;
+          district: string | null;
+          ward: string | null;
+          lat: number;
+          lng: number;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["locations"]["Row"]> & {
+          name: string;
+          address: string;
+          lat: number;
+          lng: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["locations"]["Row"]>;
       };
       scan_sessions: {
         Row: {
@@ -167,7 +189,24 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["audit_logs"]["Row"]>;
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      admin_location_summary: {
+        Row: {
+          id: string;
+          name: string;
+          address: string;
+          district: string | null;
+          ward: string | null;
+          lat: number;
+          lng: number;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+          bin_count: number;
+          active_bin_count: number;
+        };
+      };
+    };
     Functions: {
       redeem_reward: {
         Args: { reward_id: string };

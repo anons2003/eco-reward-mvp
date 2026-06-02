@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BarChart3, Bell, ChevronDown, ClipboardList, FileText, Gift, HelpCircle, History, Home, Leaf, LogOut, MapPin, Menu, Search, Settings, ShieldAlert, Trash2, Users, X, type LucideIcon } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, ClipboardList, FileText, Gift, HelpCircle, History, Home, Leaf, LogOut, Menu, Search, Settings, ShieldAlert, Trash2, Users, X, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
@@ -28,7 +28,6 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     label: "Tài sản",
     items: [
       { href: "/admin/bins", label: "Thùng rác", Icon: Trash2, match: "/admin/bins" },
-      { href: "/admin/locations", label: "Địa điểm", Icon: MapPin, match: "/admin/locations" },
     ],
   },
   {

@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type BinRow = Database["public"]["Tables"]["bins"]["Row"];
+type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 type PointRuleRow = Database["public"]["Tables"]["point_rules"]["Row"];
 type RewardRow = Database["public"]["Tables"]["reward_items"]["Row"];
 type WasteType = PointRuleRow["waste_type"];
@@ -22,9 +23,10 @@ export const DynamicAdminDashboardMotion = dynamic(() =>
   import("@/components/admin/admin-dashboard-motion").then((mod) => mod.AdminDashboardMotion),
 );
 
-export const DynamicBinManagementActions = dynamic<{ bin?: BinRow; variant?: "compact" | "toolbar" }>(() =>
+export const DynamicBinManagementActions = dynamic<{ bin?: BinRow; variant?: "compact" | "toolbar"; locations?: Pick<LocationRow, "id" | "name" | "address" | "district" | "ward" | "lat" | "lng">[] }>(() =>
   import("@/components/admin/bin-management-actions").then((mod) => mod.BinManagementActions),
 );
+export { DynamicAdminMapLibreMap } from "@/components/shared/admin-maplibre-map-dynamic";
 
 export const DynamicPointRuleManagementActions = dynamic<{ rule?: PointRuleRow; wasteType: WasteType }>(() =>
   import("@/components/admin/point-rule-management-actions").then((mod) => mod.PointRuleManagementActions),

@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Info, MapPin, PackageCheck, RadioTower, Recycle, Signal, Trash2, Wrench } from "lucide-react";
-import { DynamicAdminDashboardMotion, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
+import { DynamicAdminDashboardMotion, DynamicAdminMapLibreMap, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type BinRow = Database["public"]["Tables"]["bins"]["Row"];
+type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 
-const binColumns = "id,name,qr_code,location_name,lat,lng,active";
+const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
 
 function qrImageUrl(qrCode: string, size = 320) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(qrCode)}`;
@@ -36,7 +37,9 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
   const { id } = await params;
   const supabase = await createClient();
   const { data, error } = await supabase.from("bins").select(binColumns).eq("id", id).single();
+  const { data: locationsData } = await supabase.from("locations").select("id,name,address,district,ward,lat,lng,active").eq("active", true).order("name", { ascending: true });
   const bin = data as BinRow | null;
+  const locations = (locationsData ?? []) as LocationRow[];
 
   if (error || !bin) notFound();
 
@@ -68,7 +71,7 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
           </div>
         </div>
         <div className="flex flex-wrap gap-3 lg:justify-end">
-          <DynamicBinManagementActions bin={bin} variant="toolbar" />
+          <DynamicBinManagementActions bin={bin} variant="toolbar" locations={locations} />
           <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#ff9f1a] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(255,159,26,0.22)] transition hover:-translate-y-0.5 active:translate-y-0" type="button">
             <Wrench size={17} />
             Bảo trì
@@ -154,12 +157,13 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
 
         <aside className="grid gap-6 xl:content-start">
           <article className="overflow-hidden rounded-3xl border border-[#d9e5da] bg-white shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
-            <div className="relative grid h-48 place-items-center bg-[linear-gradient(to_right,rgba(0,109,55,0.09)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,156,219,0.13)_1px,transparent_1px),linear-gradient(135deg,#e7f8ff,#f5f3f2)] bg-[size:34px_34px]">
-              <span className="grid size-20 place-items-center rounded-full bg-[#006d37]/18">
-                <span className="grid size-14 place-items-center rounded-full bg-[#006d37] text-white">
-                  <MapPin fill="currentColor" size={25} />
-                </span>
-              </span>
+            <div className="relative">
+              <DynamicAdminMapLibreMap
+                heightClassName="h-56"
+                center={[bin.lng, bin.lat]}
+                zoom={15}
+                markers={[{ id: bin.id, label: bin.name, description: bin.location_name, lat: bin.lat, lng: bin.lng, tone: bin.active ? "bin" : "inactive" }]}
+              />
               <a className="absolute bottom-5 left-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-black text-[#006d37] shadow-[0_10px_24px_rgba(21,29,24,0.12)]" href={mapsUrl(bin)} target="_blank" rel="noreferrer">
                 <ExternalLink size={16} />
                 Mở Maps

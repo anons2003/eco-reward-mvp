@@ -1,13 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Edit, Eye, Filter, MapPin, QrCode, Search, Trash2, type LucideIcon } from "lucide-react";
-import { DynamicAdminDashboardMotion, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
+import { LocationGroupsSearch } from "@/components/admin/location-groups-search";
+import { DynamicAdminDashboardMotion, DynamicAdminMapLibreMap, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type BinRow = Database["public"]["Tables"]["bins"]["Row"];
+type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 
-const binColumns = "id,name,qr_code,location_name,lat,lng,active";
+const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
 
 function qrImageUrl(qrCode: string, size = 220) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(qrCode)}`;
@@ -16,7 +18,9 @@ function qrImageUrl(qrCode: string, size = 220) {
 export default async function AdminBinsPage() {
   const supabase = await createClient();
   const { data, error } = await supabase.from("bins").select(binColumns).order("name", { ascending: true });
+  const { data: locationsData } = await supabase.from("locations").select("id,name,address,district,ward,lat,lng,active").eq("active", true).order("name", { ascending: true });
   const bins = (data ?? []) as BinRow[];
+  const locations = (locationsData ?? []) as LocationRow[];
   const activeBins = bins.filter((bin) => bin.active).length;
   const inactiveBins = bins.length - activeBins;
 
@@ -29,7 +33,7 @@ export default async function AdminBinsPage() {
           <h1 className="text-3xl font-black leading-tight tracking-[-0.04em] text-[#2c3e50] lg:text-4xl">Quản lý Thùng rác</h1>
           <p className="mt-2 max-w-3xl text-base font-semibold leading-7 text-[#3d4a3e]">Tạo thùng, quản lý mã QR và bật/tắt thùng cho luồng quét của người dùng.</p>
         </div>
-        <DynamicBinManagementActions />
+        <DynamicBinManagementActions locations={locations} />
       </section>
 
       <section className="grid-flow-dense grid gap-6 md:grid-cols-3">
@@ -52,6 +56,33 @@ export default async function AdminBinsPage() {
             QR sẵn sàng
           </span>
         </div>
+      </section>
+
+      <section className="grid-flow-dense grid gap-6 lg:grid-cols-12" data-admin-reveal>
+        <article className="overflow-hidden rounded-3xl border border-[#bbcbbb]/25 bg-white p-4 shadow-[0_14px_38px_rgba(45,156,219,0.08)] lg:col-span-7">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-black tracking-[-0.03em] text-[#2c3e50]">Bản đồ thùng rác</h2>
+              <p className="mt-1 text-sm font-semibold text-[#6c7b6d]">Mỗi marker là một QR bin đang lưu trong hệ thống.</p>
+            </div>
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#edf6ed] px-3 py-1 text-xs font-black text-[#006d37]">
+              <MapPin size={14} />
+              {locations.length.toLocaleString("vi-VN")} địa điểm
+            </span>
+          </div>
+          <DynamicAdminMapLibreMap
+            markers={bins.map((bin) => ({
+              id: bin.id,
+              label: bin.name,
+              description: `${bin.qr_code} · ${bin.location_name}`,
+              lat: bin.lat,
+              lng: bin.lng,
+              tone: bin.active ? "bin" : "inactive",
+            }))}
+          />
+        </article>
+
+        <LocationGroupsSearch bins={bins} locations={locations} />
       </section>
 
       {error ? (
@@ -97,7 +128,7 @@ export default async function AdminBinsPage() {
                       <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(bin.qr_code, 512)} target="_blank" rel="noreferrer" title="Tải QR">
                         <QrCode size={18} />
                       </a>
-                      <DynamicBinManagementActions bin={bin} />
+                      <DynamicBinManagementActions bin={bin} locations={locations} />
                     </div>
                   </td>
                 </tr>
@@ -131,7 +162,7 @@ export default async function AdminBinsPage() {
                   <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(bin.qr_code, 512)} target="_blank" rel="noreferrer" title="Tải QR">
                     <QrCode size={18} />
                   </a>
-                  <DynamicBinManagementActions bin={bin} />
+                  <DynamicBinManagementActions bin={bin} locations={locations} />
                 </div>
               </div>
             </article>

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import type { User } from "@supabase/supabase-js";
 import { safeNextPath } from "@/infrastructure/auth/redirects";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
@@ -20,16 +21,19 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     const url = new URL(loginPath, request.url);
     url.searchParams.set("error", "invalid_credentials");
     url.searchParams.set("next", next);
     return NextResponse.redirect(url, { status: 302 });
+  }
+
+  let user: User | null = signInData?.user ?? null;
+  if (!user) {
+    const { data: currentUserData } = await supabase.auth.getUser();
+    user = currentUserData.user ?? null;
   }
 
   if (!user?.email_confirmed_at) {

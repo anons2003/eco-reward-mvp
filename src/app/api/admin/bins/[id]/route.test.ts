@@ -6,16 +6,20 @@ const update = vi.fn();
 const updateEq = vi.fn();
 const updateSelect = vi.fn();
 const updateSingle = vi.fn();
+const locationSelect = vi.fn();
+const locationEq = vi.fn();
+const locationSingle = vi.fn();
 const auditInsert = vi.fn();
 const from = vi.fn((table: string) => {
   if (table === "audit_logs") return { insert: auditInsert };
+  if (table === "locations") return { select: locationSelect };
   return { update };
 });
 
 vi.mock("@/infrastructure/auth/admin-session", () => ({ requireAdmin }));
 vi.mock("@/infrastructure/supabase/admin", () => ({ createAdminClient }));
 
-const binColumns = "id,name,qr_code,location_name,lat,lng,active";
+const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
 
 function patchRequest(body: unknown) {
   return new Request("https://eco.test/api/admin/bins/bin-1", {
@@ -34,6 +38,9 @@ describe("/api/admin/bins/[id]", () => {
     updateEq.mockReset();
     updateSelect.mockReset();
     updateSingle.mockReset();
+    locationSelect.mockReset();
+    locationEq.mockReset();
+    locationSingle.mockReset();
     auditInsert.mockReset();
     from.mockClear();
 
@@ -46,14 +53,26 @@ describe("/api/admin/bins/[id]", () => {
     update.mockReturnValue({ eq: updateEq });
     updateEq.mockReturnValue({ select: updateSelect });
     updateSelect.mockReturnValue({ single: updateSingle });
+    locationSelect.mockReturnValue({ eq: locationEq });
+    locationEq.mockReturnValue({ single: locationSingle });
+    locationSingle.mockResolvedValue({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        name: "127 Quách Thị Trang",
+        lat: 16.005406,
+        lng: 108.222811,
+      },
+      error: null,
+    });
     updateSingle.mockResolvedValue({
       data: {
         id: "bin-1",
         name: "SeaBin Edited",
         qr_code: "ECO-BIN-EDITED",
-        location_name: "Quận 3",
-        lat: 10.78,
-        lng: 106.69,
+        location_name: "127 Quách Thị Trang",
+        location_id: "11111111-1111-4111-8111-111111111111",
+        lat: 16.005406,
+        lng: 108.222811,
         active: false,
       },
       error: null,
@@ -68,21 +87,22 @@ describe("/api/admin/bins/[id]", () => {
       patchRequest({
         name: "SeaBin Edited",
         qrCode: "ECO-BIN-EDITED",
-        locationName: "Quận 3",
-        lat: 10.78,
-        lng: 106.69,
+        locationId: "11111111-1111-4111-8111-111111111111",
         active: false,
       }),
       { params: { id: "bin-1" } },
     );
 
     expect(response.status).toBe(200);
+    expect(locationSelect).toHaveBeenCalledWith("id,name,lat,lng");
+    expect(locationEq).toHaveBeenCalledWith("id", "11111111-1111-4111-8111-111111111111");
     expect(update).toHaveBeenCalledWith({
       name: "SeaBin Edited",
       qr_code: "ECO-BIN-EDITED",
-      location_name: "Quận 3",
-      lat: 10.78,
-      lng: 106.69,
+      location_id: "11111111-1111-4111-8111-111111111111",
+      location_name: "127 Quách Thị Trang",
+      lat: 16.005406,
+      lng: 108.222811,
       active: false,
     });
     expect(updateSelect).toHaveBeenCalledWith(binColumns);

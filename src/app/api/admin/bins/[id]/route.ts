@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAdmin } from "@/infrastructure/auth/admin-session";
 import { createAdminClient } from "@/infrastructure/supabase/admin";
-import { binColumns, binPayloadSchema, toBinValues, type AuditInsertTable, type BinMutationTable, type BinUpdate } from "../bin-schema";
+import { binColumns, binLocationColumns, binPayloadSchema, toBinValues, type AuditInsertTable, type BinLocationRow, type BinMutationTable, type BinUpdate } from "../bin-schema";
 
 type RouteContext = {
   params: { id: string } | Promise<{ id: string }>;
@@ -13,6 +13,14 @@ type BinDeleteTable = {
       select(columns: "id"): {
         single(): Promise<{ data: { id: string } | null; error: { message: string } | null }>;
       };
+    };
+  };
+};
+
+type BinLocationTable = {
+  select(columns: string): {
+    eq(column: "id", value: string): {
+      single(): Promise<{ data: BinLocationRow | null; error: { message: string } | null }>;
     };
   };
 };
@@ -33,8 +41,15 @@ export async function PATCH(request: NextRequest | Request, context: RouteContex
   }
 
   const id = await getBinId(context);
-  const values = toBinValues(parsed.data);
   const supabase = createAdminClient();
+  const locationTable = supabase.from("locations") as unknown as BinLocationTable;
+  const { data: location, error: locationError } = await locationTable.select(binLocationColumns).eq("id", parsed.data.locationId).single();
+
+  if (locationError || !location) {
+    return NextResponse.json({ error: "Địa điểm đã chọn không tồn tại" }, { status: 400 });
+  }
+
+  const values = toBinValues(parsed.data, location, parsed.data.qrCode);
   const bins = supabase.from("bins") as unknown as BinMutationTable<BinUpdate>;
   const { data, error } = await bins.update(values).eq("id", id).select(binColumns).single();
 
