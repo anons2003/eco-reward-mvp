@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getAuthUser } from "@/infrastructure/auth/session";
 import type { Database } from "@/infrastructure/supabase/database.types";
 import { createAdminClient } from "@/infrastructure/supabase/admin";
 import { createClient } from "@/infrastructure/supabase/server";
@@ -89,9 +90,7 @@ export async function handleOAuthCallback(request: NextRequest) {
     return NextResponse.redirect(url, { status: 302 });
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   let profile: AuthProfileRow | null = null;
   if (user) {

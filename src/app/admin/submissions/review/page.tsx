@@ -53,6 +53,7 @@ export default async function AdminReviewQueuePage() {
   const averageConfidence = queueRows.length ? Math.round(queueRows.reduce((sum, row) => sum + confidence(row), 0) / queueRows.length) : 0;
   const flagged = queueRows.filter((row) => row.risk_flags.length > 0).length;
   const oldestLabel = queueRows[0] ? formatDate(queueRows[0].created_at) : "Không có";
+  const pageLabel = queueRows.length ? "Trang 1 / 1" : "Không có trang";
   const reviewStats = [
     { label: "Tổng chờ duyệt", value: queueRows.length.toLocaleString("vi-VN"), note: "DB thật", Icon: TrendingUp, tone: queueRows.length ? "amber" : "green" },
     { label: "Độ tin cậy trung bình", value: averageConfidence ? `${averageConfidence}%` : "N/A", note: averageConfidence && averageConfidence < 70 ? "Thấp" : "Ổn định", Icon: ShieldAlert, tone: averageConfidence && averageConfidence < 70 ? "amber" : "green" },
@@ -85,6 +86,25 @@ export default async function AdminReviewQueuePage() {
         </div>
       </section>
 
+      {!error && queueRows.length === 0 ? (
+        <section className="rounded-[28px] border border-[#d9e5da] bg-white p-5 shadow-[0_14px_40px_rgba(21,29,24,0.06)] md:p-6" data-admin-reveal>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#d8f5df] text-[#006d37]">
+                <Check size={22} />
+              </span>
+              <div>
+                <h2 className="text-xl font-black tracking-[-0.03em] text-[#1b1c1b]">Không có lượt cần duyệt</h2>
+                <p className="mt-1 text-sm font-semibold leading-6 text-[#5d6a60]">Hàng chờ đang sạch. Admin có thể chuyển sang danh sách lượt gửi hoặc cảnh báo gian lận.</p>
+              </div>
+            </div>
+            <Link className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#006d37] px-5 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,109,55,0.18)]" href="/admin/submissions">
+              Xem lượt gửi
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid-flow-dense grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {reviewStats.map((stat) => (
           <ReviewStat key={stat.label} {...stat} />
@@ -100,7 +120,7 @@ export default async function AdminReviewQueuePage() {
           </div>
           <div className="flex items-center gap-2 text-[#6c7b6d]">
             <button className="grid size-9 place-items-center rounded-lg transition hover:bg-[#efedec]" type="button"><ChevronLeft size={17} /></button>
-            <span className="text-xs font-black">Trang 1 / 3</span>
+            <span className="text-xs font-black">{pageLabel}</span>
             <button className="grid size-9 place-items-center rounded-lg transition hover:bg-[#efedec]" type="button"><ChevronRight size={17} /></button>
           </div>
         </div>

@@ -23,7 +23,6 @@ export function LandingGsapAnimations({ children }: { children: ReactNode }) {
             ".landing-nav",
             ".landing-hero-copy > *",
             ".landing-hero-media",
-            ".landing-hero-float",
             ".landing-section",
             ".landing-card",
             ".landing-reward-card",
@@ -47,7 +46,6 @@ export function LandingGsapAnimations({ children }: { children: ReactNode }) {
           .from(".landing-nav", { autoAlpha: 0, y: -18, duration: 0.5 })
           .from(".landing-hero-copy > *", { autoAlpha: 0, y: 28, duration: 0.7, stagger: 0.12 }, "-=0.15")
           .from(".landing-hero-media", { autoAlpha: 0, y: 36, scale: 0.96, duration: 0.85 }, "-=0.55")
-          .from(".landing-hero-float", { autoAlpha: 0, y: 18, scale: 0.9, duration: 0.55, stagger: 0.12 }, "-=0.35")
           .from(".landing-mobile-hero > *", { autoAlpha: 0, y: 24, duration: 0.6, stagger: 0.1 }, 0.1);
 
         gsap.to(".landing-hero-media > div:first-child", {

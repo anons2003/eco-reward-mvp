@@ -5,22 +5,41 @@ const single = vi.fn();
 const eq = vi.fn(() => ({ single }));
 const select = vi.fn(() => ({ eq }));
 const from = vi.fn(() => ({ select }));
-const createServerClient = vi.fn(() => ({
+const createServerClient = vi.fn((_url: string, _key: string, options?: { cookies?: { getAll?: (keyHints?: string[]) => unknown } }) => {
+  options?.cookies?.getAll?.(["sb-supabase-auth-token"]);
+  return {
   auth: { getUser },
   from,
-}));
+  };
+});
 
 vi.mock("@supabase/ssr", () => ({
   createServerClient,
 }));
 
-function nextRequest(url: string) {
+function nextRequest(url: string, initialCookies: Array<{ name: string; value: string }> = []) {
   const nextUrl = new URL(url);
+  const cookieJar = [...initialCookies];
+
   return {
     url,
     headers: new Headers(),
     cookies: {
-      getAll: () => [],
+      getAll: () => cookieJar,
+      set: (name: string, value: string) => {
+        const index = cookieJar.findIndex((cookie) => cookie.name === name);
+        if (index >= 0) {
+          cookieJar[index] = { name, value };
+        } else {
+          cookieJar.push({ name, value });
+        }
+      },
+      delete: (name: string) => {
+        const index = cookieJar.findIndex((cookie) => cookie.name === name);
+        if (index >= 0) {
+          cookieJar.splice(index, 1);
+        }
+      },
     },
     nextUrl: {
       ...nextUrl,
@@ -70,5 +89,18 @@ describe("updateSession", () => {
     const response = await updateSession(nextRequest("https://eco.test/wallet") as never);
 
     expect(response.headers.get("location")).toBe("https://eco.test/login?next=%2Fwallet");
+  });
+
+  it("deletes malformed auth cookies on protected-route redirects", async () => {
+    getUser.mockResolvedValue({ data: { user: null } });
+    const { updateSession } = await import("./proxy");
+
+    const response = await updateSession(
+      nextRequest("https://eco.test/dashboard", [{ name: "sb-supabase-auth-token", value: '{"bad":true}garbage' }]) as never,
+    );
+
+    expect(response.headers.get("location")).toBe("https://eco.test/login?next=%2Fdashboard");
+    expect(response.headers.get("set-cookie")).toContain("sb-supabase-auth-token=");
+    expect(response.headers.get("set-cookie")).toContain("Expires=Thu, 01 Jan 1970 00:00:00 GMT");
   });
 });

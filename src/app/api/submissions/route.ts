@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAuthUser } from "@/infrastructure/auth/session";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -28,9 +29,7 @@ function stringValue(value: unknown) {
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });

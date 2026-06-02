@@ -8,12 +8,16 @@ export type UserShellProfile = Pick<Database["public"]["Tables"]["profiles"]["Ro
 
 export const getSupabaseServerClient = cache(async () => createClient());
 
-export const getCurrentUser = cache(async () => {
-  const supabase = await getSupabaseServerClient();
+export async function getAuthUser(supabase: Awaited<ReturnType<typeof createClient>>) {
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
   return user;
+}
+
+export const getCurrentUser = cache(async () => {
+  const supabase = await getSupabaseServerClient();
+  return getAuthUser(supabase);
 });
 
 export const getUserShellProfile = cache(async (userId: string) => {

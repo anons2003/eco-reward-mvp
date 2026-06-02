@@ -20,7 +20,10 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     const url = new URL(loginPath, request.url);
@@ -28,10 +31,6 @@ export async function POST(request: NextRequest) {
     url.searchParams.set("next", next);
     return NextResponse.redirect(url, { status: 302 });
   }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   if (!user?.email_confirmed_at) {
     await supabase.auth.signOut();

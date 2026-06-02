@@ -123,9 +123,9 @@ export function ScanForm() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <section className="overflow-hidden rounded-[32px] border border-[#d9e5da] bg-white/82 shadow-[0_22px_70px_rgba(21,29,24,0.08)]">
-        <div className="grid min-h-[560px] place-items-center bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] p-6 text-[#151d18] [background-size:24px_24px]">
-          <div className="w-full max-w-sm">
+      <section className="order-2 overflow-hidden rounded-[32px] border border-[#d9e5da] bg-white/82 shadow-[0_22px_70px_rgba(21,29,24,0.08)] lg:order-1">
+        <div className="grid min-h-[360px] place-items-center bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] p-5 text-[#151d18] [background-size:24px_24px] lg:min-h-[560px] lg:p-6">
+          <div className="w-full max-w-[280px] sm:max-w-sm">
             <div className="relative aspect-square rounded-[34px] border-2 border-[#007a3d] bg-white p-5 shadow-[0_22px_70px_rgba(0,106,61,0.12)]">
               <div className="relative grid h-full place-items-center overflow-hidden rounded-[26px] border border-dashed border-[#bdcabe] bg-[#edf6ed]">
                 <video ref={videoRef} autoPlay muted playsInline className={`absolute inset-0 size-full object-cover transition ${cameraReady ? "opacity-100" : "opacity-0"}`} />
@@ -142,7 +142,7 @@ export function ScanForm() {
         </div>
       </section>
 
-      <aside className="rounded-[32px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_22px_70px_rgba(21,29,24,0.08)]">
+      <aside className="order-1 rounded-[32px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_22px_70px_rgba(21,29,24,0.08)] lg:order-2">
         <div className="flex items-center gap-3">
           <span className="grid size-12 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d]">
             <ScanLine size={24} />

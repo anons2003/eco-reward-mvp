@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { env } from "@/infrastructure/config/env";
+import { sanitizeSupabaseAuthCookies } from "./auth-cookies";
 import type { Database } from "./database.types";
 
 export async function createClient() {
@@ -12,8 +13,8 @@ export async function createClient() {
 
   return createServerClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
     cookies: {
-      getAll() {
-        return cookieStore.getAll();
+      getAll(keyHints?: string[]) {
+        return sanitizeSupabaseAuthCookies(cookieStore.getAll(), keyHints).cookies;
       },
       setAll(cookiesToSet) {
         try {

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getAuthUser } from "@/infrastructure/auth/session";
 import { createClient } from "@/infrastructure/supabase/server";
 
 function redirectWithPasswordStatus(request: NextRequest | Request, status: string) {
@@ -26,9 +27,7 @@ export async function POST(request: NextRequest | Request) {
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user?.email) {
     return redirectWithPasswordStatus(request, "unauthorized");

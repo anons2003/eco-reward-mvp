@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/infrastructure/config/env";
 import { appOrigin } from "@/infrastructure/auth/redirects";
+import { sanitizeSupabaseAuthCookies } from "./auth-cookies";
 import type { Database } from "./database.types";
 
 type AuthProfileRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
@@ -21,6 +22,13 @@ function redirectToLogin(request: NextRequest) {
   return NextResponse.redirect(url);
 }
 
+function withStaleAuthCookieDeletes(response: NextResponse, staleAuthCookieNames: Set<string>) {
+  staleAuthCookieNames.forEach((name) => {
+    response.cookies.delete(name);
+  });
+  return response;
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const path = request.nextUrl.pathname;
@@ -38,10 +46,16 @@ export async function updateSession(request: NextRequest) {
     return isProtectedPath(request.nextUrl.pathname) ? redirectToLogin(request) : response;
   }
 
+  const staleAuthCookieNames = new Set<string>();
   const supabase = createServerClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
     cookies: {
-      getAll() {
-        return request.cookies.getAll();
+      getAll(keyHints?: string[]) {
+        const { cookies, staleCookieNames } = sanitizeSupabaseAuthCookies(request.cookies.getAll(), keyHints);
+        staleCookieNames.forEach((name) => {
+          staleAuthCookieNames.add(name);
+          request.cookies.delete(name);
+        });
+        return cookies;
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
@@ -63,30 +77,30 @@ export async function updateSession(request: NextRequest) {
 
   if ((path === "/login" || path === "/admin/login") && user) {
     const role = await getProfileRole();
-    return NextResponse.redirect(new URL(role === "admin" ? "/admin/dashboard" : "/dashboard", request.url));
+    return withStaleAuthCookieDeletes(NextResponse.redirect(new URL(role === "admin" ? "/admin/dashboard" : "/dashboard", request.url)), staleAuthCookieNames);
   }
 
   if (path === "/admin/login") {
-    return response;
+    return withStaleAuthCookieDeletes(response, staleAuthCookieNames);
   }
 
   if (isProtectedPath(path) && !user) {
-    return redirectToLogin(request);
+    return withStaleAuthCookieDeletes(redirectToLogin(request), staleAuthCookieNames);
   }
 
   if (protectedUserPaths.some((prefix) => path.startsWith(prefix)) && user) {
     const role = await getProfileRole();
     if (role === "admin") {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      return withStaleAuthCookieDeletes(NextResponse.redirect(new URL("/admin/dashboard", request.url)), staleAuthCookieNames);
     }
   }
 
   if (protectedAdminPaths.some((prefix) => path.startsWith(prefix)) && user) {
     const role = await getProfileRole();
     if (role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return withStaleAuthCookieDeletes(NextResponse.redirect(new URL("/dashboard", request.url)), staleAuthCookieNames);
     }
   }
 
-  return response;
+  return withStaleAuthCookieDeletes(response, staleAuthCookieNames);
 }

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { BarChart3, Bell, ChevronDown, ClipboardList, FileText, Gift, HelpCircle, History, Home, Leaf, LogOut, MapPin, Menu, Search, Settings, ShieldAlert, Trash2, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, Bell, ChevronDown, ClipboardList, FileText, Gift, HelpCircle, History, Home, Leaf, LogOut, MapPin, Menu, Search, Settings, ShieldAlert, Trash2, Users, X, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
@@ -49,10 +50,10 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
 ];
 
 const mobileItems = [
-  { href: "/admin/dashboard", label: "Tổng quan", Icon: Home, match: "/admin/dashboard" },
-  { href: "/admin/users", label: "Người dùng", Icon: Users, match: "/admin/users" },
-  { href: "/admin/bins", label: "Thùng rác", Icon: Trash2, match: "/admin/bins" },
-  { href: "/admin/rewards", label: "Quà tặng", Icon: Gift, match: "/admin/rewards" },
+  { href: "/admin/dashboard", label: "Tổng", Icon: Home, match: "/admin/dashboard" },
+  { href: "/admin/users", label: "Users", Icon: Users, match: "/admin/users" },
+  { href: "/admin/bins", label: "Thùng", Icon: Trash2, match: "/admin/bins" },
+  { href: "/admin/rewards", label: "Quà", Icon: Gift, match: "/admin/rewards" },
   { href: "/admin/settings", label: "Thêm", Icon: Menu, match: "/admin/settings" },
 ];
 
@@ -78,6 +79,7 @@ export function AdminShell({
   avatarUrl?: string | null;
 }) {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] text-[#1b1c1b] [background-image:radial-gradient(#d8ded8_0.5px,transparent_0.5px)] [background-size:24px_24px]">
@@ -161,8 +163,8 @@ export function AdminShell({
 
           <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-[#fbf9f8]/95 px-4 backdrop-blur lg:hidden">
             <div className="flex items-center gap-2">
-              <button aria-label="Mở menu" className="grid size-10 place-items-center rounded-full text-[#006d37] transition active:scale-95" type="button">
-                <Menu size={22} />
+              <button aria-expanded={mobileMenuOpen} aria-label={mobileMenuOpen ? "Đóng menu" : "Mở menu"} className="grid size-10 place-items-center rounded-full text-[#006d37] transition active:scale-95" type="button" onClick={() => setMobileMenuOpen((open) => !open)}>
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
               <Link className="text-xl font-black tracking-[-0.03em] text-[#006d37]" href="/admin/dashboard">
                 SeaTech Admin
@@ -180,6 +182,41 @@ export function AdminShell({
         </div>
       </div>
 
+      {mobileMenuOpen ? (
+        <div className="fixed inset-x-3 top-16 z-50 max-h-[calc(100vh-8.5rem)] overflow-y-auto rounded-[28px] border border-[#d9e5da] bg-white p-3 shadow-[0_22px_70px_rgba(21,29,24,0.18)] lg:hidden">
+          <div className="mb-2 flex items-center justify-between px-2">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6e7a70]">Điều hướng nhanh</p>
+            <button className="grid size-9 place-items-center rounded-full text-[#3e4941] transition hover:bg-[#efedec]" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Đóng menu">
+              <X size={18} />
+            </button>
+          </div>
+          <nav className="grid gap-3">
+            {navGroups.map((group) => (
+              <div className="rounded-2xl bg-[#fbf9f8] p-2" key={group.label}>
+                <p className="px-2 pb-1 text-[11px] font-black uppercase tracking-[0.12em] text-[#6e7a70]">{group.label}</p>
+                <div className="grid gap-1">
+                  {group.items.map(({ href, label, Icon, match }) => {
+                    const active = isActive(pathname, match);
+
+                    return (
+                      <Link
+                        className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-black transition ${active ? "bg-[#09864f] text-white" : "text-[#1b1c1b] hover:bg-white"}`}
+                        href={href}
+                        key={label}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Icon size={17} />
+                        {label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+      ) : null}
+
       <nav className="fixed bottom-0 left-0 z-50 grid h-[84px] w-full grid-cols-5 items-center gap-1 rounded-t-[28px] border-t border-[#d9e5da] bg-white px-2 shadow-[0_-8px_28px_rgba(21,29,24,0.08)] lg:hidden">
         {mobileItems.map(({ href, label, Icon, match }) => {
           const active = isActive(pathname, match);
@@ -193,7 +230,7 @@ export function AdminShell({
               key={label}
             >
               <Icon size={19} />
-              <span className="mt-0.5 max-w-full truncate">{label}</span>
+              <span className="mt-0.5 max-w-full whitespace-nowrap">{label}</span>
             </Link>
           );
         })}

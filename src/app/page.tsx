@@ -178,10 +178,12 @@ function DesktopHome() {
                 <Image
                   alt="Giao diện vận hành SeaTech hiển thị lượt phân loại rác, điểm thưởng và thống kê tác động"
                   className="h-auto w-full"
+                  fetchPriority="high"
                   height={1792}
-                  priority
+                  loading="eager"
                   sizes="(min-width: 1024px) 680px, 92vw"
                   src="/seatech/hero-board.jpg"
+                  unoptimized
                   width={2560}
                 />
               </div>
@@ -372,10 +374,12 @@ function MobileHome() {
               <Image
                 alt="Giao diện vận hành SeaTech hiển thị ảnh phân loại rác và trạng thái điểm thưởng"
                 className="h-auto w-full"
+                fetchPriority="high"
                 height={1792}
-                priority
+                loading="eager"
                 sizes="100vw"
                 src="/seatech/hero-board.jpg"
+                unoptimized
                 width={2560}
               />
             </div>

@@ -79,7 +79,7 @@ export default async function DashboardPage() {
           <div className="absolute bottom-8 right-12 hidden size-32 rounded-[36px] border border-white/12 bg-white/8 md:block" />
         </div>
 
-        <FeaturedRewardCard className="hidden xl:block" />
+        <FeaturedRewardCard className="hidden xl:block" points={points} />
       </section>
 
       <nav aria-label="Lối tắt dashboard" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:hidden">
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <FeaturedRewardCard className="xl:hidden" />
+      <FeaturedRewardCard className="xl:hidden" points={points} />
 
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="order-2 rounded-[28px] border border-[#d9e5da] bg-white/82 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)] lg:order-1">
@@ -215,8 +215,10 @@ export default async function DashboardPage() {
   );
 }
 
-function FeaturedRewardCard({ className = "" }: { className?: string }) {
+function FeaturedRewardCard({ className = "", points }: { className?: string; points: number }) {
   const rewardHref = `/rewards/${featuredReward.id}`;
+  const canRedeem = points >= featuredReward.points;
+  const actionHref = canRedeem ? rewardHref : "/scan";
 
   return (
     <article
@@ -232,8 +234,8 @@ function FeaturedRewardCard({ className = "" }: { className?: string }) {
           <p className="mt-3 line-clamp-2 text-sm font-black leading-5 text-[#151d18]">{featuredReward.title}</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
             <p className="text-xl font-black tracking-[-0.04em] text-[#007a3d] sm:text-lg">{featuredReward.points.toLocaleString("vi-VN")} pts</p>
-            <Link className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#edf6ed] px-3 py-1.5 text-xs font-black text-[#007a3d] transition hover:bg-[#d8f5df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a3d]" href={rewardHref}>
-              Đổi ngay
+            <Link className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#edf6ed] px-3 py-1.5 text-xs font-black text-[#007a3d] transition hover:bg-[#d8f5df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a3d]" href={actionHref}>
+              {canRedeem ? "Đổi ngay" : "Tích điểm"}
               <ArrowRight size={14} />
             </Link>
           </div>

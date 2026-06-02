@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAuthUser } from "@/infrastructure/auth/session";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -10,9 +11,7 @@ export type AdminSession =
 
 export async function requireAdmin(): Promise<AdminSession> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user) {
     return { ok: false, response: NextResponse.json({ error: "Authentication required" }, { status: 401 }) };
