@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Info, MapPin, PackageCheck, RadioTower, Recycle, Signal, Trash2, Wrench } from "lucide-react";
 import { DynamicAdminDashboardMotion, DynamicAdminMapLibreMap, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
+import { env } from "@/infrastructure/config/env";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type BinRow = Database["public"]["Tables"]["bins"]["Row"];
@@ -11,8 +12,13 @@ type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 
 const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
 
-function qrImageUrl(qrCode: string, size = 320) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(qrCode)}`;
+function scanUrl(qrCode: string) {
+  const baseUrl = env.appUrl.replace(/\/$/, "");
+  return `${baseUrl}/scan?qr=${encodeURIComponent(qrCode)}`;
+}
+
+function qrImageUrl(data: string, size = 320) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(data)}`;
 }
 
 function mapsUrl(bin: BinRow) {
@@ -43,6 +49,7 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
 
   if (error || !bin) notFound();
 
+  const binScanUrl = scanUrl(bin.qr_code);
   const stats = binStats(bin);
   const supportedWaste = ["Nhựa", "Kim loại", "Giấy"];
   const recentEvents = [
@@ -180,12 +187,17 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
           <article className="rounded-3xl border border-[#d9e5da] bg-white p-6 text-center shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
             <h2 className="mb-5 text-left text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">Mã QR của thùng</h2>
             <div className="mx-auto grid size-56 place-items-center rounded-2xl border-[6px] border-[#dfe8df] bg-[#fbf9f8] p-5">
-              <img alt={`QR ${bin.qr_code}`} className="size-full object-contain" src={qrImageUrl(bin.qr_code, 360)} />
+              <img alt={`QR ${bin.qr_code}`} className="size-full object-contain" src={qrImageUrl(binScanUrl, 360)} />
             </div>
-            <p className="mx-auto mt-5 max-w-[240px] text-sm font-semibold leading-6 text-[#6c7b6d]">Mã định danh duy nhất cho việc quét tại trạm.</p>
-            <a className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#006d37] text-sm font-black text-white shadow-[0_14px_30px_rgba(0,109,55,0.18)] transition hover:-translate-y-0.5 active:translate-y-0" href={qrImageUrl(bin.qr_code, 720)} target="_blank" rel="noreferrer">
+            <p className="mx-auto mt-5 max-w-[260px] text-sm font-semibold leading-6 text-[#6c7b6d]">QR này mở thẳng trang quét và tự điền mã thùng.</p>
+            <p className="mt-4 break-all rounded-2xl bg-[#f5f3f2] px-3 py-2 text-left text-xs font-black leading-5 text-[#3d4a3e]">{binScanUrl}</p>
+            <a className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#006d37] text-sm font-black text-white shadow-[0_14px_30px_rgba(0,109,55,0.18)] transition hover:-translate-y-0.5 active:translate-y-0" href={qrImageUrl(binScanUrl, 720)} target="_blank" rel="noreferrer">
               <Download size={17} />
               Tải xuống QR
+            </a>
+            <a className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#d9e5da] bg-white text-sm font-black text-[#1b1c1b] transition hover:border-[#006d37]" href={binScanUrl} target="_blank" rel="noreferrer">
+              <ExternalLink size={16} />
+              Mở thử link scan
             </a>
           </article>
         </aside>

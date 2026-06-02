@@ -16,9 +16,16 @@ type ScanSessionTable = {
 };
 
 type SubmissionTable = {
+  select(columns: "id"): {
+    eq(column: "scan_session_id", value: string): {
+      limit(count: 1): {
+        maybeSingle(): Promise<{ data: { id: string } | null; error: { message: string } | null }>;
+      };
+    };
+  };
   insert(values: SubmissionInsert): {
     select(columns: "id"): {
-      single(): Promise<{ data: SubmissionResponse | null; error: { message: string } | null }>;
+      single(): Promise<{ data: SubmissionResponse | null; error: { code?: string; message: string } | null }>;
     };
   };
 };
@@ -55,6 +62,12 @@ export async function POST(request: Request) {
   }
 
   const submissions = supabase.from("submissions") as unknown as SubmissionTable;
+  const existingSubmission = await submissions.select("id").eq("scan_session_id", session.id).limit(1).maybeSingle();
+
+  if (existingSubmission.data) {
+    return NextResponse.json({ error: "Phiên QR này đã được sử dụng." }, { status: 400 });
+  }
+
   const { data: submission, error } = await submissions
     .insert({
       user_id: user.id,
@@ -69,6 +82,10 @@ export async function POST(request: Request) {
     })
     .select("id")
     .single();
+
+  if (error?.code === "23505") {
+    return NextResponse.json({ error: "Phiên QR này đã được sử dụng." }, { status: 400 });
+  }
 
   if (error || !submission) {
     return NextResponse.json({ error: "Không tạo được lượt gửi." }, { status: 500 });

@@ -6,6 +6,10 @@ const sessionSingle = vi.fn();
 const submissionSingle = vi.fn();
 const selectSession = vi.fn();
 const eqSession = vi.fn();
+const selectExistingSubmission = vi.fn();
+const eqExistingSubmission = vi.fn();
+const limitExistingSubmission = vi.fn();
+const maybeSingleExistingSubmission = vi.fn();
 const insertSubmission = vi.fn();
 const selectSubmission = vi.fn();
 
@@ -32,17 +36,25 @@ describe("POST /api/submissions", () => {
     submissionSingle.mockReset();
     selectSession.mockReset();
     eqSession.mockReset();
+    selectExistingSubmission.mockReset();
+    eqExistingSubmission.mockReset();
+    limitExistingSubmission.mockReset();
+    maybeSingleExistingSubmission.mockReset();
     insertSubmission.mockReset();
     selectSubmission.mockReset();
 
     selectSession.mockReturnValue({ eq: eqSession });
     eqSession.mockReturnValue({ single: sessionSingle });
+    selectExistingSubmission.mockReturnValue({ eq: eqExistingSubmission });
+    eqExistingSubmission.mockReturnValue({ limit: limitExistingSubmission });
+    limitExistingSubmission.mockReturnValue({ maybeSingle: maybeSingleExistingSubmission });
+    maybeSingleExistingSubmission.mockResolvedValue({ data: null, error: null });
     insertSubmission.mockReturnValue({ select: selectSubmission });
     selectSubmission.mockReturnValue({ single: submissionSingle });
 
     from.mockImplementation((table: string) => {
       if (table === "scan_sessions") return { select: selectSession };
-      if (table === "submissions") return { insert: insertSubmission };
+      if (table === "submissions") return { select: selectExistingSubmission, insert: insertSubmission };
       throw new Error(`Unexpected table ${table}`);
     });
   });
@@ -70,6 +82,8 @@ describe("POST /api/submissions", () => {
     expect(response.status).toBe(200);
     expect(selectSession).toHaveBeenCalledWith("id,user_id,bin_id,expires_at");
     expect(eqSession).toHaveBeenCalledWith("id", "scan-1");
+    expect(selectExistingSubmission).toHaveBeenCalledWith("id");
+    expect(eqExistingSubmission).toHaveBeenCalledWith("scan_session_id", "scan-1");
     expect(insertSubmission).toHaveBeenCalledWith({
       user_id: "user-1",
       bin_id: "bin-1",
@@ -102,6 +116,28 @@ describe("POST /api/submissions", () => {
 
     expect(response.status).toBe(400);
     expect(payload.error).toBe("Phiên QR đã hết hạn.");
+    expect(insertSubmission).not.toHaveBeenCalled();
+  });
+
+  it("rejects scan sessions that already have a submission", async () => {
+    getUser.mockResolvedValueOnce({ data: { user: { id: "user-1" } } });
+    sessionSingle.mockResolvedValueOnce({
+      data: {
+        id: "scan-1",
+        user_id: "user-1",
+        bin_id: "bin-1",
+        expires_at: new Date(Date.now() + 60_000).toISOString(),
+      },
+      error: null,
+    });
+    maybeSingleExistingSubmission.mockResolvedValueOnce({ data: { id: "sub-existing" }, error: null });
+    const { POST } = await import("./route");
+
+    const response = await POST(postSubmission({ scan_session_id: "scan-1", image_url: "data:image/jpeg;base64,abc" }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe("Phiên QR này đã được sử dụng.");
     expect(insertSubmission).not.toHaveBeenCalled();
   });
 });

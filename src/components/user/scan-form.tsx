@@ -1,9 +1,11 @@
 "use client";
 
+import { BrowserQRCodeReader, type IScannerControls } from "@zxing/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock3, MapPin, QrCode, ScanLine, ShieldCheck, Wifi, type LucideIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Camera, CameraOff, CheckCircle2, Clock3, MapPin, QrCode, ScanLine, ShieldCheck, Wifi, type LucideIcon } from "lucide-react";
 import { LoadingButtonContent, useGlobalLoading } from "@/components/shared/loading-ui";
+import { QrSessionCountdown, useQrSessionCountdown } from "@/components/user/qr-session-countdown";
 
 type ScanPayload = {
   session?: { id: string; expiresAt: string };
@@ -11,23 +13,61 @@ type ScanPayload = {
   error?: string;
 };
 
-type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => {
-  detect(source: HTMLVideoElement): Promise<Array<{ rawValue?: string }>>;
+type GeoPoint = {
+  lat: number;
+  lng: number;
 };
+
+type CameraState = "idle" | "starting" | "ready" | "unsupported" | "blocked" | "error";
+
+function normalizeQrInput(value: string) {
+  return value.trim();
+}
+
+function getQrFromUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return normalizeQrInput(url.searchParams.get("qr") ?? url.pathname.split("/").filter(Boolean).at(-1) ?? value);
+  } catch {
+    return normalizeQrInput(value);
+  }
+}
+
+function getPosition() {
+  return new Promise<GeoPoint | null>((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve({ lat: position.coords.latitude, lng: position.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, maximumAge: 30_000, timeout: 6000 },
+    );
+  });
+}
 
 export function ScanForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { clearGlobalLoading, setGlobalLoading } = useGlobalLoading();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerControlsRef = useRef<IScannerControls | null>(null);
   const autoScanningRef = useRef(false);
-  const [qrCode, setQrCode] = useState("ECO-BIN-A1");
+  const autoQrStartedRef = useRef(false);
+  const initialQrCode = searchParams.get("qr") ?? "ECO-BIN-A1";
+  const [qrCode, setQrCode] = useState(initialQrCode);
   const [payload, setPayload] = useState<ScanPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
+  const [cameraState, setCameraState] = useState<CameraState>("idle");
+  const [cameraMessage, setCameraMessage] = useState("Bấm mở camera để quét QR trên điện thoại.");
+  const countdown = useQrSessionCountdown(payload?.session?.expiresAt);
 
   const createScanSession = useCallback(async (nextQrCode: string, autoContinue = false) => {
-    const trimmedQrCode = nextQrCode.trim();
+    const trimmedQrCode = getQrFromUrl(nextQrCode);
     if (!trimmedQrCode) {
       setError("Vui lòng nhập hoặc quét mã QR.");
       return;
@@ -37,10 +77,11 @@ export function ScanForm() {
     setGlobalLoading("Đang xác nhận thùng...");
     setError("");
     try {
+      const position = await getPosition();
       const response = await fetch("/api/scan-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qr_code: trimmedQrCode, lat: 10.7769, lng: 106.7009 }),
+        body: JSON.stringify({ qr_code: trimmedQrCode, lat: position?.lat, lng: position?.lng }),
       });
       const nextPayload = (await response.json()) as ScanPayload;
 
@@ -51,6 +92,7 @@ export function ScanForm() {
       }
 
       setPayload(nextPayload);
+      setQrCode(trimmedQrCode);
       if (autoContinue && nextPayload.session) {
         setGlobalLoading("Đang mở camera...");
         router.push(`/capture?scanSessionId=${nextPayload.session.id}`);
@@ -61,55 +103,82 @@ export function ScanForm() {
     }
   }, [clearGlobalLoading, router, setGlobalLoading]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let stream: MediaStream | null = null;
-    let frameId = 0;
+  const stopCamera = useCallback(() => {
+    scannerControlsRef.current?.stop();
+    scannerControlsRef.current = null;
+    autoScanningRef.current = false;
+    setCameraReady(false);
+    setCameraState("idle");
+    setCameraMessage("Camera đã tắt. Bấm mở lại khi cần quét QR.");
+  }, []);
 
-    async function startScanner() {
-      const BarcodeDetector = (window as unknown as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector;
-      if (!BarcodeDetector || !navigator.mediaDevices?.getUserMedia) return;
-
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (cancelled || !videoRef.current) return;
-        videoRef.current.srcObject = stream;
-        setCameraReady(true);
-        const detector = new BarcodeDetector({ formats: ["qr_code"] });
-
-        async function tick() {
-          if (cancelled || autoScanningRef.current || !videoRef.current) return;
-
-          try {
-            const codes = await detector.detect(videoRef.current);
-            const detected = codes.find((code) => code.rawValue)?.rawValue?.trim();
-            if (detected) {
-              autoScanningRef.current = true;
-              setQrCode(detected);
-              await createScanSession(detected, true);
-              return;
-            }
-          } catch {
-            // Keep manual QR entry as the reliable fallback when native detection fails.
-          }
-
-          frameId = window.requestAnimationFrame(tick);
-        }
-
-        frameId = window.requestAnimationFrame(tick);
-      } catch {
-        setCameraReady(false);
-      }
+  const startCamera = useCallback(async () => {
+    if (!videoRef.current) return;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraState("unsupported");
+      setCameraMessage("Trình duyệt này không hỗ trợ camera web. Hãy nhập mã QR thủ công.");
+      return;
+    }
+    if (!window.isSecureContext) {
+      setCameraState("blocked");
+      setCameraMessage("Camera trên điện thoại cần HTTPS. Hãy dùng domain production hoặc localhost, không dùng địa chỉ http trong mạng LAN.");
+      return;
     }
 
-    void startScanner();
+    setCameraState("starting");
+    setCameraMessage("Đang xin quyền camera...");
+    setError("");
+    autoScanningRef.current = false;
 
-    return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(frameId);
-      stream?.getTracks().forEach((track) => track.stop());
-    };
+    try {
+      scannerControlsRef.current?.stop();
+      const reader = new BrowserQRCodeReader();
+      scannerControlsRef.current = await reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
+        const detected = result?.getText();
+        if (!detected || autoScanningRef.current) return;
+
+        const detectedQr = getQrFromUrl(detected);
+        autoScanningRef.current = true;
+        setQrCode(detectedQr);
+        setCameraMessage("Đã đọc QR. Đang xác nhận thùng...");
+        void createScanSession(detectedQr, true);
+      });
+      setCameraReady(true);
+      setCameraState("ready");
+      setCameraMessage("Camera đang mở. Đưa QR vào giữa khung để hệ thống tự đọc.");
+    } catch (nextError) {
+      setCameraReady(false);
+      const name = nextError instanceof DOMException ? nextError.name : "";
+      if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+        setCameraState("blocked");
+        setCameraMessage("Bạn chưa cấp quyền camera. Hãy bật quyền camera trong trình duyệt rồi thử lại.");
+      } else {
+        setCameraState("error");
+        setCameraMessage("Không mở được camera. Bạn vẫn có thể nhập mã QR thủ công.");
+      }
+    }
   }, [createScanSession]);
+
+  useEffect(() => {
+    const qrFromUrl = searchParams.get("qr");
+    if (!qrFromUrl || autoQrStartedRef.current) return;
+    autoQrStartedRef.current = true;
+    const normalizedQr = getQrFromUrl(qrFromUrl);
+    const timeoutId = window.setTimeout(() => {
+      setQrCode(normalizedQr);
+      void createScanSession(normalizedQr);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [createScanSession, searchParams]);
+
+  useEffect(
+    () => () => {
+      scannerControlsRef.current?.stop();
+      scannerControlsRef.current = null;
+    },
+    [],
+  );
 
   function verifyBin() {
     void createScanSession(qrCode);
@@ -129,7 +198,17 @@ export function ScanForm() {
             <div className="relative aspect-square rounded-[34px] border-2 border-[#007a3d] bg-white p-5 shadow-[0_22px_70px_rgba(0,106,61,0.12)]">
               <div className="relative grid h-full place-items-center overflow-hidden rounded-[26px] border border-dashed border-[#bdcabe] bg-[#edf6ed]">
                 <video ref={videoRef} autoPlay muted playsInline className={`absolute inset-0 size-full object-cover transition ${cameraReady ? "opacity-100" : "opacity-0"}`} />
-                {!cameraReady ? <QrCode className="text-[#007a3d]" size={96} /> : null}
+                {!cameraReady ? (
+                  <button className="grid size-full place-items-center text-center transition hover:bg-white/40" type="button" onClick={startCamera} aria-label="Mở camera quét QR">
+                    <span className="grid gap-4">
+                      <QrCode className="mx-auto text-[#007a3d]" size={96} />
+                      <span className="mx-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,106,61,0.24)]" style={{ color: "#ffffff" }}>
+                        <Camera size={17} />
+                        Mở camera
+                      </span>
+                    </span>
+                  </button>
+                ) : null}
               </div>
               <span className="absolute left-5 top-5 size-11 rounded-tl-3xl border-l-4 border-t-4 border-[#007a3d]" />
               <span className="absolute right-5 top-5 size-11 rounded-tr-3xl border-r-4 border-t-4 border-[#007a3d]" />
@@ -137,7 +216,17 @@ export function ScanForm() {
               <span className="absolute bottom-5 right-5 size-11 rounded-br-3xl border-b-4 border-r-4 border-[#007a3d]" />
               <div className="absolute left-8 right-8 top-1/2 h-1 rounded-full bg-[#8ff8b6] shadow-[0_0_28px_rgba(0,122,61,0.55)]" />
             </div>
-            <p className="mt-5 text-center text-sm font-bold leading-6 text-[#3e4941]">Đưa mã QR trên thùng vào khung hoặc nhập mã demo để xác nhận vị trí gửi.</p>
+            <p className="mt-5 text-center text-sm font-bold leading-6 text-[#3e4941]">{cameraMessage}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-4 text-sm font-black text-white transition hover:bg-[#006a35] disabled:cursor-wait disabled:opacity-70" type="button" onClick={startCamera} disabled={cameraState === "starting"} style={{ color: "#ffffff" }}>
+                <Camera size={16} />
+                {cameraState === "starting" ? "Đang mở..." : "Mở camera"}
+              </button>
+              <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#d9e5da] bg-white px-4 text-sm font-black text-[#151d18] transition hover:border-[#007a3d] disabled:cursor-not-allowed disabled:opacity-50" type="button" onClick={stopCamera} disabled={!cameraReady}>
+                <CameraOff size={16} />
+                Tắt camera
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -159,8 +248,8 @@ export function ScanForm() {
         <input className="mt-2 min-h-14 w-full rounded-2xl border border-[#d9e5da] bg-white px-4 font-black text-[#151d18] outline-none focus:ring-2 focus:ring-[#007a3d]/20" id="qr" value={qrCode} onChange={(event) => setQrCode(event.target.value)} />
 
         <div className="mt-4 grid gap-3">
-          <InfoRow icon={MapPin} title="Vị trí hiện tại" body="Sảnh chính tòa nhà A, trong bán kính hợp lệ." />
-          <InfoRow icon={Wifi} title="Thùng đang hoạt động" body="Có thể tạo phiên gửi trong 120 giây." />
+          <InfoRow icon={MapPin} title="Vị trí hiện tại" body="Nếu trình duyệt cho phép, vị trí thật sẽ được lưu cùng phiên QR." />
+          <InfoRow icon={Wifi} title="Camera điện thoại" body="Dùng HTTPS trên điện thoại để trình duyệt cho phép mở camera." />
         </div>
 
         {payload?.bin ? (
@@ -179,6 +268,12 @@ export function ScanForm() {
           </div>
         ) : null}
 
+        {payload?.session ? (
+          <div className="mt-4">
+            <QrSessionCountdown expiresAt={payload.session.expiresAt} compact />
+          </div>
+        ) : null}
+
         {error ? <p className="mt-4 rounded-2xl bg-[#fff0f0] p-3 text-sm font-bold text-[#B91C1C]">{error}</p> : null}
 
         <div className="mt-6 grid gap-3">
@@ -188,8 +283,8 @@ export function ScanForm() {
               {payload ? "Xác nhận lại" : "Xác nhận thùng"}
             </LoadingButtonContent>
           </button>
-          <button className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#edf6ed] px-5 font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50" disabled={!payload?.session} onClick={continueToCapture} type="button">
-            Tiếp tục chụp ảnh
+          <button className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#edf6ed] px-5 font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50" disabled={!payload?.session || countdown.expired} onClick={continueToCapture} type="button">
+            {countdown.expired ? "Quét lại để tạo phiên mới" : "Tiếp tục chụp ảnh"}
           </button>
         </div>
       </aside>

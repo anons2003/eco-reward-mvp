@@ -5,6 +5,23 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, CheckCircle2, ImageUp, Sparkles, Timer, Zap } from "lucide-react";
 import { LoadingButtonContent, LoadingSpinner, useGlobalLoading } from "@/components/shared/loading-ui";
+import { QrSessionCountdown, useQrSessionCountdown } from "@/components/user/qr-session-countdown";
+
+type ScanSessionPayload = {
+  session?: {
+    id: string;
+    expiresAt: string;
+    expired: boolean;
+    used: boolean;
+  };
+  bin?: {
+    name: string;
+    locationName: string;
+    qrCode: string;
+    active: boolean;
+  } | null;
+  error?: string;
+};
 
 export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
   const router = useRouter();
@@ -15,6 +32,9 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [captured, setCaptured] = useState(false);
+  const [sessionPayload, setSessionPayload] = useState<ScanSessionPayload | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(Boolean(scanSessionId));
+  const countdown = useQrSessionCountdown(sessionPayload?.session?.expiresAt);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -32,6 +52,44 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
     void startCamera();
     return () => stream?.getTracks().forEach((track) => track.stop());
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSession() {
+      if (!scanSessionId) {
+        setSessionLoading(false);
+        return;
+      }
+
+      setSessionLoading(true);
+      try {
+        const response = await fetch(`/api/scan-sessions/${encodeURIComponent(scanSessionId)}`);
+        const payload = (await response.json().catch(() => null)) as ScanSessionPayload | null;
+        if (cancelled) return;
+
+        if (!response.ok || !payload?.session) {
+          setSessionPayload(null);
+          setError(payload?.error ?? "Phiên QR không hợp lệ. Vui lòng quét lại.");
+          return;
+        }
+
+        setSessionPayload(payload);
+        if (payload.session.expired) setError("Phiên QR đã hết hạn. Vui lòng quét lại.");
+        if (payload.session.used) setError("Phiên QR này đã được sử dụng. Vui lòng quét lại.");
+      } catch {
+        if (!cancelled) setError("Không kiểm tra được phiên QR. Vui lòng thử lại.");
+      } finally {
+        if (!cancelled) setSessionLoading(false);
+      }
+    }
+
+    void loadSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scanSessionId]);
 
   function captureFrame() {
     const video = videoRef.current;
@@ -52,6 +110,18 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
   async function submit() {
     if (!scanSessionId) {
       setError("Bạn cần quét mã QR trước khi gửi ảnh.");
+      return;
+    }
+    if (sessionLoading) {
+      setError("Đang kiểm tra phiên QR. Vui lòng chờ trong giây lát.");
+      return;
+    }
+    if (!sessionPayload?.session || countdown.expired || sessionPayload.session.expired) {
+      setError("Phiên QR đã hết hạn. Vui lòng quét lại.");
+      return;
+    }
+    if (sessionPayload.session.used) {
+      setError("Phiên QR này đã được sử dụng. Vui lòng quét lại.");
       return;
     }
 
@@ -123,10 +193,10 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
             <Camera size={18} />
             {captured ? "Chụp lại" : "Chụp ảnh"}
           </button>
-          <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 font-black text-white shadow-[0_12px_30px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] disabled:cursor-not-allowed disabled:opacity-60" disabled={!captured} onClick={submit} type="button">
+          <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 font-black text-white shadow-[0_12px_30px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] disabled:cursor-not-allowed disabled:opacity-60" disabled={!captured || sessionLoading || !sessionPayload?.session || countdown.expired || sessionPayload.session.used} onClick={submit} type="button">
             <LoadingButtonContent loading={loading} loadingLabel="Đang gửi...">
               <ImageUp size={18} />
-              Gửi phân tích
+              {countdown.expired || sessionPayload?.session?.used ? "Quét lại QR" : "Gửi phân tích"}
             </LoadingButtonContent>
           </button>
         </div>
@@ -149,14 +219,26 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
               <Timer size={18} className="text-[#007a3d]" />
               Phiên QR
             </div>
-            <p className="mt-2 text-sm leading-6 text-[#5d6a60]">{scanSessionId ? "Phiên đã được xác nhận. Hãy chụp ảnh rõ vật phẩm cần phân loại." : "Vui lòng quét mã thùng rác trước khi chụp ảnh."}</p>
+            <p className="mt-2 text-sm leading-6 text-[#5d6a60]">
+              {sessionLoading
+                ? "Đang kiểm tra thời hạn phiên QR..."
+                : sessionPayload?.bin
+                  ? `${sessionPayload.bin.name} · ${sessionPayload.bin.locationName}`
+                  : scanSessionId
+                    ? "Phiên QR không hợp lệ. Vui lòng quét lại."
+                    : "Vui lòng quét mã thùng rác trước khi chụp ảnh."}
+            </p>
           </div>
+          {sessionPayload?.session ? <QrSessionCountdown expiresAt={sessionPayload.session.expiresAt} /> : null}
           <div className="rounded-[22px] bg-[#f3fcf3] p-4 text-sm font-bold leading-6 text-[#5d6a60]">
             <Zap className="mb-2 text-[#007a3d]" size={18} />
             Ưu tiên ánh sáng đủ, vật phẩm nằm trọn trong khung và không bị che khuất.
           </div>
         </div>
         {error ? <p className="mt-4 rounded-2xl bg-[#fff7e6] p-3 text-sm font-bold text-[#92400E]">{error}</p> : null}
+        <button className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#edf6ed] px-5 text-sm font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-white" type="button" onClick={() => router.push("/scan")}>
+          Quét lại QR
+        </button>
       </aside>
     </div>
   );
