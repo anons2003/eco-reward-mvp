@@ -10,13 +10,13 @@ const sidebarItems: Array<{ href: string; label: string; Icon: LucideIcon; match
   { href: "/wallet", label: "Ví điểm", Icon: Wallet, match: "/wallet" },
   { href: "/rewards", label: "Đổi thưởng", Icon: Gift, match: "/rewards" },
   { href: "/history", label: "Lịch sử", Icon: History, match: "/history" },
-  { href: "/impact", label: "Tìm thùng", Icon: MapPin, match: "/impact" },
+  { href: "/bins", label: "Tìm thùng", Icon: MapPin, match: "/bins" },
   { href: "/profile", label: "Tài khoản", Icon: User, match: "/profile" },
 ];
 
 const mobileItems: Array<{ href: string; label: string; Icon: LucideIcon; match: string }> = [
   { href: "/dashboard", label: "Trang chủ", Icon: Home, match: "/dashboard" },
-  { href: "/impact", label: "Tìm thùng", Icon: MapPin, match: "/impact" },
+  { href: "/bins", label: "Tìm thùng", Icon: MapPin, match: "/bins" },
   { href: "/rewards", label: "Đổi thưởng", Icon: Gift, match: "/rewards" },
   { href: "/profile", label: "Tôi", Icon: User, match: "/profile" },
 ];

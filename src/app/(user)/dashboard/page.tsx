@@ -221,11 +221,9 @@ function FeaturedRewardCard({ className = "", points }: { className?: string; po
   const actionHref = canRedeem ? rewardHref : "/scan";
 
   return (
-    <article
-      className={`group overflow-hidden rounded-[24px] border border-[#d9e5da] bg-white p-3 shadow-[0_12px_34px_rgba(21,29,24,0.06)] transition hover:-translate-y-0.5 hover:border-[#007a3d] sm:rounded-[28px] sm:p-4 ${className}`}
-    >
-      <div className="flex gap-3 sm:block">
-        <div className="h-24 w-24 shrink-0 rounded-[20px] bg-cover bg-center sm:mt-3 sm:aspect-[16/10] sm:h-auto sm:w-full sm:rounded-3xl" style={{ backgroundImage: `url(${featuredReward.image})` }} />
+    <article className={`group overflow-hidden rounded-[24px] border border-[#d9e5da] bg-white p-3 shadow-[0_12px_34px_rgba(21,29,24,0.06)] transition hover:-translate-y-0.5 hover:border-[#007a3d] xl:rounded-[28px] xl:p-4 ${className}`}>
+      <div className="flex gap-3 xl:block">
+        <div className="h-24 w-24 shrink-0 rounded-[20px] bg-cover bg-center md:h-32 md:w-44 xl:mt-3 xl:aspect-[16/10] xl:h-auto xl:w-full xl:rounded-3xl" style={{ backgroundImage: `url(${featuredReward.image})` }} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2 sm:-order-none sm:mb-0">
             <span className="rounded-full bg-[#fff3c4] px-3 py-1 text-[10px] font-black uppercase text-[#755b00] sm:text-[11px]">Ưu đãi nổi bật</span>

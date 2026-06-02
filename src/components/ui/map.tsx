@@ -1,7 +1,15 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import maplibregl, { type LngLatLike, type Map as MapLibreInstance, type MapMouseEvent, type Marker as MapLibreMarker, type StyleSpecification } from "maplibre-gl";
+import maplibregl, {
+  type GeoJSONSource,
+  type LngLatBoundsLike,
+  type LngLatLike,
+  type Map as MapLibreInstance,
+  type MapMouseEvent,
+  type Marker as MapLibreMarker,
+  type StyleSpecification,
+} from "maplibre-gl";
 import { Compass, LocateFixed, Maximize2, Minus, Plus } from "lucide-react";
 
 type MapContextValue = {
@@ -222,9 +230,12 @@ export type MapMarkerProps = {
   popupHtml?: string;
   markerHtml?: string;
   className?: string;
+  onClick?: () => void;
+  onPopupAction?: (action: string, value: string) => void;
+  showPopup?: boolean;
 };
 
-export function MapMarker({ coordinate, label, popupHtml, markerHtml, className }: MapMarkerProps) {
+export function MapMarker({ coordinate, label, popupHtml, markerHtml, className, onClick, onPopupAction, showPopup = true }: MapMarkerProps) {
   const { map } = useContext(MapContext);
   const markerRef = useRef<MapLibreMarker | null>(null);
 
@@ -246,8 +257,17 @@ export function MapMarker({ coordinate, label, popupHtml, markerHtml, className 
       `<div class="min-w-56 rounded-2xl border border-white/10 bg-[#101412] p-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.32)]"><p class="text-sm font-black">${label}</p></div>`;
     const popup = new maplibregl.Popup({ offset: 20, closeButton: true, maxWidth: "none" }).setDOMContent(popupElement);
 
+    function handlePopupClick(event: MouseEvent) {
+      const target = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-map-action]") : null;
+      if (!target) return;
+      event.preventDefault();
+      onPopupAction?.(target.dataset.mapAction ?? "", target.dataset.mapValue ?? "");
+    }
+
     function handleMarkerClick(event: MouseEvent) {
       event.stopPropagation();
+      onClick?.();
+      if (!showPopup) return;
       if (popup.isOpen()) {
         popup.remove();
         return;
@@ -255,16 +275,100 @@ export function MapMarker({ coordinate, label, popupHtml, markerHtml, className 
       popup.setLngLat(coordinate as LngLatLike).addTo(mapInstance);
     }
 
+    popupElement.addEventListener("click", handlePopupClick);
     markerElement.addEventListener("click", handleMarkerClick);
     markerRef.current = new maplibregl.Marker({ element: markerElement }).setLngLat(coordinate as LngLatLike).addTo(mapInstance);
 
     return () => {
+      popupElement.removeEventListener("click", handlePopupClick);
       markerElement.removeEventListener("click", handleMarkerClick);
       popup.remove();
       markerRef.current?.remove();
       markerRef.current = null;
     };
-  }, [className, coordinate, label, map, markerHtml, popupHtml]);
+  }, [className, coordinate, label, map, markerHtml, onClick, onPopupAction, popupHtml, showPopup]);
 
   return null;
+}
+
+export type MapRouteLineProps = {
+  id: string;
+  coordinates: [number, number][];
+  color?: string;
+  width?: number;
+  opacity?: number;
+  fitBounds?: boolean;
+};
+
+export function MapRouteLine({ id, coordinates, color = "#007a3d", width = 6, opacity = 0.92, fitBounds = true }: MapRouteLineProps) {
+  const { map } = useContext(MapContext);
+
+  useEffect(() => {
+    if (!map || coordinates.length < 2) return;
+    const sourceId = `${id}-source`;
+    const layerId = `${id}-layer`;
+    const routeData = routeGeoJson(coordinates);
+    const existingSource = map.getSource(sourceId) as GeoJSONSource | undefined;
+
+    if (existingSource) {
+      existingSource.setData(routeData);
+    } else {
+      map.addSource(sourceId, {
+        type: "geojson",
+        data: routeData,
+      });
+      map.addLayer(
+        {
+          id: layerId,
+          type: "line",
+          source: sourceId,
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+          paint: {
+            "line-color": color,
+            "line-width": width,
+            "line-opacity": opacity,
+          },
+        },
+        firstSymbolLayerId(map),
+      );
+    }
+
+    map.setPaintProperty(layerId, "line-color", color);
+    map.setPaintProperty(layerId, "line-width", width);
+    map.setPaintProperty(layerId, "line-opacity", opacity);
+
+    if (fitBounds) {
+      map.fitBounds(boundsForCoordinates(coordinates), { padding: 70, duration: 700, maxZoom: 15 });
+    }
+
+    return () => {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    };
+  }, [color, coordinates, fitBounds, id, map, opacity, width]);
+
+  return null;
+}
+
+function routeGeoJson(coordinates: [number, number][]) {
+  return {
+    type: "Feature" as const,
+    properties: {},
+    geometry: {
+      type: "LineString" as const,
+      coordinates,
+    },
+  };
+}
+
+function firstSymbolLayerId(map: MapLibreInstance) {
+  return map.getStyle().layers.find((layer) => layer.type === "symbol")?.id;
+}
+
+function boundsForCoordinates(coordinates: [number, number][]): LngLatBoundsLike {
+  const bounds = coordinates.reduce((nextBounds, coordinate) => nextBounds.extend(coordinate), new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+  return bounds;
 }
