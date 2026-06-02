@@ -22,7 +22,8 @@ type LoadingButtonContentProps = {
 };
 
 const GlobalLoadingContext = createContext<GlobalLoadingContextValue | null>(null);
-const fallbackDuration = 9000;
+const fallbackDuration = 2500;
+const displayDelay = 180;
 
 function isModifiedClick(event: MouseEvent) {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
@@ -80,10 +81,15 @@ export function useGlobalLoading() {
 export function GlobalLoadingProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const timeoutRef = useRef<number | null>(null);
+  const delayRef = useRef<number | null>(null);
   const [label, setLabel] = useState("Đang xử lý...");
   const [active, setActive] = useState(false);
 
   const clearGlobalLoading = useCallback(() => {
+    if (delayRef.current !== null) {
+      window.clearTimeout(delayRef.current);
+      delayRef.current = null;
+    }
     if (timeoutRef.current !== null) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -93,12 +99,19 @@ export function GlobalLoadingProvider({ children }: { children: ReactNode }) {
 
   const setGlobalLoading = useCallback(
     (nextLabel = "Đang xử lý...") => {
+      if (delayRef.current !== null) {
+        window.clearTimeout(delayRef.current);
+      }
       if (timeoutRef.current !== null) {
         window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
       setLabel(nextLabel);
-      setActive(true);
-      timeoutRef.current = window.setTimeout(clearGlobalLoading, fallbackDuration);
+      delayRef.current = window.setTimeout(() => {
+        delayRef.current = null;
+        setActive(true);
+        timeoutRef.current = window.setTimeout(clearGlobalLoading, fallbackDuration);
+      }, displayDelay);
     },
     [clearGlobalLoading],
   );
