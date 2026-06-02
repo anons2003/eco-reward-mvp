@@ -6,6 +6,7 @@ type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 type PointRuleRow = Database["public"]["Tables"]["point_rules"]["Row"];
 type RewardRow = Database["public"]["Tables"]["reward_items"]["Row"];
 type WasteType = PointRuleRow["waste_type"];
+type NearbyBin = Pick<BinRow, "id" | "name" | "qr_code" | "location_name" | "lat" | "lng" | "active">;
 
 type UserManagementUser = {
   id: string;
@@ -53,3 +54,7 @@ export const DynamicRewardRedeemButton = dynamic<{ rewardId: string; canRedeem: 
 );
 
 export const DynamicScanForm = dynamic(() => import("@/components/user/scan-form").then((mod) => mod.ScanForm));
+
+export const DynamicNearbyBinsMap = dynamic<{ bins: NearbyBin[] }>(() =>
+  import("@/components/user/nearby-bins-map").then((mod) => mod.NearbyBinsMap),
+);

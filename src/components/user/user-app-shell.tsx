@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, ChevronDown, Gift, HelpCircle, History, Home, Leaf, LogOut, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, ChevronDown, Gift, HelpCircle, History, Home, LogOut, MapPin, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
@@ -10,13 +10,13 @@ const sidebarItems: Array<{ href: string; label: string; Icon: LucideIcon; match
   { href: "/wallet", label: "Ví điểm", Icon: Wallet, match: "/wallet" },
   { href: "/rewards", label: "Đổi thưởng", Icon: Gift, match: "/rewards" },
   { href: "/history", label: "Lịch sử", Icon: History, match: "/history" },
-  { href: "/dashboard#impact", label: "Tác động", Icon: Leaf, match: "/dashboard#impact" },
+  { href: "/impact", label: "Tìm thùng", Icon: MapPin, match: "/impact" },
   { href: "/profile", label: "Tài khoản", Icon: User, match: "/profile" },
 ];
 
 const mobileItems: Array<{ href: string; label: string; Icon: LucideIcon; match: string }> = [
   { href: "/dashboard", label: "Trang chủ", Icon: Home, match: "/dashboard" },
-  { href: "/wallet", label: "Ví điểm", Icon: Wallet, match: "/wallet" },
+  { href: "/impact", label: "Tìm thùng", Icon: MapPin, match: "/impact" },
   { href: "/rewards", label: "Đổi thưởng", Icon: Gift, match: "/rewards" },
   { href: "/profile", label: "Tôi", Icon: User, match: "/profile" },
 ];

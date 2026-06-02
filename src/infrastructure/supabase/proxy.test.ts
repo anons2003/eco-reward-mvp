@@ -71,14 +71,16 @@ describe("updateSession", () => {
     expect(response.headers.get("location")).toBe("https://eco.test/auth/callback?code=abc&type=recovery");
   });
 
-  it("redirects signed-out users away from protected profile and settings routes", async () => {
+  it("redirects signed-out users away from protected profile, impact, and settings routes", async () => {
     getUser.mockResolvedValue({ data: { user: null } });
     const { updateSession } = await import("./proxy");
 
     const profileResponse = await updateSession(nextRequest("https://eco.test/profile") as never);
+    const impactResponse = await updateSession(nextRequest("https://eco.test/impact") as never);
     const settingsResponse = await updateSession(nextRequest("https://eco.test/settings") as never);
 
     expect(profileResponse.headers.get("location")).toBe("https://eco.test/login?next=%2Fprofile");
+    expect(impactResponse.headers.get("location")).toBe("https://eco.test/login?next=%2Fimpact");
     expect(settingsResponse.headers.get("location")).toBe("https://eco.test/login?next=%2Fsettings");
   });
 

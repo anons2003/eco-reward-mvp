@@ -81,6 +81,11 @@ export function MapCanvas({ center, zoom, styleUrl, className, children, onMapCl
   }, [center, style, zoom]);
 
   useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.flyTo({ center, zoom, essential: true });
+  }, [center, zoom]);
+
+  useEffect(() => {
     if (!mapRef.current || !onMapClick) return;
     const clickHandler = onMapClick;
 
@@ -239,7 +244,7 @@ export function MapMarker({ coordinate, label, popupHtml, markerHtml, className 
     popupElement.innerHTML =
       popupHtml ??
       `<div class="min-w-56 rounded-2xl border border-white/10 bg-[#101412] p-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.32)]"><p class="text-sm font-black">${label}</p></div>`;
-    const popup = new maplibregl.Popup({ offset: 20, closeButton: false, maxWidth: "none" }).setDOMContent(popupElement);
+    const popup = new maplibregl.Popup({ offset: 20, closeButton: true, maxWidth: "none" }).setDOMContent(popupElement);
 
     function handleMarkerClick(event: MouseEvent) {
       event.stopPropagation();
