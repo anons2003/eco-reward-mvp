@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { Bell, ChevronDown, Gift, HelpCircle, History, Home, LogOut, MapPin, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
 const sidebarItems: Array<{ href: string; label: string; Icon: LucideIcon; match?: string }> = [
@@ -55,26 +54,7 @@ export function UserAppShell({
   points: number;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const firstName = displayName.split(" ")[0] || "Bạn";
-
-  useEffect(() => {
-    const routes = new Set([...sidebarItems.map((item) => item.href), ...mobileItems.map((item) => item.href), "/settings", "/scan"]);
-    const prefetchRoutes = () => {
-      routes.forEach((route) => router.prefetch(route));
-    };
-
-    const scheduleIdle = globalThis.requestIdleCallback;
-    const cancelIdle = globalThis.cancelIdleCallback;
-
-    if (typeof scheduleIdle === "function" && typeof cancelIdle === "function") {
-      const idleId = scheduleIdle(prefetchRoutes, { timeout: 1800 });
-      return () => cancelIdle(idleId);
-    }
-
-    const timeoutId = globalThis.setTimeout(prefetchRoutes, 250);
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [router]);
 
   return (
     <div className="fixed inset-0 z-30 overflow-y-auto bg-[#f3fcf3] text-[#151d18] [background-image:radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px]">
