@@ -14,12 +14,20 @@ export type SubmissionStatus = "approved" | "pending_review" | "rejected";
 
 export type ImageQuality = "good" | "blurry" | "dark" | "unclear";
 
+export type ContaminationRisk = "low" | "medium" | "high";
+
 export type AIResult = {
   wasteType: WasteType;
   confidence: number;
   objectCount: number;
   imageQuality: ImageQuality;
   notes?: string;
+  isValidSubmission?: boolean;
+  contaminationRisk?: ContaminationRisk;
+  visibleEvidence?: string[];
+  fraudFlags?: string[];
+  provider?: string;
+  model?: string;
 };
 
 export type ValidationSignals = {

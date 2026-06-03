@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { analyzeImage } from "@/application/ai/analyze-image";
+import type { AIResult } from "@/core/entities/types";
 import { getAuthUser } from "@/infrastructure/auth/session";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
@@ -32,6 +34,23 @@ type SubmissionTable = {
 
 function stringValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function uniqueFlags(flags: string[]) {
+  return Array.from(new Set(flags.filter(Boolean)));
+}
+
+function riskFlagsFromAI(aiResult: AIResult) {
+  const threshold = Number(process.env.MIN_AI_CONFIDENCE ?? "0.75");
+  const riskFlags = [...(aiResult.fraudFlags ?? [])];
+
+  if (aiResult.confidence < threshold) riskFlags.push("low_confidence");
+  if (aiResult.wasteType === "unknown") riskFlags.push("unknown_waste");
+  if (aiResult.imageQuality !== "good") riskFlags.push("image_quality");
+  if (aiResult.isValidSubmission === false) riskFlags.push("invalid_submission");
+  if (aiResult.contaminationRisk === "high") riskFlags.push("high_contamination");
+
+  return uniqueFlags(riskFlags);
 }
 
 export async function POST(request: Request) {
@@ -68,17 +87,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Phiên QR này đã được sử dụng." }, { status: 400 });
   }
 
+  const aiResult = await analyzeImage(imageUrl);
+  const riskFlags = riskFlagsFromAI(aiResult);
+
   const { data: submission, error } = await submissions
     .insert({
       user_id: user.id,
       bin_id: session.bin_id,
       scan_session_id: session.id,
       image_url: imageUrl,
-      ai_result: { mode: "manual_review" },
+      ai_result: aiResult,
       status: "pending_review",
-      points: 10,
-      reason: "Chờ admin duyệt thủ công.",
-      risk_flags: [],
+      points: 0,
+      reason: riskFlags.length ? "AI đã phát hiện rủi ro, chờ admin kiểm tra." : "AI đã phân tích, chờ admin duyệt.",
+      risk_flags: riskFlags,
     })
     .select("id")
     .single();
