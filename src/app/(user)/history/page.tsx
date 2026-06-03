@@ -1,9 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Coins, Filter, Gift, ImageIcon, Leaf, MapPin, Recycle, ShoppingBag, TreePine, XCircle, type LucideIcon } from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Coins, Gift, MapPin, Recycle, ShoppingBag, TreePine, XCircle, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { SubmissionStatus } from "@/core/entities/types";
-import { buildHistoryViewModel, type HistoryActivity, type HistoryBinRow, type HistoryRedemptionRow, type HistorySubmissionRow, type SubmissionHistoryActivity } from "./history-view-model";
+import { buildHistoryViewModel, type HistoryActivity, type HistoryBinRow, type HistoryRedemptionRow, type HistoryRewardRow, type HistorySubmissionRow, type SubmissionHistoryActivity } from "./history-view-model";
+
+type HistoryFilterType = "all" | "earned" | "spent";
+type HistoryPeriod = "all" | "month";
+
+const typeTabs: Array<{ label: string; value: HistoryFilterType }> = [
+  { label: "Tất cả", value: "all" },
+  { label: "Đã nhận", value: "earned" },
+  { label: "Đã đổi", value: "spent" },
+];
 
 function statusTone(status: SubmissionStatus) {
   if (status === "approved") return { label: "Hoàn thành", Icon: CheckCircle2, className: "bg-[#d8f5df] text-[#007a3d]" };
@@ -11,7 +20,33 @@ function statusTone(status: SubmissionStatus) {
   return { label: "Từ chối", Icon: XCircle, className: "bg-[#ffdad6] text-[#93000a]" };
 }
 
-export default async function HistoryPage() {
+function normalizeType(value: string | string[] | undefined): HistoryFilterType {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return candidate === "earned" || candidate === "spent" ? candidate : "all";
+}
+
+function normalizePeriod(value: string | string[] | undefined): HistoryPeriod {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return candidate === "month" ? "month" : "all";
+}
+
+function historyHref({ type, period }: { type: HistoryFilterType; period: HistoryPeriod }) {
+  const params = new URLSearchParams();
+  if (type !== "all") params.set("type", type);
+  if (period !== "all") params.set("period", period);
+  const query = params.toString();
+  return query ? `/history?${query}` : "/history";
+}
+
+function startOfCurrentMonth() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+}
+
+export default async function HistoryPage({ searchParams }: { searchParams: Promise<{ type?: string | string[]; period?: string | string[] }> }) {
+  const params = await searchParams;
+  const selectedType = normalizeType(params.type);
+  const selectedPeriod = normalizePeriod(params.period);
   const { user } = await getUserShell();
   const supabase = await getSupabaseServerClient();
 
@@ -23,15 +58,43 @@ export default async function HistoryPage() {
   const submissions = (submissionData ?? []) as HistorySubmissionRow[];
   const redemptions = (redemptionData ?? []) as HistoryRedemptionRow[];
   const binIds = [...new Set(submissions.map((submission) => submission.bin_id))];
+  const rewardIds = [...new Set(redemptions.map((redemption) => redemption.reward_item_id))];
   let bins: HistoryBinRow[] = [];
+  let rewards: HistoryRewardRow[] = [];
 
-  if (binIds.length > 0) {
-    const { data: binData } = await supabase.from("bins").select("id,name,location_name").in("id", binIds);
-    bins = (binData ?? []) as HistoryBinRow[];
-  }
+  await Promise.all([
+    binIds.length > 0
+      ? supabase
+          .from("bins")
+          .select("id,name,location_name")
+          .in("id", binIds)
+          .then(({ data }) => {
+            bins = (data ?? []) as HistoryBinRow[];
+          })
+      : Promise.resolve(),
+    rewardIds.length > 0
+      ? supabase
+          .from("reward_items")
+          .select("id,title")
+          .in("id", rewardIds)
+          .then(({ data }) => {
+            rewards = (data ?? []) as HistoryRewardRow[];
+          })
+      : Promise.resolve(),
+  ]);
 
-  const viewModel = buildHistoryViewModel({ submissions, bins, redemptions });
-  const { rows, summary } = viewModel;
+  const monthStart = startOfCurrentMonth();
+  const periodSubmissions = selectedPeriod === "month" ? submissions.filter((submission) => Date.parse(submission.created_at) >= monthStart) : submissions;
+  const periodRedemptions = selectedPeriod === "month" ? redemptions.filter((redemption) => Date.parse(redemption.created_at) >= monthStart) : redemptions;
+  const viewModel = buildHistoryViewModel({ submissions: periodSubmissions, bins, redemptions: periodRedemptions, rewards });
+  const rows = viewModel.rows.filter((row) => {
+    if (selectedType === "earned") return row.kind === "submission";
+    if (selectedType === "spent") return row.kind === "redemption";
+    return true;
+  });
+  const { summary } = viewModel;
+  const hasActiveFilter = selectedType !== "all" || selectedPeriod !== "all";
+  const activeFilterText = selectedPeriod === "month" ? "trong tháng này" : "toàn thời gian";
 
   return (
     <div className="space-y-5">
@@ -41,10 +104,16 @@ export default async function HistoryPage() {
           <h1 className="mt-2 text-4xl font-black tracking-[-0.05em] text-[#093719] md:text-5xl">Lịch sử hoạt động</h1>
           <p className="mt-2 max-w-2xl font-semibold leading-7 text-[#5d6a60]">Theo dõi các lượt phân loại, điểm nhận và giao dịch đổi thưởng gần đây.</p>
         </div>
-        <button className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-[#edf6ed]" type="button">
+        <Link
+          className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 font-black ring-1 ring-[#d9e5da] transition ${
+            selectedPeriod === "month" ? "bg-[#007a3d] text-white hover:bg-[#006a35]" : "bg-white text-[#151d18] hover:bg-[#edf6ed]"
+          }`}
+          href={historyHref({ type: selectedType, period: selectedPeriod === "month" ? "all" : "month" })}
+          style={selectedPeriod === "month" ? { color: "#ffffff" } : undefined}
+        >
           <CalendarDays size={18} />
-          Tháng này
-        </button>
+          {selectedPeriod === "month" ? "Đang xem tháng này" : "Tháng này"}
+        </Link>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -56,16 +125,30 @@ export default async function HistoryPage() {
       <section className="rounded-[30px] border border-[#d9e5da] bg-white/84 p-4 shadow-[0_12px_40px_rgba(21,29,24,0.05)] md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex gap-2 overflow-x-auto rounded-full bg-[#edf6ed] p-1">
-            {["Tất cả", "Đã nhận", "Đã đổi"].map((tab, index) => (
-              <button className={`min-h-10 shrink-0 rounded-full px-5 text-sm font-black transition ${index === 0 ? "bg-white text-[#007a3d] shadow-sm" : "text-[#3e4941] hover:bg-white/60"}`} key={tab} type="button">
-                {tab}
-              </button>
-            ))}
+            {typeTabs.map((tab) => {
+              const active = selectedType === tab.value;
+              return (
+                <Link
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex min-h-10 shrink-0 items-center rounded-full px-5 text-sm font-black transition ${active ? "bg-white text-[#007a3d] shadow-sm" : "text-[#3e4941] hover:bg-white/60"}`}
+                  href={historyHref({ type: tab.value, period: selectedPeriod })}
+                  key={tab.value}
+                >
+                  {tab.label}
+                </Link>
+              );
+            })}
           </div>
-          <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-black text-[#151d18] ring-1 ring-[#d9e5da]" type="button">
-            <Filter size={16} />
-            Bộ lọc
-          </button>
+          <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#5d6a60]">
+            <span className="rounded-full bg-[#f3fcf3] px-4 py-2 text-[#3e4941] ring-1 ring-[#d9e5da]">
+              {rows.length.toLocaleString("vi-VN")} hoạt động {activeFilterText}
+            </span>
+            {hasActiveFilter ? (
+              <Link className="rounded-full bg-white px-4 py-2 text-[#007a3d] ring-1 ring-[#d9e5da] transition hover:bg-[#edf6ed]" href="/history">
+                Xóa lọc
+              </Link>
+            ) : null}
+          </div>
         </div>
 
         <div className="mt-5 grid gap-3">
@@ -82,19 +165,23 @@ export default async function HistoryPage() {
           ) : null}
         </div>
 
-        <div className="mt-8 flex justify-center">
-          <button className="inline-flex items-center gap-2 rounded-full bg-[#edf6ed] px-5 py-3 text-sm font-black text-[#007a3d] transition hover:bg-[#d8f5df]" type="button">
-            Xem tất cả giao dịch
-            <ArrowRight size={16} />
-          </button>
-        </div>
+        {hasActiveFilter ? (
+          <div className="mt-8 flex justify-center">
+            <Link className="inline-flex items-center gap-2 rounded-full bg-[#edf6ed] px-5 py-3 text-sm font-black text-[#007a3d] transition hover:bg-[#d8f5df]" href="/history">
+              Xem tất cả giao dịch
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        ) : null}
       </section>
 
       <section className="relative min-h-48 overflow-hidden rounded-[32px] bg-[#007a3d] p-7 text-white shadow-[0_18px_44px_rgba(0,106,61,0.16)]">
         <div className="relative z-10 max-w-xl">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[#8ff8b6]">Tác động của bạn</p>
-          <h2 className="mt-3 text-3xl font-black tracking-[-0.04em]">Bạn đã giúp giảm 45kg CO2 trong tháng này.</h2>
-          <p className="mt-3 text-sm font-semibold leading-6 text-white/78">Mỗi lượt phân loại đúng giúp hệ thống ghi nhận tác động môi trường và cộng tiến độ xanh cho tài khoản.</p>
+          <h2 className="mt-3 text-3xl font-black tracking-[-0.04em]">Bạn đã giúp giảm {summary.co2Label} CO2 {selectedPeriod === "month" ? "trong tháng này" : "từ các lượt đã duyệt"}.</h2>
+          <p className="mt-3 text-sm font-semibold leading-6 text-white/78">
+            Con số này được ước tính từ {summary.approvedSubmissions.toLocaleString("vi-VN")} lượt phân loại đã hoàn thành, không dùng dữ liệu mẫu.
+          </p>
         </div>
         <TreePine className="absolute -bottom-10 right-8 text-white/18" size={180} />
         <div className="absolute -right-16 -top-16 size-72 rounded-full bg-white/10 blur-3xl" />

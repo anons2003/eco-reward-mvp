@@ -1,21 +1,13 @@
 import Link from "next/link";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Clock3, Coins, Gift, History, Leaf, QrCode, Recycle, ShoppingBag, Sparkles, WalletCards, type LucideIcon } from "lucide-react";
 import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
-import type { AIResult, SubmissionStatus } from "@/core/entities/types";
+import { dashboardWasteLabel } from "@/app/(user)/dashboard/dashboard-metrics";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type SubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "ai_result" | "status" | "points" | "created_at">;
 type TransactionRow = Pick<Database["public"]["Tables"]["point_transactions"]["Row"], "id" | "points" | "reason" | "created_at">;
 type RewardRow = Pick<Database["public"]["Tables"]["reward_items"]["Row"], "id" | "title" | "description" | "points_required">;
 type RedemptionRow = Pick<Database["public"]["Tables"]["reward_redemptions"]["Row"], "id" | "points_spent" | "status" | "created_at">;
-
-function parseAiResult(value: unknown): AIResult {
-  if (value && typeof value === "object" && "wasteType" in value) {
-    return value as AIResult;
-  }
-
-  return { wasteType: "unknown", confidence: 0, objectCount: 0, imageQuality: "unclear" };
-}
 
 export default async function WalletPage() {
   const { points, user } = await getUserShell();
@@ -94,7 +86,7 @@ export default async function WalletPage() {
         </div>
 
         <div className="grid gap-4">
-          <WalletStat icon={ArrowDownRight} label="Tổng điểm nhận" value={`${totalEarned.toLocaleString("vi-VN")} Pts`} tone="green" note="+12% so với tháng trước" />
+          <WalletStat icon={ArrowDownRight} label="Tổng điểm nhận" value={`${totalEarned.toLocaleString("vi-VN")} Pts`} tone="green" note={`${transactions.length.toLocaleString("vi-VN")} giao dịch nhận điểm`} />
           <WalletStat icon={ArrowUpRight} label="Tổng điểm đổi" value={`${totalRedeemed.toLocaleString("vi-VN")} Pts`} tone="blue" note={`${redemptions.length} lượt đổi thưởng`} />
         </div>
       </section>
@@ -110,16 +102,14 @@ export default async function WalletPage() {
           </div>
 
           <div className="mt-4 grid gap-3">
-            {pendingSubmissions.slice(0, 3).map((submission) => {
-              const aiResult = parseAiResult(submission.ai_result);
-              return (
+            {pendingSubmissions.slice(0, 3).map((submission) => (
                 <Link className="flex items-center justify-between gap-3 rounded-[22px] border border-[#d9e5da] bg-white p-4 transition hover:border-[#f0a100]" href={`/result/${submission.id}`} key={submission.id}>
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#edf6ed] text-[#007a3d]">
                       <Recycle size={20} />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-black text-[#151d18]">{aiResult.wasteType.replaceAll("_", " ")}</p>
+                      <p className="truncate text-sm font-black text-[#151d18]">{dashboardWasteLabel(submission.ai_result, submission.status)}</p>
                       <p className="text-xs font-semibold text-[#5d6a60]">{new Date(submission.created_at).toLocaleString("vi-VN")}</p>
                     </div>
                   </div>
@@ -128,8 +118,7 @@ export default async function WalletPage() {
                     <p className="text-xs font-bold text-[#92400E]">Chờ duyệt</p>
                   </div>
                 </Link>
-              );
-            })}
+            ))}
 
             {pendingSubmissions.length === 0 ? (
               <div className="rounded-[22px] bg-[#f3fcf3] p-5 text-sm font-semibold leading-6 text-[#5d6a60]">
@@ -214,8 +203,15 @@ export default async function WalletPage() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <PromoCard title="X2 Điểm Nhựa" body="Nhận gấp đôi điểm khi phân loại chai nhựa trong tuần này." href="/scan" cta="Tham gia ngay" icon={Recycle} tone="green" />
-        <PromoCard title={nextReward?.title ?? "Đổi túi vải Canvas xanh"} body={nextReward?.description ?? "Sử dụng điểm SeaTech để nhận phần thưởng xanh từ đối tác."} href={nextReward ? `/rewards/${nextReward.id}` : "/rewards"} cta="Đổi ngay" icon={ShoppingBag} tone="blue" />
+        <PromoCard title="Tích điểm từ lượt gửi thật" body="Quét QR trên thùng, chụp ảnh và chờ admin duyệt để điểm được cộng vào ví." href="/scan" cta="Quét QR" icon={Recycle} tone="green" />
+        <PromoCard
+          title={nextReward?.title ?? "Chưa có phần thưởng đang mở"}
+          body={nextReward?.description ?? "Khi admin phát hành ưu đãi active, ví sẽ tự hiển thị mốc điểm tiếp theo tại đây."}
+          href={nextReward ? `/rewards/${nextReward.id}` : "/rewards"}
+          cta={nextReward ? "Xem ưu đãi" : "Xem danh sách"}
+          icon={ShoppingBag}
+          tone="blue"
+        />
       </section>
     </div>
   );

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Leaf, Share2, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Leaf, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
 import { DynamicRewardRedeemButton } from "@/components/shared/dynamic-client-components";
+import { RewardShareButton } from "@/components/user/reward-share-button";
 import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -39,9 +40,7 @@ export default async function RewardDetailPage({ params }: { params: Promise<{ i
           <ArrowLeft size={18} />
           Quay lại
         </Link>
-        <button className="grid size-11 place-items-center rounded-full bg-white text-[#3e4941] ring-1 ring-[#bdcabe] transition hover:bg-[#edf6ed]" type="button" aria-label="Chia sẻ">
-          <Share2 size={18} />
-        </button>
+        <RewardShareButton title={reward.title} />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">

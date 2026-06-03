@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Bell, ChevronDown, Gift, HelpCircle, History, Home, LogOut, MapPin, QrCode, Search, Settings, User, Wallet, type LucideIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
 const sidebarItems: Array<{ href: string; label: string; Icon: LucideIcon; match?: string }> = [
@@ -54,7 +54,9 @@ export function UserAppShell({
   points: number;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const firstName = displayName.split(" ")[0] || "Bạn";
+  const rewardSearch = pathname.startsWith("/rewards") ? searchParams.get("q") ?? "" : "";
 
   return (
     <div className="fixed inset-0 z-30 overflow-y-auto bg-[#f3fcf3] text-[#151d18] [background-image:radial-gradient(#bdcabe_1px,transparent_1px)] [background-size:24px_24px]">
@@ -91,14 +93,16 @@ export function UserAppShell({
 
         <main className="relative min-w-0 flex-1">
           <header className="sticky top-0 z-40 hidden h-16 items-center justify-between bg-[#f3fcf3]/90 px-8 backdrop-blur-md md:flex">
-            <div className="relative">
+            <form action="/rewards" className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6e7a70]" size={17} />
               <input
                 className="h-10 w-72 rounded-full border-0 bg-[#e7f0e7] px-4 pl-10 text-sm font-semibold text-[#151d18] outline-none placeholder:text-[#6e7a70] focus:ring-2 focus:ring-[#007a3d]/20"
+                defaultValue={rewardSearch}
+                name="q"
                 placeholder="Tìm kiếm phần thưởng..."
                 type="search"
               />
-            </div>
+            </form>
             <div className="flex items-center gap-5">
               <button aria-label="Thông báo" className="grid size-10 place-items-center rounded-full text-[#3e4941] transition hover:bg-[#e7f0e7]" type="button">
                 <Bell size={19} />

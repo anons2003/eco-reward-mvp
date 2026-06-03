@@ -35,6 +35,21 @@ export const DynamicPointRuleManagementActions = dynamic<{ rule?: PointRuleRow; 
 
 export const DynamicReviewActions = dynamic<{ submissionId: string }>(() => import("@/components/admin/review-actions").then((mod) => mod.ReviewActions));
 
+export const DynamicFraudAlertActions = dynamic<{
+  submissionId: string;
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+    phone: string | null;
+    location: string | null;
+    bio: string | null;
+    role: "user" | "admin";
+    status: "active" | "blocked" | "deleted";
+    trust_score: number;
+  } | null;
+}>(() => import("@/components/admin/fraud-alert-actions").then((mod) => mod.FraudAlertActions));
+
 export const DynamicRewardManagementActions = dynamic<{ reward?: RewardRow }>(() =>
   import("@/components/admin/reward-management-actions").then((mod) => mod.RewardManagementActions),
 );

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, ChevronRight, History, Leaf, Lock, Sparkles, Ticket, WalletCards } from "lucide-react";
+import { ArrowRight, ChevronRight, History, Leaf, Lock, Search, Sparkles, Ticket, WalletCards } from "lucide-react";
 import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type RewardRow = Database["public"]["Tables"]["reward_items"]["Row"];
 
-const categories = ["Tất cả", "Voucher", "Quà tặng", "Đóng góp", "Dịch vụ"];
+const categories = ["Tất cả", "Voucher", "Quà tặng", "Đóng góp", "Dịch vụ"] as const;
+type RewardCategoryFilter = (typeof categories)[number];
 
 const categoryStyles: Record<RewardRow["category"], string> = {
   Voucher: "bg-[#e3f2ff] text-[#006496]",
@@ -13,6 +14,23 @@ const categoryStyles: Record<RewardRow["category"], string> = {
   "Đóng góp": "bg-[#fff3c4] text-[#755b00]",
   "Dịch vụ": "bg-[#f1e8ff] text-[#6741a1]",
 };
+
+function normalizeSearch(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0]?.trim() ?? "" : value?.trim() ?? "";
+}
+
+function normalizeCategory(value: string | string[] | undefined): RewardCategoryFilter {
+  const category = normalizeSearch(value);
+  return categories.includes(category as RewardCategoryFilter) ? (category as RewardCategoryFilter) : "Tất cả";
+}
+
+function rewardsHref(category: RewardCategoryFilter, query: string) {
+  const params = new URLSearchParams();
+  if (category !== "Tất cả") params.set("category", category);
+  if (query) params.set("q", query);
+  const search = params.toString();
+  return search ? `/rewards?${search}` : "/rewards";
+}
 
 function RewardCard({ item, points }: { item: RewardRow; points: number }) {
   const canRedeem = points >= item.points_required && item.stock > 0;
@@ -49,24 +67,38 @@ function RewardCard({ item, points }: { item: RewardRow; points: number }) {
               <p className="text-lg font-black text-[#151d18]">{item.stock.toLocaleString("vi-VN")}</p>
             </div>
           </div>
-          <div
+          <span
             className={`mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-5 text-sm font-black transition ${
               canRedeem ? "bg-[#007a3d] text-white group-hover:bg-[#006a3d]" : "bg-[#e7f0e7] text-[#3e4941]"
             }`}
           >
-            {canRedeem ? "Đổi ngay" : item.stock <= 0 ? "Hết hàng" : "Chưa đủ điểm"}
+            {canRedeem ? "Xem và đổi" : item.stock <= 0 ? "Hết hàng" : "Xem điều kiện"}
             {canRedeem ? <ArrowRight size={18} /> : <ChevronRight size={18} />}
-          </div>
+          </span>
         </div>
       </Link>
     </article>
   );
 }
 
-export default async function RewardsPage() {
+export default async function RewardsPage({ searchParams }: { searchParams: Promise<{ category?: string | string[]; q?: string | string[] }> }) {
+  const params = await searchParams;
+  const selectedCategory = normalizeCategory(params.category);
+  const searchQuery = normalizeSearch(params.q);
   const { points } = await getUserShell();
   const supabase = await getSupabaseServerClient();
-  const { data } = await supabase.from("reward_items").select("id,title,description,points_required,stock,active,category,partner,image_url,expires_at,created_at").eq("active", true).order("points_required", { ascending: true });
+  let query = supabase.from("reward_items").select("id,title,description,points_required,stock,active,category,partner,image_url,expires_at,created_at").eq("active", true);
+
+  if (selectedCategory !== "Tất cả") {
+    query = query.eq("category", selectedCategory);
+  }
+
+  if (searchQuery) {
+    const escapedSearch = searchQuery.replaceAll("%", "\\%").replaceAll("_", "\\_");
+    query = query.or(`title.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,partner.ilike.%${escapedSearch}%`);
+  }
+
+  const { data } = await query.order("points_required", { ascending: true });
   const rewards = (data ?? []) as RewardRow[];
   const affordableCount = rewards.filter((reward) => points >= reward.points_required && reward.stock > 0).length;
 
@@ -122,20 +154,56 @@ export default async function RewardsPage() {
         </div>
       </section>
 
-      <section className="flex gap-2 overflow-x-auto pb-1">
-        {categories.map((category, index) => (
-          <button
-            className={`min-h-11 shrink-0 rounded-full px-5 text-sm font-black transition ${
-              index === 0
-                ? "bg-[#151d18] text-white shadow-[0_10px_24px_rgba(21,29,24,0.14)]"
-                : "bg-white text-[#3e4941] ring-1 ring-[#d7e2d8] hover:bg-[#f3fcf3]"
-            }`}
-            key={category}
-            type="button"
-          >
-            {category}
-          </button>
-        ))}
+      <section className="rounded-[30px] border border-[#d7e2d8] bg-white/90 p-3 shadow-[0_14px_34px_rgba(21,29,24,0.07)] backdrop-blur">
+        <div className="grid gap-3 lg:grid-cols-[minmax(320px,1fr)_auto] lg:items-center">
+          <form action="/rewards" className="relative">
+            {selectedCategory !== "Tất cả" ? <input name="category" type="hidden" value={selectedCategory} /> : null}
+            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5d6a60]" size={20} />
+            <input
+              className="min-h-14 w-full rounded-[22px] border border-[#c9d8ca] bg-[#f7fbf7] px-5 pl-12 pr-28 text-base font-bold text-[#151d18] outline-none placeholder:text-[#7c887f] focus:border-[#007a3d] focus:ring-4 focus:ring-[#007a3d]/12"
+              defaultValue={searchQuery}
+              name="q"
+              placeholder="Tìm theo tên ưu đãi, đối tác hoặc mô tả"
+              type="search"
+            />
+            <button className="absolute right-2 top-1/2 hidden min-h-10 -translate-y-1/2 rounded-[18px] bg-[#007a3d] px-4 text-sm font-black text-white transition hover:bg-[#006a35] sm:inline-flex sm:items-center" type="submit">
+              Tìm
+            </button>
+          </form>
+
+          <div className="flex gap-2 overflow-x-auto pb-1 lg:justify-end lg:pb-0">
+            {categories.map((category) => {
+              const active = selectedCategory === category;
+              return (
+                <Link
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex min-h-12 shrink-0 items-center justify-center rounded-[22px] px-5 text-sm font-black transition ${
+                    active
+                      ? "bg-[#007a3d] text-white shadow-[0_12px_26px_rgba(0,106,61,0.22)]"
+                      : "bg-white text-[#26332a] ring-1 ring-[#d7e2d8] hover:bg-[#f3fcf3] hover:text-[#006a3d]"
+                  }`}
+                  href={rewardsHref(category, searchQuery)}
+                  key={category}
+                  style={active ? { color: "#ffffff" } : undefined}
+                >
+                  {category}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {searchQuery || selectedCategory !== "Tất cả" ? (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-[22px] bg-[#f3fcf3] px-4 py-3 text-sm font-bold text-[#4c5a50]">
+            <span>
+              Tìm thấy <strong className="text-[#007a3d]">{rewards.length.toLocaleString("vi-VN")}</strong> phần thưởng
+              {searchQuery ? ` cho "${searchQuery}"` : ""}.
+            </span>
+            <Link className="inline-flex min-h-9 items-center rounded-full bg-white px-4 text-[#007a3d] ring-1 ring-[#d7e2d8] transition hover:bg-[#edf6ed]" href="/rewards">
+              Xóa bộ lọc
+            </Link>
+          </div>
+        ) : null}
       </section>
 
       <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -146,8 +214,10 @@ export default async function RewardsPage() {
 
       {rewards.length === 0 ? (
         <section className="rounded-[32px] border border-[#d7e2d8] bg-white p-10 text-center shadow-[0_10px_30px_rgba(21,29,24,0.07)]">
-          <p className="text-lg font-black text-[#151d18]">Chưa có phần thưởng đang mở.</p>
-          <p className="mt-2 text-sm font-semibold text-[#4c5a50]">Quay lại sau khi admin phát hành voucher mới.</p>
+          <p className="text-lg font-black text-[#151d18]">{searchQuery || selectedCategory !== "Tất cả" ? "Không có phần thưởng phù hợp." : "Chưa có phần thưởng đang mở."}</p>
+          <p className="mt-2 text-sm font-semibold text-[#4c5a50]">
+            {searchQuery || selectedCategory !== "Tất cả" ? "Thử đổi từ khóa hoặc xóa bộ lọc để xem toàn bộ ưu đãi." : "Quay lại sau khi admin phát hành voucher mới."}
+          </p>
         </section>
       ) : null}
     </div>

@@ -52,6 +52,7 @@ describe("buildHistoryViewModel", () => {
           created_at: "2026-06-02T01:30:00.000Z",
         },
       ],
+      rewards: [{ id: "reward-1", title: "Voucher cà phê xanh" }],
     });
 
     expect(viewModel.summary).toEqual({
@@ -63,6 +64,8 @@ describe("buildHistoryViewModel", () => {
       pendingPoints: 10,
       pointsSpent: 5,
       redemptionCount: 1,
+      co2Kg: 0.25,
+      co2Label: "0,25 kg",
     });
     expect(viewModel.rows.map((row) => row.id)).toEqual(["sub-pending", "redeem-1", "sub-approved", "sub-rejected"]);
     expect(viewModel.rows[0]).toMatchObject({
@@ -80,6 +83,12 @@ describe("buildHistoryViewModel", () => {
       title: "Phân loại Chai nhựa",
       pointsLabel: "+15 pts",
       binName: "Thùng B",
+    });
+    expect(viewModel.rows[1]).toMatchObject({
+      kind: "redemption",
+      id: "redeem-1",
+      title: "Voucher cà phê xanh",
+      pointsLabel: "-5 pts",
     });
     expect(viewModel.rows[3]).toMatchObject({
       kind: "submission",
