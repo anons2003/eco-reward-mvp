@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertCircle, Crosshair, LocateFixed, Navigation, QrCode, Route, Search, ShieldCheck, Trash2, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MapCanvas, MapControls, MapMarker, MapRouteLine } from "@/components/ui/map";
 import { formatDistance, sortByNearest, type GeoPoint, type WithDistance } from "@/lib/geo-distance";
 
@@ -55,7 +55,7 @@ const daNangCenter: [number, number] = [108.2208, 16.0678];
 const defaultLocationState: LocationState = {
   status: "idle",
   point: null,
-  message: "Bật định vị để SeaTech sắp xếp thùng rác gần bạn nhất.",
+  message: "Bấm Dùng vị trí để SeaTech sắp xếp thùng rác gần bạn nhất.",
 };
 
 function escapeHtml(value: string) {
@@ -146,7 +146,6 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
   const [routeStatus, setRouteStatus] = useState<"idle" | "loading" | "error">("idle");
   const [routeMessage, setRouteMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const autoLocateStartedRef = useRef(false);
   const activeBins = useMemo(() => bins.filter((bin) => bin.active), [bins]);
   const nearestBins = useMemo(() => {
     if (!location.point) return activeBins.map((bin) => ({ ...bin, distanceMeters: Number.POSITIVE_INFINITY }));
@@ -165,8 +164,17 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
   const center = useMemo<[number, number]>(() => (location.point ? [location.point.lng, location.point.lat] : daNangCenter), [location.point]);
   const zoom = location.point ? 14 : 12;
 
+  const locationBlockedMessage = "Quyền định vị đang bị chặn. Hãy mở cài đặt trang web của trình duyệt, cho phép Location rồi bấm Dùng vị trí lại.";
+
   const requestLocation = useCallback(() => {
     return new Promise<GeoPoint>((resolve, reject) => {
+      if (!window.isSecureContext) {
+        const message = "Định vị chỉ hoạt động trên HTTPS hoặc localhost. Hãy mở bản production bằng https://.";
+        setLocation({ status: "error", point: null, message });
+        reject(new Error(message));
+        return;
+      }
+
       if (!("geolocation" in navigator)) {
         const message = "Trình duyệt này không hỗ trợ định vị. Bạn vẫn có thể xem các thùng ở Đà Nẵng trên bản đồ.";
         setLocation({ status: "error", point: null, message });
@@ -186,23 +194,33 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
           resolve(point);
         },
         (error) => {
-          const denied = error.code === error.PERMISSION_DENIED;
-          const message = denied ? "Bạn chưa cấp quyền định vị. Hãy bật Location Permission nếu muốn xem thùng gần nhất." : "Không lấy được vị trí hiện tại. Bản đồ vẫn hiển thị các thùng đang hoạt động.";
+          const message =
+            error.code === error.PERMISSION_DENIED
+              ? locationBlockedMessage
+              : error.code === error.TIMEOUT
+                ? "Lấy vị trí quá lâu. Hãy bật GPS/Wi-Fi rồi bấm Dùng vị trí lại."
+                : "Không lấy được vị trí hiện tại. Bản đồ vẫn hiển thị các thùng đang hoạt động.";
           setLocation({ status: "error", point: null, message });
           reject(new Error(message));
         },
-        { enableHighAccuracy: true, maximumAge: 30_000, timeout: 10_000 },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 15_000 },
       );
     });
-  }, []);
-
-  useEffect(() => {
-    if (!token || autoLocateStartedRef.current) return;
-    autoLocateStartedRef.current = true;
-    void requestLocation().catch(() => null);
-  }, [requestLocation, token]);
+  }, [locationBlockedMessage]);
 
   async function handleLocateClick() {
+    if ("permissions" in navigator) {
+      try {
+        const permission = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+        if (permission.state === "denied") {
+          setLocation({ status: "error", point: null, message: locationBlockedMessage });
+          return;
+        }
+      } catch {
+        // Safari/iOS may not support querying geolocation permission; getCurrentPosition will handle it.
+      }
+    }
+
     await requestLocation().catch(() => null);
   }
 
