@@ -20,20 +20,7 @@ type BinInsertTable = {
 };
 
 type BinLocationTable = {
-  select(columns: string): {
-    eq(column: "address", value: string): {
-      limit(count: 1): {
-        maybeSingle(): Promise<{ data: BinLocationRow | null; error: { message: string } | null }>;
-      };
-    };
-  };
-  update(values: LocationInsert): {
-    eq(column: "id", value: string): {
-      select(columns: string): {
-        single(): Promise<{ data: BinLocationRow | null; error: { message: string } | null }>;
-      };
-    };
-  };
+  select(columns: string): Promise<{ data: BinLocationRow[] | null; error: { message: string } | null }>;
   insert(values: LocationInsert): {
     select(columns: string): {
       single(): Promise<{ data: BinLocationRow | null; error: { message: string } | null }>;
@@ -51,13 +38,46 @@ function isQrDuplicate(error: { code?: string; message: string } | null) {
   return error.code === "23505" && (message.includes("qr_code") || message.includes("bins_qr_code_key"));
 }
 
-async function findOrCreateLocationByAddress(locationTable: BinLocationTable, values: LocationInsert) {
-  const existing = await locationTable.select(binLocationColumns).eq("address", values.address).limit(1).maybeSingle();
-  if (existing.error) return existing;
+function normalizeLocationText(value: string | null | undefined) {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
 
-  if (existing.data) {
-    return locationTable.update(values).eq("id", existing.data.id).select(binLocationColumns).single();
-  }
+function distanceMeters(first: Pick<LocationInsert, "lat" | "lng">, second: Pick<LocationInsert, "lat" | "lng">) {
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const radius = 6_371_000;
+  const deltaLat = toRadians(second.lat - first.lat);
+  const deltaLng = toRadians(second.lng - first.lng);
+  const lat1 = toRadians(first.lat);
+  const lat2 = toRadians(second.lat);
+  const a = Math.sin(deltaLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+  return 2 * radius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function findReusableLocation(locations: BinLocationRow[], values: LocationInsert) {
+  const normalizedAddress = normalizeLocationText(values.address);
+  const normalizedName = normalizeLocationText(values.name);
+
+  return (
+    locations.find((location) => normalizeLocationText(location.address) === normalizedAddress) ??
+    locations.find((location) => distanceMeters(values, location) <= 25 && normalizeLocationText(location.name) === normalizedName) ??
+    null
+  );
+}
+
+async function findOrCreateLocation(locationTable: BinLocationTable, values: LocationInsert) {
+  const existing = await locationTable.select(binLocationColumns);
+  if (existing.error) return { data: null, error: existing.error };
+
+  const reusable = findReusableLocation(existing.data ?? [], values);
+  if (reusable) return { data: reusable, error: null };
 
   return locationTable.insert(values).select(binLocationColumns).single();
 }
@@ -89,7 +109,7 @@ export async function POST(request: NextRequest | Request) {
 
   const supabase = createAdminClient();
   const locationTable = supabase.from("locations") as unknown as BinLocationTable;
-  const { data: location, error: locationError } = await findOrCreateLocationByAddress(locationTable, toLocationValues(parsed.data.location));
+  const { data: location, error: locationError } = await findOrCreateLocation(locationTable, toLocationValues(parsed.data.location));
 
   if (locationError || !location) {
     return NextResponse.json({ error: locationError?.message ?? "Không thể tạo địa điểm cho thùng rác" }, { status: 500 });

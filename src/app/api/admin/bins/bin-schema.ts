@@ -3,12 +3,12 @@ import type { Database } from "@/infrastructure/supabase/database.types";
 import { locationPayloadSchema } from "../locations/location-schema";
 
 export const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
-export const binLocationColumns = "id,name,lat,lng";
+export const binLocationColumns = "id,name,address,lat,lng";
 
 export type BinRow = Database["public"]["Tables"]["bins"]["Row"];
 export type BinInsert = Database["public"]["Tables"]["bins"]["Insert"];
 export type BinUpdate = Database["public"]["Tables"]["bins"]["Update"];
-export type BinLocationRow = Pick<Database["public"]["Tables"]["locations"]["Row"], "id" | "name" | "lat" | "lng">;
+export type BinLocationRow = Pick<Database["public"]["Tables"]["locations"]["Row"], "id" | "name" | "address" | "lat" | "lng">;
 export type AuditInsert = Database["public"]["Tables"]["audit_logs"]["Insert"];
 
 export type AuditInsertTable = {

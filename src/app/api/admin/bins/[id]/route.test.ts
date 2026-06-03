@@ -59,6 +59,7 @@ describe("/api/admin/bins/[id]", () => {
       data: {
         id: "11111111-1111-4111-8111-111111111111",
         name: "127 Quách Thị Trang",
+        address: "127 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng",
         lat: 16.005406,
         lng: 108.222811,
       },
@@ -94,7 +95,7 @@ describe("/api/admin/bins/[id]", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(locationSelect).toHaveBeenCalledWith("id,name,lat,lng");
+    expect(locationSelect).toHaveBeenCalledWith("id,name,address,lat,lng");
     expect(locationEq).toHaveBeenCalledWith("id", "11111111-1111-4111-8111-111111111111");
     expect(update).toHaveBeenCalledWith({
       name: "SeaBin Edited",

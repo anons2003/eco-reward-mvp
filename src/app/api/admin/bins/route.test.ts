@@ -8,19 +8,13 @@ const insert = vi.fn();
 const insertSelect = vi.fn();
 const single = vi.fn();
 const locationSelect = vi.fn();
-const locationEq = vi.fn();
-const locationLimit = vi.fn();
-const locationMaybeSingle = vi.fn();
-const locationUpdate = vi.fn();
-const locationUpdateEq = vi.fn();
-const locationUpdateSelect = vi.fn();
 const locationInsert = vi.fn();
 const locationInsertSelect = vi.fn();
 const locationSingle = vi.fn();
 const auditInsert = vi.fn();
 const from = vi.fn((table: string) => {
   if (table === "audit_logs") return { insert: auditInsert };
-  if (table === "locations") return { select: locationSelect, update: locationUpdate, insert: locationInsert };
+  if (table === "locations") return { select: locationSelect, insert: locationInsert };
   return { select, insert };
 });
 
@@ -52,12 +46,6 @@ describe("/api/admin/bins", () => {
     insertSelect.mockReset();
     single.mockReset();
     locationSelect.mockReset();
-    locationEq.mockReset();
-    locationLimit.mockReset();
-    locationMaybeSingle.mockReset();
-    locationUpdate.mockReset();
-    locationUpdateEq.mockReset();
-    locationUpdateSelect.mockReset();
     locationInsert.mockReset();
     locationInsertSelect.mockReset();
     locationSingle.mockReset();
@@ -88,29 +76,27 @@ describe("/api/admin/bins", () => {
     });
     insert.mockReturnValue({ select: insertSelect });
     insertSelect.mockReturnValue({ single });
-    locationSelect.mockReturnValue({ eq: locationEq });
-    locationEq.mockReturnValue({ limit: locationLimit });
-    locationLimit.mockReturnValue({ maybeSingle: locationMaybeSingle });
-    locationMaybeSingle.mockResolvedValue({
-      data: {
-        id: "11111111-1111-4111-8111-111111111111",
-        name: "127 Quách Thị Trang",
-        lat: 16.005406,
-        lng: 108.222811,
-      },
+    locationSelect.mockResolvedValue({
+      data: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          name: "127 Quách Thị Trang",
+          address: "127 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng",
+          lat: 16.005406,
+          lng: 108.222811,
+        },
+      ],
       error: null,
     });
-    locationUpdate.mockReturnValue({ eq: locationUpdateEq });
-    locationUpdateEq.mockReturnValue({ select: locationUpdateSelect });
-    locationUpdateSelect.mockReturnValue({ single: locationSingle });
     locationInsert.mockReturnValue({ select: locationInsertSelect });
     locationInsertSelect.mockReturnValue({ single: locationSingle });
     locationSingle.mockResolvedValue({
       data: {
-        id: "11111111-1111-4111-8111-111111111111",
-        name: "127 Quách Thị Trang",
-        lat: 16.005406,
-        lng: 108.222811,
+        id: "22222222-2222-4222-8222-222222222222",
+        name: "WinMart",
+        address: "128 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng",
+        lat: 16.0055,
+        lng: 108.2229,
       },
       error: null,
     });
@@ -183,20 +169,7 @@ describe("/api/admin/bins", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(locationSelect).toHaveBeenCalledWith("id,name,lat,lng");
-    expect(locationEq).toHaveBeenCalledWith("address", "127 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng");
-    expect(locationLimit).toHaveBeenCalledWith(1);
-    expect(locationUpdate).toHaveBeenCalledWith({
-      name: "127 Quách Thị Trang",
-      address: "127 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng",
-      district: "Cẩm Lệ",
-      ward: "Hòa Xuân",
-      lat: 16.005406,
-      lng: 108.222811,
-      active: true,
-    });
-    expect(locationUpdateEq).toHaveBeenCalledWith("id", "11111111-1111-4111-8111-111111111111");
-    expect(locationUpdateSelect).toHaveBeenCalledWith("id,name,lat,lng");
+    expect(locationSelect).toHaveBeenCalledWith("id,name,address,lat,lng");
     expect(locationInsert).not.toHaveBeenCalled();
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({
       name: "SeaBin Test",
@@ -214,5 +187,68 @@ describe("/api/admin/bins", () => {
       target_id: "bin-1",
       metadata: { name: "SeaBin Test", qrCode: expect.stringMatching(/^SEATECH-BIN-[0-9A-F]{8}$/), active: true },
     });
+  });
+
+  it("reuses an existing location when the same address is typed with different casing or accents", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      postRequest({
+        name: "SeaBin Second",
+        location: {
+          name: "127 quach thi trang",
+          address: "127 quach thi trang, hoa xuan, cam le, da nang",
+          lat: 16.005407,
+          lng: 108.222812,
+        },
+        active: true,
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(locationInsert).not.toHaveBeenCalled();
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      name: "SeaBin Second",
+      location_id: "11111111-1111-4111-8111-111111111111",
+      location_name: "127 Quách Thị Trang",
+      lat: 16.005406,
+      lng: 108.222811,
+      active: true,
+    }));
+  });
+
+  it("creates a new location when the address and nearby name do not match", async () => {
+    locationSelect.mockResolvedValueOnce({ data: [], error: null });
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      postRequest({
+        name: "SeaBin New",
+        location: {
+          name: "WinMart",
+          address: "128 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng",
+          lat: 16.0055,
+          lng: 108.2229,
+        },
+        active: true,
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(locationInsert).toHaveBeenCalledWith({
+      name: "WinMart",
+      address: "128 Quách Thị Trang, Hòa Xuân, Cẩm Lệ, Đà Nẵng",
+      district: "Cẩm Lệ",
+      ward: "Hòa Xuân",
+      lat: 16.0055,
+      lng: 108.2229,
+      active: true,
+    });
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      location_id: "22222222-2222-4222-8222-222222222222",
+      location_name: "WinMart",
+      lat: 16.0055,
+      lng: 108.2229,
+    }));
   });
 });

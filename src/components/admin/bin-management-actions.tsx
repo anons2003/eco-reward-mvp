@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Edit3, MapPin, PackagePlus, Trash2 } from "lucide-react";
+import { CheckCircle2, Edit3, MapPin, PackagePlus, Search, Trash2 } from "lucide-react";
 import { LoadingButtonContent, useGlobalLoading } from "@/components/shared/loading-ui";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -54,6 +54,29 @@ function roundCoordinate(value: number) {
   return Number(value.toFixed(6));
 }
 
+function normalizeLocationText(value: string | null | undefined) {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function distanceMeters(first: Pick<LocationRow, "lat" | "lng">, second: Pick<LocationRow, "lat" | "lng">) {
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const radius = 6_371_000;
+  const deltaLat = toRadians(second.lat - first.lat);
+  const deltaLng = toRadians(second.lng - first.lng);
+  const lat1 = toRadians(first.lat);
+  const lat2 = toRadians(second.lat);
+  const a = Math.sin(deltaLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+  return 2 * radius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 async function readError(response: Response, fallback: string) {
   const body = (await response.json().catch(() => null)) as { error?: unknown; issues?: Record<string, unknown> } | null;
   const message = typeof body?.error === "string" ? body.error.trim() : "";
@@ -80,6 +103,13 @@ export function BinManagementActions({ bin, variant = "compact", locations = [] 
   const selectedLocation = locations.find((location) => location.id === selectedLocationId);
   const isCreate = dialogMode === "create";
   const hasPredictions = predictions.length > 0;
+  const matchedLocation =
+    isCreate && !selectedLocation
+      ? locations.find((location) => normalizeLocationText(location.address) === normalizeLocationText(pickedLocation.address)) ??
+        locations.find((location) => Boolean(pickedLocation.name.trim()) && distanceMeters(location, pickedLocation) <= 25 && normalizeLocationText(location.name) === normalizeLocationText(pickedLocation.name)) ??
+        null
+      : null;
+  const effectiveCreateLocation = isCreate ? selectedLocation ?? matchedLocation : null;
 
   const closeDialog = useCallback(() => {
     if (loadingAction) return;
@@ -130,6 +160,30 @@ export function BinManagementActions({ bin, variant = "compact", locations = [] 
       lng: daNangDefaultCoordinate.lng,
     });
     setDialogMode(mode);
+  }
+
+  function applySavedLocation(location: Pick<LocationRow, "id" | "name" | "address" | "lat" | "lng">) {
+    setSelectedLocationId(location.id);
+    setPickedLocation({
+      name: location.name,
+      address: location.address,
+      lat: roundCoordinate(location.lat),
+      lng: roundCoordinate(location.lng),
+    });
+    setQuery(location.address);
+    setPredictions([]);
+  }
+
+  function resetSavedLocation() {
+    setSelectedLocationId("");
+    setPickedLocation({
+      name: "",
+      address: "",
+      lat: daNangDefaultCoordinate.lat,
+      lng: daNangDefaultCoordinate.lng,
+    });
+    setQuery("");
+    setPredictions([]);
   }
 
   function closeFromBackdrop(event: MouseEvent<HTMLDivElement>) {
@@ -190,10 +244,10 @@ export function BinManagementActions({ bin, variant = "compact", locations = [] 
       : {
           name: stringValue(formData, "name"),
           location: {
-            name: stringValue(formData, "locationName"),
-            address: stringValue(formData, "address"),
-            lat: Number.parseFloat(stringValue(formData, "lat")),
-            lng: Number.parseFloat(stringValue(formData, "lng")),
+            name: effectiveCreateLocation?.name ?? stringValue(formData, "locationName"),
+            address: effectiveCreateLocation?.address ?? stringValue(formData, "address"),
+            lat: effectiveCreateLocation?.lat ?? Number.parseFloat(stringValue(formData, "lat")),
+            lng: effectiveCreateLocation?.lng ?? Number.parseFloat(stringValue(formData, "lng")),
             active: true,
           },
           active,
@@ -312,6 +366,52 @@ export function BinManagementActions({ bin, variant = "compact", locations = [] 
                   {isCreate ? (
                     <>
                       <div className="grid gap-4 md:grid-cols-2">
+                        <label className="grid gap-2 md:col-span-2">
+                          <span className="text-xs font-black uppercase tracking-[0.08em] text-[#3d4a3e]">Gộp vào địa điểm đã lưu</span>
+                          <div className="relative">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6c7b6d]" size={17} />
+                            <select
+                              className={`${fieldClass} h-12 pl-10`}
+                              value={selectedLocationId}
+                              onChange={(event) => {
+                                const location = locations.find((item) => item.id === event.target.value);
+                                if (location) applySavedLocation(location);
+                              }}
+                            >
+                              <option value="">Tự nhận diện từ địa chỉ mới</option>
+                              {locations.map((location) => (
+                                <option value={location.id} key={location.id}>
+                                  {location.name} {location.district ? `- ${location.district}` : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <span className="text-xs font-bold leading-5 text-[#6c7b6d]">Nếu địa điểm đã có trong hệ thống, chọn tại đây để tạo thêm QR bin vào cùng một nhóm.</span>
+                        </label>
+
+                        {effectiveCreateLocation ? (
+                          <div className="md:col-span-2 rounded-2xl border border-[#2ecc71]/45 bg-[#edf9ef] p-4 shadow-[0_12px_28px_rgba(0,109,55,0.08)]">
+                            <div className="flex items-start gap-3">
+                              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#d8f5df] text-[#007a3d]">
+                                <CheckCircle2 size={20} />
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-black text-[#006d37]">Đã nhận diện địa điểm đã lưu</p>
+                                <p className="mt-1 text-base font-black text-[#1b1c1b]">{effectiveCreateLocation.name}</p>
+                                <p className="mt-1 text-xs font-bold leading-5 text-[#3d4a3e]">{effectiveCreateLocation.address}</p>
+                                <p className="mt-1 text-xs font-bold text-[#6c7b6d]">
+                                  Thùng mới sẽ dùng chung nhóm địa điểm và tọa độ: {effectiveCreateLocation.lat.toFixed(6)}, {effectiveCreateLocation.lng.toFixed(6)}
+                                </p>
+                              </div>
+                              {selectedLocation ? (
+                                <button className="shrink-0 rounded-full border border-[#bbcbbb]/70 bg-white px-3 py-1.5 text-xs font-black text-[#3d4a3e] transition hover:border-[#006d37] hover:text-[#006d37]" type="button" onClick={resetSavedLocation}>
+                                  Đổi
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : null}
+
                         <Field label="Tên địa điểm" name="locationName" value={pickedLocation.name} onChange={(value) => setPickedLocation((current) => ({ ...current, name: value }))} required />
                         <div className="relative grid gap-2 md:col-span-2">
                           <Field

@@ -62,14 +62,15 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char);
 }
 
-function locationMarkerHtml(active: boolean, count: number) {
-  const color = active ? "#00b96b" : "#8b9098";
+function locationMarkerHtml(selected: boolean, count: number) {
+  const color = selected ? "#007a3d" : "#00b96b";
+  const ring = selected ? "box-shadow:0 0 0 6px rgba(143,248,182,0.55),0 18px 38px rgba(0,109,55,0.30);" : "box-shadow:0 18px 38px rgba(15,23,18,0.24);";
   const countBadge =
     count > 1
       ? `<span style="position:absolute;right:-6px;top:-7px;background:#071b12;color:white;border:2px solid white;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-size:11px;font-weight:900;line-height:1">${count}</span>`
       : "";
   return `
-    <span style="background:${color}" class="relative grid size-11 place-items-center rounded-full border-[3px] border-white text-white shadow-[0_18px_38px_rgba(15,23,18,0.24)]">
+    <span style="background:${color};${ring}" class="relative grid size-11 place-items-center rounded-full border-[3px] border-white text-white">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
       </svg>
@@ -158,7 +159,7 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
   }, [nearestBins, searchQuery]);
   const locationClusters = useMemo(() => groupBinsByLocation(nearestBins), [nearestBins]);
   const searchedLocationClusters = useMemo(() => groupBinsByLocation(searchedBins), [searchedBins]);
-  const visibleLocationClusters = searchedLocationClusters.slice(0, 6);
+  const visibleListClusters = searchedLocationClusters.slice(0, 6);
   const selectedLocation = selectedLocationKey ? locationClusters.find((cluster) => cluster.key === selectedLocationKey) ?? null : null;
   const token = mapToken();
   const center = useMemo<[number, number]>(() => (location.point ? [location.point.lng, location.point.lat] : daNangCenter), [location.point]);
@@ -324,7 +325,7 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
                 className="grid size-12 place-items-center border-0 bg-transparent p-0"
               />
             ) : null}
-            {visibleLocationClusters.map((cluster) => {
+            {searchedLocationClusters.map((cluster) => {
               const primaryBin = cluster.bins[0];
               if (!primaryBin) return null;
               const active = activeRoute ? locationKey(activeRoute.bin) === cluster.key : selectedLocationKey === cluster.key;
@@ -384,7 +385,7 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
               ) : null}
             </label>
             <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto pr-1 lg:max-h-[300px]">
-              {visibleLocationClusters.map((cluster) => (
+              {visibleListClusters.map((cluster) => (
                 <LocationListItem active={activeRoute ? locationKey(activeRoute.bin) === cluster.key : selectedLocation?.key === cluster.key} cluster={cluster} key={cluster.key} loading={routeStatus === "loading"} routingActive={activeRoute ? locationKey(activeRoute.bin) === cluster.key : false} onDrawRoute={drawRouteToBin} onSelectLocation={selectLocationCluster} />
               ))}
               {activeBins.length === 0 ? (
@@ -392,15 +393,15 @@ export function NearbyBinsMap({ bins }: { bins: NearbyBin[] }) {
                   <p className="text-sm font-black text-[#3d4a3e]">Chưa có thùng rác hoạt động trong hệ thống.</p>
                 </div>
               ) : null}
-              {activeBins.length > 0 && visibleLocationClusters.length === 0 ? (
+              {activeBins.length > 0 && visibleListClusters.length === 0 ? (
                 <div className="rounded-[22px] border border-dashed border-[#bbcbbb] bg-white p-5 text-center">
                   <p className="text-sm font-black text-[#3d4a3e]">Không tìm thấy thùng phù hợp.</p>
                   <p className="mt-2 text-xs font-bold leading-5 text-[#667468]">Thử tìm bằng tên địa điểm hoặc mã QR khác.</p>
                 </div>
               ) : null}
             </div>
-            {searchedLocationClusters.length > visibleLocationClusters.length ? (
-              <p className="mt-3 text-center text-xs font-bold text-[#667468]">Đang hiển thị {visibleLocationClusters.length} địa điểm gần nhất. Dùng tìm kiếm để lọc nhanh hơn.</p>
+            {searchedLocationClusters.length > visibleListClusters.length ? (
+              <p className="mt-3 text-center text-xs font-bold text-[#667468]">Đang hiển thị {visibleListClusters.length} địa điểm gần nhất. Bản đồ vẫn hiển thị toàn bộ điểm phù hợp.</p>
             ) : null}
           </div>
         </aside>
