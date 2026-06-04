@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { analyzeImage } from "@/application/ai/analyze-image";
-import type { AIResult } from "@/core/entities/types";
+import type { AIResult, SubmissionStatus, WasteType } from "@/core/entities/types";
+import { calculatePoints } from "@/core/points/calculate-points";
+import { isMvpAutoWasteType, mvpWasteTypeLabel } from "@/core/points/point-rules";
 import { getAuthUser } from "@/infrastructure/auth/session";
+import { createAdminClient } from "@/infrastructure/supabase/admin";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type ScanSessionRow = Pick<Database["public"]["Tables"]["scan_sessions"]["Row"], "id" | "user_id" | "bin_id" | "expires_at">;
 type SubmissionInsert = Database["public"]["Tables"]["submissions"]["Insert"];
 type SubmissionResponse = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id">;
+type ProfilePointsRow = Pick<Database["public"]["Tables"]["profiles"]["Row"], "points">;
+type PointTransactionInsert = Database["public"]["Tables"]["point_transactions"]["Insert"];
 
 type ScanSessionTable = {
   select(columns: "id,user_id,bin_id,expires_at"): {
@@ -32,6 +37,21 @@ type SubmissionTable = {
   };
 };
 
+type ProfileTable = {
+  select(columns: "points"): {
+    eq(column: "id", value: string): {
+      single(): Promise<{ data: ProfilePointsRow | null; error: { message: string } | null }>;
+    };
+  };
+  update(values: Pick<ProfilePointsRow, "points">): {
+    eq(column: "id", value: string): Promise<{ error: { message: string } | null }>;
+  };
+};
+
+type InsertTable<T> = {
+  insert(values: T): Promise<{ error: { message: string } | null }>;
+};
+
 function stringValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -51,6 +71,60 @@ function riskFlagsFromAI(aiResult: AIResult) {
   if (aiResult.contaminationRisk === "high") riskFlags.push("high_contamination");
 
   return uniqueFlags(riskFlags);
+}
+
+function canAutoApprove(aiResult: AIResult, riskFlags: string[]) {
+  const threshold = Number(process.env.MIN_AI_CONFIDENCE ?? "0.75");
+
+  return (
+    isMvpAutoWasteType(aiResult.wasteType) &&
+    aiResult.confidence >= threshold &&
+    aiResult.isValidSubmission === true &&
+    aiResult.imageQuality === "good" &&
+    aiResult.objectCount > 0 &&
+    aiResult.objectCount <= 3 &&
+    aiResult.contaminationRisk !== "high" &&
+    riskFlags.length === 0
+  );
+}
+
+async function awardApprovedSubmissionPoints({
+  userId,
+  submissionId,
+  points,
+  reason,
+}: {
+  userId: string;
+  submissionId: string;
+  points: number;
+  reason: string;
+}) {
+  const supabase = createAdminClient();
+  const profiles = supabase.from("profiles") as unknown as ProfileTable;
+  const { data: profile, error: profileReadError } = await profiles.select("points").eq("id", userId).single();
+
+  if (profileReadError || !profile) {
+    return { error: "Không tải được ví điểm người dùng." };
+  }
+
+  const { error: profileUpdateError } = await profiles.update({ points: profile.points + points }).eq("id", userId);
+  if (profileUpdateError) {
+    return { error: "Không cộng được điểm vào ví." };
+  }
+
+  const pointTransactions = supabase.from("point_transactions") as unknown as InsertTable<PointTransactionInsert>;
+  const { error: transactionError } = await pointTransactions.insert({
+    user_id: userId,
+    submission_id: submissionId,
+    points,
+    reason,
+  });
+
+  if (transactionError) {
+    return { error: "Không ghi được giao dịch điểm." };
+  }
+
+  return { error: null };
 }
 
 export async function POST(request: Request) {
@@ -89,6 +163,10 @@ export async function POST(request: Request) {
 
   const aiResult = await analyzeImage(imageUrl);
   const riskFlags = riskFlagsFromAI(aiResult);
+  const autoApproved = canAutoApprove(aiResult, riskFlags);
+  const points = autoApproved ? calculatePoints(aiResult.wasteType) : 0;
+  const status: SubmissionStatus = autoApproved ? "approved" : "pending_review";
+  const reason = autoApproved ? `AI tự động duyệt: ${mvpWasteTypeLabel(aiResult.wasteType)}.` : riskFlags.length ? "AI đã phát hiện rủi ro, chờ admin kiểm tra." : "AI đã phân tích, chờ admin duyệt.";
 
   const { data: submission, error } = await submissions
     .insert({
@@ -97,10 +175,11 @@ export async function POST(request: Request) {
       scan_session_id: session.id,
       image_url: imageUrl,
       ai_result: aiResult,
-      status: "pending_review",
-      points: 0,
-      reason: riskFlags.length ? "AI đã phát hiện rủi ro, chờ admin kiểm tra." : "AI đã phân tích, chờ admin duyệt.",
+      status,
+      points,
+      reason,
       risk_flags: riskFlags,
+      reviewed_at: autoApproved ? new Date().toISOString() : null,
     })
     .select("id")
     .single();
@@ -111,6 +190,19 @@ export async function POST(request: Request) {
 
   if (error || !submission) {
     return NextResponse.json({ error: "Không tạo được lượt gửi." }, { status: 500 });
+  }
+
+  if (autoApproved && points > 0) {
+    const pointResult = await awardApprovedSubmissionPoints({
+      userId: user.id,
+      submissionId: submission.id,
+      points,
+      reason,
+    });
+
+    if (pointResult.error) {
+      return NextResponse.json({ error: pointResult.error }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ submission });

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { AIResult } from "@/core/entities/types";
 
-export const wasteTypes = ["plastic_bottle", "metal_can", "paper", "cardboard", "glass_bottle", "organic", "hazardous", "unknown"] as const;
+export const wasteTypes = ["plastic_bottle", "metal_can", "paper", "glass_bottle", "unknown"] as const;
 export const imageQualities = ["good", "blurry", "dark", "unclear"] as const;
 export const contaminationRisks = ["low", "medium", "high"] as const;
 
@@ -29,7 +29,7 @@ export const wasteReviewJsonSchema = {
     wasteType: {
       type: "string",
       enum: wasteTypes,
-      description: "The most likely waste category. Use unknown when uncertain.",
+      description: "The MVP waste category. Only plastic bottles, metal cans, paper, and glass bottles can be auto-classified. Use unknown for every other material.",
     },
     confidence: {
       type: "number",

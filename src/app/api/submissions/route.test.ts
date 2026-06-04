@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getUser = vi.fn();
 const from = vi.fn();
+const adminFrom = vi.fn();
 const sessionSingle = vi.fn();
 const submissionSingle = vi.fn();
 const selectSession = vi.fn();
@@ -13,11 +14,23 @@ const maybeSingleExistingSubmission = vi.fn();
 const insertSubmission = vi.fn();
 const selectSubmission = vi.fn();
 const analyzeImage = vi.fn();
+const selectProfile = vi.fn();
+const eqProfileSelect = vi.fn();
+const singleProfile = vi.fn();
+const updateProfile = vi.fn();
+const eqProfileUpdate = vi.fn();
+const insertPointTransaction = vi.fn();
 
 vi.mock("@/infrastructure/supabase/server", () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser },
     from,
+  })),
+}));
+
+vi.mock("@/infrastructure/supabase/admin", () => ({
+  createAdminClient: vi.fn(() => ({
+    from: adminFrom,
   })),
 }));
 
@@ -37,6 +50,7 @@ describe("POST /api/submissions", () => {
   beforeEach(() => {
     getUser.mockReset();
     from.mockReset();
+    adminFrom.mockReset();
     sessionSingle.mockReset();
     submissionSingle.mockReset();
     selectSession.mockReset();
@@ -48,6 +62,12 @@ describe("POST /api/submissions", () => {
     insertSubmission.mockReset();
     selectSubmission.mockReset();
     analyzeImage.mockReset();
+    selectProfile.mockReset();
+    eqProfileSelect.mockReset();
+    singleProfile.mockReset();
+    updateProfile.mockReset();
+    eqProfileUpdate.mockReset();
+    insertPointTransaction.mockReset();
 
     selectSession.mockReturnValue({ eq: eqSession });
     eqSession.mockReturnValue({ single: sessionSingle });
@@ -57,11 +77,23 @@ describe("POST /api/submissions", () => {
     maybeSingleExistingSubmission.mockResolvedValue({ data: null, error: null });
     insertSubmission.mockReturnValue({ select: selectSubmission });
     selectSubmission.mockReturnValue({ single: submissionSingle });
+    selectProfile.mockReturnValue({ eq: eqProfileSelect });
+    eqProfileSelect.mockReturnValue({ single: singleProfile });
+    singleProfile.mockResolvedValue({ data: { points: 30 }, error: null });
+    updateProfile.mockReturnValue({ eq: eqProfileUpdate });
+    eqProfileUpdate.mockResolvedValue({ error: null });
+    insertPointTransaction.mockResolvedValue({ error: null });
 
     from.mockImplementation((table: string) => {
       if (table === "scan_sessions") return { select: selectSession };
       if (table === "submissions") return { select: selectExistingSubmission, insert: insertSubmission };
-      throw new Error(`Unexpected table ${table}`);
+      throw new Error(`Unexpected user table ${table}`);
+    });
+
+    adminFrom.mockImplementation((table: string) => {
+      if (table === "profiles") return { select: selectProfile, update: updateProfile };
+      if (table === "point_transactions") return { insert: insertPointTransaction };
+      throw new Error(`Unexpected admin table ${table}`);
     });
 
     analyzeImage.mockResolvedValue({
@@ -79,7 +111,7 @@ describe("POST /api/submissions", () => {
     });
   });
 
-  it("creates a pending AI-reviewed submission tied to the authenticated scan session", async () => {
+  it("auto-approves and awards points for confident MVP AI classifications", async () => {
     getUser.mockResolvedValueOnce({ data: { user: { id: "user-1" } } });
     sessionSingle.mockResolvedValueOnce({
       data: {
@@ -123,12 +155,68 @@ describe("POST /api/submissions", () => {
         provider: "openai",
         model: "gpt-4.1-mini",
       },
-      status: "pending_review",
-      points: 0,
-      reason: "AI đã phân tích, chờ admin duyệt.",
+      status: "approved",
+      points: 10,
+      reason: "AI tự động duyệt: Chai nhựa.",
       risk_flags: [],
+      reviewed_at: expect.any(String),
+    });
+    expect(selectProfile).toHaveBeenCalledWith("points");
+    expect(eqProfileSelect).toHaveBeenCalledWith("id", "user-1");
+    expect(updateProfile).toHaveBeenCalledWith({ points: 40 });
+    expect(eqProfileUpdate).toHaveBeenCalledWith("id", "user-1");
+    expect(insertPointTransaction).toHaveBeenCalledWith({
+      user_id: "user-1",
+      submission_id: "sub-1",
+      points: 10,
+      reason: "AI tự động duyệt: Chai nhựa.",
     });
     expect(payload).toEqual({ submission: { id: "sub-1" } });
+  });
+
+  it("keeps non-MVP or uncertain AI classifications pending for admin review", async () => {
+    getUser.mockResolvedValueOnce({ data: { user: { id: "user-1" } } });
+    sessionSingle.mockResolvedValueOnce({
+      data: {
+        id: "scan-1",
+        user_id: "user-1",
+        bin_id: "bin-1",
+        expires_at: new Date(Date.now() + 60_000).toISOString(),
+      },
+      error: null,
+    });
+    analyzeImage.mockResolvedValueOnce({
+      wasteType: "unknown",
+      confidence: 0.8,
+      objectCount: 1,
+      imageQuality: "good",
+      notes: "Không thuộc nhóm MVP.",
+      isValidSubmission: true,
+      contaminationRisk: "low",
+      visibleEvidence: [],
+      fraudFlags: [],
+      provider: "openai",
+      model: "gpt-4.1-mini",
+    });
+    submissionSingle.mockResolvedValueOnce({
+      data: { id: "sub-1" },
+      error: null,
+    });
+    const { POST } = await import("./route");
+
+    const response = await POST(postSubmission({ scan_session_id: "scan-1", image_url: "data:image/jpeg;base64,abc" }));
+
+    expect(response.status).toBe(200);
+    expect(insertSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "pending_review",
+        points: 0,
+        reason: "AI đã phát hiện rủi ro, chờ admin kiểm tra.",
+        risk_flags: ["unknown_waste"],
+      }),
+    );
+    expect(updateProfile).not.toHaveBeenCalled();
+    expect(insertPointTransaction).not.toHaveBeenCalled();
   });
 
   it("stores risk flags when AI cannot confidently validate the image", async () => {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MVP_REVIEW_WASTE_TYPES } from "@/core/points/point-rules";
 import { mockAnalyzeImage } from "./mock-provider";
 
 describe("mockAnalyzeImage", () => {
@@ -9,5 +10,11 @@ describe("mockAnalyzeImage", () => {
     expect(first).toEqual(second);
     expect(first.confidence).toBeGreaterThanOrEqual(0.8);
     expect(first.wasteType).toBe("plastic_bottle");
+  });
+
+  it("only returns MVP review waste types", async () => {
+    const result = await mockAnalyzeImage("https://example.com/any-demo.jpg");
+
+    expect(MVP_REVIEW_WASTE_TYPES).toContain(result.wasteType);
   });
 });

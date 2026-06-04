@@ -73,6 +73,12 @@ export async function openaiAnalyzeImage(imageUrl: string): Promise<AIResult> {
                 type: "input_text",
                 text:
                   "Bạn là hệ thống kiểm duyệt ảnh rác tái chế của SeaTech. " +
+                  "Nhiệm vụ MVP là chỉ phân loại 4 nhóm được auto-duyệt: plastic_bottle, metal_can, paper, glass_bottle. Mọi vật liệu khác phải trả unknown để admin duyệt thủ công. " +
+                  "Ưu tiên vật liệu bao bì hơn nội dung/sản phẩm ghi trên nhãn. " +
+                  "Ví dụ chai nhựa đựng tương, nước ngọt, dầu gội hoặc nước rửa phải phân loại là plastic_bottle nếu vật thể chính là chai nhựa. " +
+                  "Carton, rác ướt/hữu cơ, pin, hóa chất, đồ điện tử, vải, nhựa không phải chai, hoặc vật không thuộc 4 nhóm chính phải trả unknown. " +
+                  "Ảnh chụp thùng rác, mô hình phân loại, trạm phân loại, poster, bảng hướng dẫn hoặc thiết bị chứa rác không phải là lượt gửi rác hợp lệ; " +
+                  "trường hợp đó không được phân loại là cardboard/plastic/metal theo vật liệu của thùng, mà phải trả wasteType unknown, objectCount 0, isValidSubmission false và thêm fraudFlags bin_or_station_photo, no_visible_waste. " +
                   "Phân loại vật thể chính trong ảnh, đánh giá chất lượng ảnh, rủi ro gian lận, và chỉ trả về JSON đúng schema. " +
                   "Nếu không chắc hoặc ảnh không thấy rác rõ ràng, dùng wasteType unknown, confidence thấp, isValidSubmission false.",
               },

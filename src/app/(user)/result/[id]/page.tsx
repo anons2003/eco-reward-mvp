@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Coins, Cpu, Leaf, MapPin, Recycle, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { SubmissionStatus } from "@/core/entities/types";
+import { mvpWasteTypeLabel } from "@/core/points/point-rules";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -22,19 +23,13 @@ function aiResult(row: SubmissionRow) {
 
 function wasteTypeLabel(value: unknown) {
   if (value === "manual_review") return "Duyệt thủ công";
-  if (typeof value !== "string") return "Chưa xác định";
+  return mvpWasteTypeLabel(value);
+}
 
-  const labels: Record<string, string> = {
-    plastic_bottle: "Chai nhựa",
-    metal_can: "Lon kim loại",
-    paper: "Giấy",
-    cardboard: "Bìa carton",
-    glass_bottle: "Chai thủy tinh",
-    organic: "Hữu cơ",
-    hazardous: "Nguy hại",
-    unknown: "Chưa xác định",
-  };
-  return labels[value] ?? value.replaceAll("_", " ");
+function aiReviewBadge(result: Record<string, unknown>, status: SubmissionStatus) {
+  if (status !== "pending_review") return "Đã xác minh";
+  if (result.provider === "manual" || result.mode === "manual_review") return "Chờ duyệt thủ công";
+  return "AI đã phân tích";
 }
 
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
@@ -102,8 +97,8 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           <section className="rounded-[30px] border border-[#d9e5da] bg-white/84 p-6 shadow-[0_12px_40px_rgba(21,29,24,0.05)]">
             <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[#6e7a70]">Trạng thái giao dịch</h2>
             <div className="mt-6 grid gap-6">
-              <TimelineItem title="Rác đã được bỏ vào thùng" body="Thùng thông minh đã ghi nhận phiên QR và vật phẩm." active />
-              <TimelineItem title="Kiểm duyệt thủ công" body={submission.status === "pending_review" ? "Ảnh đã được ghi nhận và đang chờ admin duyệt." : `Xác nhận: ${wasteType}${confidence ? ` • ${confidence}% độ tin cậy.` : "."}`} active={submission.status !== "rejected"} />
+              <TimelineItem title="Phiên QR đã ghi nhận" body="Hệ thống đã ghi nhận mã QR, thùng rác và ảnh người dùng gửi." active />
+              <TimelineItem title="AI phân tích & admin xác nhận" body={submission.status === "pending_review" ? "AI đã phân tích ảnh. Admin sẽ xác nhận lần cuối trước khi cộng điểm." : `Xác nhận: ${wasteType}${confidence ? ` • ${confidence}% độ tin cậy.` : "."}`} active={submission.status !== "rejected"} />
               <TimelineItem title="Điểm thưởng đã cộng" body={`${submission.points} điểm được thêm vào ví SeaTech.`} active={submission.status === "approved"} last />
             </div>
           </section>
@@ -117,7 +112,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-[#d8f5df] px-3 py-1 text-xs font-black text-[#007a3d]">
                 <ShieldCheck size={15} />
-                {submission.status === "pending_review" ? "Manual Review" : "Verified"}
+                {aiReviewBadge(result, submission.status)}
               </span>
             </div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[#6e7a70]">Loại rác phát hiện</p>

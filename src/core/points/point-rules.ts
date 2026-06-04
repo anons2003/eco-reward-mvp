@@ -1,6 +1,8 @@
 import type { WasteType } from "@/core/entities/types";
 
 export const WASTE_TYPES = ["plastic_bottle", "metal_can", "paper", "cardboard", "glass_bottle", "organic", "hazardous", "unknown"] as const satisfies readonly WasteType[];
+export const MVP_AUTO_WASTE_TYPES = ["plastic_bottle", "metal_can", "paper", "glass_bottle"] as const satisfies readonly WasteType[];
+export const MVP_REVIEW_WASTE_TYPES = [...MVP_AUTO_WASTE_TYPES, "unknown"] as const satisfies readonly WasteType[];
 
 export const WASTE_TYPE_LABELS: Record<WasteType, string> = {
   plastic_bottle: "Chai nhựa",
@@ -37,4 +39,16 @@ export const WASTE_TYPE_TONES: Record<WasteType, "blue" | "amber" | "green" | "r
 
 export function isWasteType(value: unknown): value is WasteType {
   return typeof value === "string" && (WASTE_TYPES as readonly string[]).includes(value);
+}
+
+export function isMvpAutoWasteType(value: unknown): value is (typeof MVP_AUTO_WASTE_TYPES)[number] {
+  return typeof value === "string" && (MVP_AUTO_WASTE_TYPES as readonly string[]).includes(value);
+}
+
+export function mvpWasteType(value: unknown): WasteType {
+  return isMvpAutoWasteType(value) ? value : "unknown";
+}
+
+export function mvpWasteTypeLabel(value: unknown) {
+  return WASTE_TYPE_LABELS[mvpWasteType(value)];
 }
