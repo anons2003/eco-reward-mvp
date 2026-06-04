@@ -2,7 +2,7 @@ import type { Database, Json } from "@/infrastructure/supabase/database.types";
 
 export type HistorySubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "bin_id" | "image_url" | "ai_result" | "status" | "points" | "reason" | "risk_flags" | "created_at">;
 export type HistoryBinRow = Pick<Database["public"]["Tables"]["bins"]["Row"], "id" | "name" | "location_name">;
-export type HistoryRedemptionRow = Pick<Database["public"]["Tables"]["reward_redemptions"]["Row"], "id" | "reward_item_id" | "points_spent" | "status" | "created_at">;
+export type HistoryRedemptionRow = Pick<Database["public"]["Tables"]["reward_redemptions"]["Row"], "id" | "reward_item_id" | "points_spent" | "status" | "redemption_code" | "created_at">;
 export type HistoryRewardRow = Pick<Database["public"]["Tables"]["reward_items"]["Row"], "id" | "title">;
 
 export type SubmissionHistoryActivity = {
@@ -26,6 +26,7 @@ export type RedemptionHistoryActivity = {
   createdAt: string;
   pointsLabel: string;
   status: string;
+  redemptionCode: string;
 };
 
 export type HistoryActivity = SubmissionHistoryActivity | RedemptionHistoryActivity;
@@ -134,6 +135,7 @@ export function buildHistoryViewModel({
     createdAt: redemption.created_at,
     pointsLabel: `-${redemption.points_spent} pts`,
     status: redemption.status,
+    redemptionCode: redemption.redemption_code,
   }));
 
   return {

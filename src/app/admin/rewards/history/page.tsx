@@ -1,11 +1,12 @@
-import { Download, Filter, MoreVertical } from "lucide-react";
-import { DynamicAdminDashboardMotion } from "@/components/shared/dynamic-client-components";
+import { Download, Filter } from "lucide-react";
+import { DynamicAdminDashboardMotion, DynamicRewardRedemptionActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 
 type RedemptionRow = {
   id: string;
   points_spent: number;
   status: string;
+  redemption_code: string;
   created_at: string;
   profiles: { full_name: string; email: string } | null;
   reward_items: { title: string } | null;
@@ -15,7 +16,7 @@ export default async function AdminRewardHistoryPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("reward_redemptions")
-    .select("id,points_spent,status,created_at,profiles(full_name,email),reward_items(title)")
+    .select("id,points_spent,status,redemption_code,created_at,profiles(full_name,email),reward_items(title)")
     .order("created_at", { ascending: false })
     .limit(50);
   const rows = (data ?? []) as unknown as RedemptionRow[];
@@ -106,15 +107,13 @@ export default async function AdminRewardHistoryPage() {
                   <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{row.reward_items?.title ?? "Phần thưởng"}</td>
                   <td className="px-6 py-5 text-sm font-black text-[#e74c3c]">- {row.points_spent.toLocaleString("vi-VN")} pts</td>
                   <td className="px-6 py-5">
-                    <code className="rounded bg-[#fbf9f8] px-2 py-1 font-mono text-sm font-black text-[#006d37]">MVP-{row.id.slice(0, 8).toUpperCase()}</code>
+                    <code className="rounded bg-[#fbf9f8] px-2 py-1 font-mono text-sm font-black text-[#006d37]">{row.redemption_code}</code>
                   </td>
                   <td className="px-6 py-5">
                     <StatusPill status={row.status} />
                   </td>
                   <td className="px-6 py-5">
-                    <button className="text-[#6c7b6d] transition hover:text-[#006d37]" type="button" aria-label="Thêm hành động">
-                      <MoreVertical size={18} />
-                    </button>
+                    <DynamicRewardRedemptionActions redemptionId={row.id} status={row.status} />
                   </td>
                 </tr>
               ))}
@@ -134,7 +133,10 @@ export default async function AdminRewardHistoryPage() {
                 <span>{new Date(row.created_at).toLocaleString("vi-VN")}</span>
                 <span className="text-right text-[#e74c3c]">- {row.points_spent.toLocaleString("vi-VN")} pts</span>
               </div>
-              <div className="mt-3 rounded-xl bg-[#fbf9f8] px-3 py-2 font-mono text-xs font-black text-[#006d37]">MVP-{row.id.slice(0, 8).toUpperCase()}</div>
+              <div className="mt-3 rounded-xl bg-[#fbf9f8] px-3 py-2 font-mono text-xs font-black text-[#006d37]">{row.redemption_code}</div>
+              <div className="mt-3">
+                <DynamicRewardRedemptionActions redemptionId={row.id} status={row.status} />
+              </div>
             </article>
           ))}
         </div>
@@ -172,10 +174,11 @@ function UserCell({ name, email }: { name: string; email: string }) {
 
 function StatusPill({ status }: { status: string }) {
   const className = status === "issued" ? "bg-[#2ecc71]/18 text-[#005027]" : status === "used" ? "bg-[#2d9cdb]/12 text-[#2d9cdb]" : "bg-[#ffdad6]/50 text-[#ba1a1a]";
+  const label = status === "issued" ? "Đã phát hành" : status === "used" ? "Đã sử dụng" : status === "cancelled" ? "Đã hủy" : status;
   return (
     <span className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-black ${className}`}>
       <span className="size-1.5 rounded-full bg-current" />
-      {status}
+      {label}
     </span>
   );
 }

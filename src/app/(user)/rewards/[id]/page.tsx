@@ -1,34 +1,40 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Leaf, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Leaf, QrCode, ShieldCheck, Sparkles, TicketCheck, WalletCards } from "lucide-react";
 import { DynamicRewardRedeemButton } from "@/components/shared/dynamic-client-components";
 import { RewardShareButton } from "@/components/user/reward-share-button";
 import { getSupabaseServerClient, getUserShell } from "@/infrastructure/auth/session";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 type RewardRow = Database["public"]["Tables"]["reward_items"]["Row"];
+type RedemptionRow = Pick<Database["public"]["Tables"]["reward_redemptions"]["Row"], "id" | "redemption_code" | "status" | "created_at">;
 
 export default async function RewardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { points } = await getUserShell();
+  const { points, user } = await getUserShell();
   const supabase = await getSupabaseServerClient();
-  const { data: item } = await supabase
-    .from("reward_items")
-    .select("id,title,description,points_required,stock,active,category,partner,image_url,expires_at,created_at")
-    .eq("id", id)
-    .eq("active", true)
-    .single();
+  const [{ data: item }, { data: redemptionData }] = await Promise.all([
+    supabase
+      .from("reward_items")
+      .select("id,title,description,points_required,stock,active,category,partner,image_url,expires_at,created_at")
+      .eq("id", id)
+      .eq("active", true)
+      .single(),
+    supabase.from("reward_redemptions").select("id,redemption_code,status,created_at").eq("user_id", user.id).eq("reward_item_id", id).order("created_at", { ascending: false }).limit(1),
+  ]);
 
   if (!item) notFound();
 
   const reward = item as RewardRow;
+  const latestRedemption = ((redemptionData ?? []) as RedemptionRow[])[0] ?? null;
   const afterRedeem = Math.max(points - reward.points_required, 0);
   const canRedeem = points >= reward.points_required && reward.stock > 0;
   const expires = reward.expires_at ? new Date(reward.expires_at).toLocaleDateString("vi-VN") : "Theo thông báo chương trình";
 
   const conditions = [
     "Mỗi lần đổi tạo một giao dịch trong lịch sử ví điểm.",
-    "MVP phát hành trạng thái issued, chưa tích hợp mã voucher thật.",
+    "Sau khi đổi thành công, SeaTech phát hành mã nhận quà duy nhất để xuất trình với đối tác.",
+    "Mã ở trạng thái Đã phát hành cho đến khi admin hoặc đối tác xác nhận đã sử dụng.",
     "Không áp dụng quy đổi thành tiền mặt hoặc dịch vụ khác.",
     `Thời hạn nhận quà: ${expires}. Số lượng còn lại: ${reward.stock.toLocaleString("vi-VN")}.`,
   ];
@@ -112,12 +118,43 @@ export default async function RewardDetailPage({ params }: { params: Promise<{ i
             <DynamicRewardRedeemButton rewardId={reward.id} canRedeem={canRedeem} />
           </section>
 
+          {latestRedemption ? (
+            <section className="rounded-3xl border border-[#9fd7b0] bg-[#f3fcf3] p-5 shadow-[0_12px_28px_rgba(0,106,61,0.08)]">
+              <div className="flex items-start gap-3">
+                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#d8f5df] text-[#007a3d]">
+                  <TicketCheck size={22} />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-base font-black text-[#151d18]">Mã nhận quà của bạn</h2>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-[#5d6a60]">Xuất trình mã này tại đối tác. Không chia sẻ nếu chưa nhận quà.</p>
+                </div>
+              </div>
+              <div className="mt-4 rounded-[24px] border border-[#bdcabe] bg-white p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <code className="font-mono text-2xl font-black tracking-[0.08em] text-[#007a3d]">{latestRedemption.redemption_code}</code>
+                  <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#d8f5df] px-3 py-1 text-xs font-black text-[#007a3d]">
+                    <QrCode size={15} />
+                    {redemptionStatusLabel(latestRedemption.status)}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs font-bold text-[#6e7a70]">Phát hành lúc {new Date(latestRedemption.created_at).toLocaleString("vi-VN")}</p>
+              </div>
+            </section>
+          ) : null}
+
           <div className="rounded-3xl bg-[#fff3c4] p-4 text-sm font-semibold leading-6 text-[#3e4941]">
             <ShieldCheck className="mb-2 text-[#755b00]" size={20} />
-            Sau khi đổi, hệ thống trừ điểm, giảm tồn kho và ghi giao dịch vào lịch sử ví điểm của bạn.
+            Sau khi đổi, hệ thống trừ điểm, giảm tồn kho, phát hành mã nhận quà và ghi giao dịch vào lịch sử ví điểm của bạn.
           </div>
         </aside>
       </section>
     </>
   );
+}
+
+function redemptionStatusLabel(status: string) {
+  if (status === "issued") return "Đã phát hành";
+  if (status === "used") return "Đã sử dụng";
+  if (status === "cancelled") return "Đã hủy";
+  return status;
 }

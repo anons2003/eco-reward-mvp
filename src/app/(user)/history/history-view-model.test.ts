@@ -49,6 +49,7 @@ describe("buildHistoryViewModel", () => {
           reward_item_id: "reward-1",
           points_spent: 5,
           status: "completed",
+          redemption_code: "ST-ABC123DEF0",
           created_at: "2026-06-02T01:30:00.000Z",
         },
       ],
@@ -89,6 +90,7 @@ describe("buildHistoryViewModel", () => {
       id: "redeem-1",
       title: "Voucher cà phê xanh",
       pointsLabel: "-5 pts",
+      redemptionCode: "ST-ABC123DEF0",
     });
     expect(viewModel.rows[3]).toMatchObject({
       kind: "submission",

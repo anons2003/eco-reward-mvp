@@ -1,16 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, CheckCircle2, Download, ExternalLink, Info, MapPin, PackageCheck, RadioTower, Recycle, Signal, Trash2, Wrench } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, Download, ExternalLink, FileCheck2, Info, MapPin, PackageCheck, RadioTower, Recycle, Signal, ShieldCheck, XCircle, type LucideIcon } from "lucide-react";
 import { DynamicAdminDashboardMotion, DynamicAdminMapLibreMap, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
 import { createClient } from "@/infrastructure/supabase/server";
 import { env } from "@/infrastructure/config/env";
 import type { Database } from "@/infrastructure/supabase/database.types";
+import { buildBinDetailMetrics, type BinDetailProfileRow, type BinDetailSubmissionRow } from "./bin-detail-metrics";
 
 type BinRow = Database["public"]["Tables"]["bins"]["Row"];
 type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 
-const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
+const binDetailColumns = "id,name,qr_code,location_name,location_id,lat,lng,active,created_at";
+const submissionColumns = "id,user_id,ai_result,status,points,reason,risk_flags,created_at";
 
 function scanUrl(qrCode: string) {
   const baseUrl = env.appUrl.replace(/\/$/, "");
@@ -25,38 +27,32 @@ function mapsUrl(bin: BinRow) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${bin.lat},${bin.lng}`)}`;
 }
 
-function statSeed(value: string) {
-  return value.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0);
-}
-
-function binStats(bin: BinRow) {
-  const seed = statSeed(bin.qr_code);
-  const capacity = bin.active ? 42 + (seed % 48) : 0;
-  const submissions = 120 + (seed % 180);
-  const weight = (18 + (seed % 420) / 10).toFixed(1);
-  const battery = 72 + (seed % 24);
-
-  return { battery, capacity, submissions, weight };
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value));
 }
 
 export default async function AdminBinDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data, error } = await supabase.from("bins").select(binColumns).eq("id", id).single();
-  const { data: locationsData } = await supabase.from("locations").select("id,name,address,district,ward,lat,lng,active").eq("active", true).order("name", { ascending: true });
+  const { data, error } = await supabase.from("bins").select(binDetailColumns).eq("id", id).single();
+  const [{ data: locationsData }, { data: submissionsData }] = await Promise.all([
+    supabase.from("locations").select("id,name,address,district,ward,lat,lng,active").eq("active", true).order("name", { ascending: true }),
+    supabase.from("submissions").select(submissionColumns).eq("bin_id", id).order("created_at", { ascending: false }).limit(500),
+  ]);
   const bin = data as BinRow | null;
   const locations = (locationsData ?? []) as LocationRow[];
+  const submissions = (submissionsData ?? []) as BinDetailSubmissionRow[];
+  const userIds = Array.from(new Set(submissions.map((submission) => submission.user_id)));
+  const { data: profilesData } = userIds.length
+    ? await supabase.from("profiles").select("id,email,full_name").in("id", userIds)
+    : { data: [] };
+  const profiles = (profilesData ?? []) as BinDetailProfileRow[];
 
   if (error || !bin) notFound();
 
   const binScanUrl = scanUrl(bin.qr_code);
-  const stats = binStats(bin);
-  const supportedWaste = ["Nhựa", "Kim loại", "Giấy"];
-  const recentEvents = [
-    { time: "Hôm nay, 10:24", action: "Gửi rác", detail: `Gửi 0.${(statSeed(bin.id) % 7) + 2}kg Nhựa`, actor: "Lê Minh Tuấn", status: "AI đã xác thực", tone: "green" },
-    { time: "Hôm nay, 08:15", action: "Thu gom", detail: "Làm trống thùng", actor: "NV. Nguyễn Văn A", status: "Hoàn tất", tone: "blue" },
-    { time: "Hôm qua, 17:40", action: "Kiểm tra", detail: "Đồng bộ QR và vị trí", actor: "SeaTech Ops", status: "Ổn định", tone: "neutral" },
-  ];
+  const metrics = buildBinDetailMetrics({ profiles, submissions });
+  const supportedWaste = ["Nhựa", "Kim loại", "Giấy", "Thủy tinh"];
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
@@ -79,10 +75,6 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
         </div>
         <div className="flex flex-wrap gap-3 lg:justify-end">
           <DynamicBinManagementActions bin={bin} variant="toolbar" locations={locations} />
-          <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#ff9f1a] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(255,159,26,0.22)] transition hover:-translate-y-0.5 active:translate-y-0" type="button">
-            <Wrench size={17} />
-            Bảo trì
-          </button>
         </div>
       </section>
 
@@ -93,26 +85,23 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
               <div className="mb-8 flex items-start justify-between gap-4">
                 <h2 className="inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">
                   <RadioTower className="text-[#006d37]" size={18} />
-                  Trạng thái hiện tại
+                  Dữ liệu vận hành
                 </h2>
-                <span className="text-right text-xs font-black italic text-[#6c7b6d]">Cập nhật 2 phút trước</span>
+                <span className="text-right text-xs font-black italic text-[#6c7b6d]">Nguồn DB thật</span>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-end justify-between gap-4">
-                  <span className="text-sm font-black text-[#1b1c1b]">Dung lượng rác</span>
-                  <span className={`text-lg font-black tabular-nums ${stats.capacity >= 80 ? "text-[#ba1a1a]" : "text-[#006d37]"}`}>{stats.capacity}%</span>
-                </div>
-                <div className="h-3 overflow-hidden rounded-full bg-[#e9e8e7]">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#2d9cdb] via-[#2ecc71] to-[#2ecc71]" style={{ width: `${stats.capacity}%` }} />
-                </div>
-                <p className="text-sm font-semibold text-[#6c7b6d]">{stats.capacity >= 80 ? "Sắp đầy, cần thu gom sớm" : bin.active ? "Đang nhận lượt gửi ổn định" : "Đã ẩn khỏi luồng quét"}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <MetricTile Icon={FileCheck2} label="Tổng lượt gửi" value={metrics.summary.total.toLocaleString("vi-VN")} tone="green" />
+                <MetricTile Icon={ShieldCheck} label="Đã duyệt" value={metrics.summary.approved.toLocaleString("vi-VN")} tone="green" />
+                <MetricTile Icon={Clock3} label="Chờ duyệt" value={metrics.summary.pending.toLocaleString("vi-VN")} tone="amber" />
+                <MetricTile Icon={XCircle} label="Từ chối" value={metrics.summary.rejected.toLocaleString("vi-VN")} tone="red" />
               </div>
 
               <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                <TelemetryTile Icon={Signal} label="Kết nối" value={bin.active ? "Ổn định" : "Tạm ngừng"} note={bin.active ? "5G" : "Ẩn"} />
-                <TelemetryTile Icon={PackageCheck} label="Pin/Năng lượng" value={`${stats.battery}% Solar`} />
+                <TelemetryTile Icon={Signal} label="Kết nối thiết bị" value="Chưa có dữ liệu" note="Chưa tích hợp telemetry IoT" />
+                <TelemetryTile Icon={PackageCheck} label="Dung lượng/Pin" value="Chưa đo" note="Không dùng số mô phỏng" />
               </div>
+              <p className="mt-5 rounded-2xl bg-[#fff8e6] px-4 py-3 text-sm font-bold leading-6 text-[#8a4b00]">Thùng này đang quản lý QR và lượt gửi thật. Dữ liệu cảm biến như dung lượng, pin, 5G cần bảng telemetry riêng trước khi hiển thị.</p>
             </article>
 
             <article className="rounded-3xl border border-[#d9e5da] bg-white p-6 shadow-[0_18px_48px_rgba(21,29,24,0.06)]" data-admin-reveal>
@@ -123,9 +112,9 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
               <div className="space-y-0">
                 <InfoRow label="Mã thùng" value={bin.qr_code} mono />
                 <InfoRow label="Tên hiển thị" value={bin.name} />
-                <InfoRow label="Ngày lắp đặt" value="01/06/2026" />
+                <InfoRow label="Ngày tạo" value={formatDate(bin.created_at)} />
                 <div className="flex items-start justify-between gap-4 border-b border-[#d9e5da] py-4 last:border-b-0">
-                  <span className="text-sm font-black text-[#6c7b6d]">Loại rác hỗ trợ</span>
+                  <span className="text-sm font-black text-[#6c7b6d]">Nhóm AI hỗ trợ</span>
                   <div className="flex flex-wrap justify-end gap-2">
                     {supportedWaste.map((item) => (
                       <span className="rounded-lg bg-[#e9e8e7] px-3 py-1 text-xs font-black text-[#3d4a3e]" key={item}>{item}</span>
@@ -140,22 +129,25 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-sm font-black uppercase tracking-[0.14em] text-[#3d4a3e]">Hiệu suất tuần qua</h2>
-                <p className="mt-2 text-4xl font-black tracking-[-0.04em] text-[#1b1c1b] tabular-nums">{stats.submissions} lượt gửi</p>
+                <p className="mt-2 text-4xl font-black tracking-[-0.04em] text-[#1b1c1b] tabular-nums">{metrics.summary.total.toLocaleString("vi-VN")} lượt gửi</p>
               </div>
               <div className="text-left sm:text-right">
-                <p className="text-sm font-black text-[#6c7b6d]">Tổng rác thu gom</p>
-                <p className="mt-1 text-4xl font-black tracking-[-0.04em] text-[#006d37] tabular-nums">{stats.weight} kg</p>
+                <p className="text-sm font-black text-[#6c7b6d]">Điểm đã cấp</p>
+                <p className="mt-1 text-4xl font-black tracking-[-0.04em] text-[#006d37] tabular-nums">{metrics.summary.pointsIssued.toLocaleString("vi-VN")} pts</p>
               </div>
             </div>
             <div className="relative h-56 rounded-2xl bg-[linear-gradient(to_right,#edf3ed_1px,transparent_1px),linear-gradient(to_bottom,#edf3ed_1px,transparent_1px)] bg-[size:96px_56px]">
               <div className="absolute inset-x-6 bottom-12 top-8 flex items-end justify-between gap-3">
-                {[38, 58, 46, 74, 62, stats.capacity, 54].map((value, index) => (
-                  <span className="block w-full rounded-t-xl bg-gradient-to-t from-[#006d37] to-[#2ecc71]" key={`${value}-${index}`} style={{ height: `${Math.max(value, 16)}%` }} />
+                {metrics.weeklySubmissions.map((item) => (
+                  <span className="block w-full rounded-t-xl bg-gradient-to-t from-[#006d37] to-[#2ecc71]" key={item.day} style={{ height: `${item.height}%`, opacity: item.count > 0 ? 1 : 0.22 }} />
                 ))}
               </div>
               <div className="absolute inset-x-6 bottom-4 flex justify-between text-xs font-black text-[#6c7b6d]">
-                {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day) => (
-                  <span key={day}>{day}</span>
+                {metrics.weeklySubmissions.map((item) => (
+                  <span className="inline-flex flex-col items-center gap-1" key={item.day}>
+                    <span>{item.day}</span>
+                    <span className="text-[10px] text-[#006d37]">{item.count}</span>
+                  </span>
                 ))}
               </div>
             </div>
@@ -207,32 +199,41 @@ export default async function AdminBinDetailPage({ params }: { params: Promise<{
         <div className="flex items-center justify-between gap-4 border-b border-[#d9e5da] p-6">
           <h2 className="inline-flex items-center gap-3 text-2xl font-black tracking-[-0.04em] text-[#2c3e50]">
             <Recycle className="text-[#006d37]" size={26} />
-            Lịch sử hoạt động gần đây
+            Lịch sử lượt gửi gần đây
           </h2>
-          <span className="hidden text-sm font-black text-[#006d37] sm:inline">Xem tất cả</span>
+          <Link className="hidden text-sm font-black text-[#006d37] sm:inline" href="/admin/submissions">Danh sách lượt gửi</Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left">
-            <thead className="bg-[#f5f3f2]">
-              <tr>
-                {["Thời gian", "Hành động", "Chi tiết", "Người dùng/NV", "Trạng thái"].map((heading) => (
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-[0.14em] text-[#3d4a3e]" key={heading}>{heading}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#edf3ed]">
-              {recentEvents.map((event) => (
-                <tr className="transition hover:bg-[#2ecc71]/5" key={`${event.time}-${event.action}`}>
-                  <td className="px-6 py-5 text-sm font-black text-[#1b1c1b]">{event.time}</td>
-                  <td className="px-6 py-5"><ActivityPill tone={event.tone}>{event.action}</ActivityPill></td>
-                  <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{event.detail}</td>
-                  <td className="px-6 py-5 text-sm font-black text-[#1b1c1b]">{event.actor}</td>
-                  <td className="px-6 py-5 text-sm font-black text-[#3d4a3e]">{event.status}</td>
+        {metrics.recentEvents.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse text-left">
+              <thead className="bg-[#f5f3f2]">
+                <tr>
+                  {["Thời gian", "Hành động", "Chi tiết", "Người dùng", "Trạng thái"].map((heading) => (
+                    <th className="px-6 py-4 text-xs font-black uppercase tracking-[0.14em] text-[#3d4a3e]" key={heading}>{heading}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-[#edf3ed]">
+                {metrics.recentEvents.map((event) => (
+                  <tr className="transition hover:bg-[#2ecc71]/5" key={`${event.time}-${event.action}-${event.actor}`}>
+                    <td className="px-6 py-5 text-sm font-black text-[#1b1c1b]">{event.time}</td>
+                    <td className="px-6 py-5"><ActivityPill tone={event.tone}>{event.action}</ActivityPill></td>
+                    <td className="px-6 py-5 text-sm font-bold text-[#1b1c1b]">{event.detail}</td>
+                    <td className="px-6 py-5 text-sm font-black text-[#1b1c1b]">{event.actor}</td>
+                    <td className="px-6 py-5 text-sm font-black text-[#3d4a3e]">{event.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-6">
+            <div className="rounded-2xl border border-dashed border-[#bbcbbb] bg-[#f5f3f2]/60 p-8 text-center">
+              <p className="text-lg font-black text-[#1b1c1b]">Chưa có lượt gửi nào cho thùng này.</p>
+              <p className="mt-2 text-sm font-semibold text-[#6c7b6d]">Khi người dùng quét QR và gửi ảnh, lịch sử thật sẽ xuất hiện ở đây.</p>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );
@@ -256,7 +257,25 @@ function InfoRow({ label, value, mono = false }: { label: string; value: string;
   );
 }
 
-function TelemetryTile({ Icon, label, value, note }: { Icon: typeof Signal; label: string; value: string; note?: string }) {
+function MetricTile({ Icon, label, value, tone }: { Icon: LucideIcon; label: string; value: string; tone: "amber" | "green" | "red" }) {
+  const toneClass = {
+    amber: "bg-[#fff8e6] text-[#8a4b00]",
+    green: "bg-[#edf8f0] text-[#006d37]",
+    red: "bg-[#ffdad6]/55 text-[#ba1a1a]",
+  }[tone];
+
+  return (
+    <div className="rounded-2xl border border-[#d9e5da] bg-[#fbf9f8] p-4">
+      <div className={`mb-4 grid size-10 place-items-center rounded-xl ${toneClass}`}>
+        <Icon size={19} />
+      </div>
+      <p className="text-3xl font-black leading-none text-[#1b1c1b] tabular-nums">{value}</p>
+      <p className="mt-2 text-sm font-black text-[#6c7b6d]">{label}</p>
+    </div>
+  );
+}
+
+function TelemetryTile({ Icon, label, value, note }: { Icon: LucideIcon; label: string; value: string; note?: string }) {
   return (
     <div className="rounded-2xl bg-[#fbf9f8] p-4">
       <p className="text-xs font-black text-[#6c7b6d]">{label}</p>
@@ -271,9 +290,9 @@ function TelemetryTile({ Icon, label, value, note }: { Icon: typeof Signal; labe
 
 function ActivityPill({ children, tone }: { children: React.ReactNode; tone: string }) {
   const toneClass = {
-    blue: "bg-[#d9eefb] text-[#00557d]",
+    amber: "bg-[#fff8e6] text-[#8a4b00]",
     green: "bg-[#dcf8e6] text-[#006d37]",
-    neutral: "bg-[#e9e8e7] text-[#3d4a3e]",
+    red: "bg-[#ffdad6]/55 text-[#ba1a1a]",
   }[tone] ?? "bg-[#e9e8e7] text-[#3d4a3e]";
 
   return <span className={`rounded-lg px-3 py-1 text-xs font-black ${toneClass}`}>{children}</span>;

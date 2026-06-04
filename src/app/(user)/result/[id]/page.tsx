@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Coins, Cpu, Leaf, MapPin, Recycle, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Coins, Cpu, Leaf, MapPin, Recycle, ShieldCheck, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { SubmissionStatus } from "@/core/entities/types";
 import { mvpWasteTypeLabel } from "@/core/points/point-rules";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
+import { buildResultImpact } from "./result-impact";
 
 type SubmissionRow = Pick<Database["public"]["Tables"]["submissions"]["Row"], "id" | "bin_id" | "image_url" | "ai_result" | "status" | "points" | "reason" | "risk_flags" | "created_at">;
 type BinRow = Pick<Database["public"]["Tables"]["bins"]["Row"], "id" | "name" | "location_name">;
@@ -50,9 +51,11 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   const result = aiResult(submission);
   const resultMode = typeof result.mode === "string" ? result.mode : undefined;
   const confidence = typeof result.confidence === "number" ? Math.round(result.confidence * 100) : 0;
-  const wasteType = wasteTypeLabel(typeof result.wasteType === "string" ? result.wasteType : resultMode);
+  const detectedWasteType = typeof result.wasteType === "string" ? result.wasteType : resultMode;
+  const wasteType = wasteTypeLabel(detectedWasteType);
   const status = statusCopy(submission.status);
   const StatusIcon = status.Icon;
+  const impact = buildResultImpact({ points: submission.points, status: submission.status, wasteType: detectedWasteType });
 
   return (
     <div className="space-y-5">
@@ -139,13 +142,16 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
           <section className="relative overflow-hidden rounded-[30px] bg-[#007a3d] p-6 text-white shadow-[0_18px_44px_rgba(0,106,61,0.16)]">
             <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[#8ff8b6]">Tác động môi trường</h2>
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <ImpactMetric icon={Leaf} value="0.05kg" label="Giảm CO2" />
-              <ImpactMetric icon={Zap} value="1.2kWh" label="Tiết kiệm" />
-            </div>
+            <p className="mt-2 text-2xl font-black tracking-[-0.04em]">{impact.title}</p>
+            {impact.showMetrics ? (
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <ImpactMetric icon={Leaf} value={impact.co2Label} label="CO2 ước tính" />
+                <ImpactMetric icon={Coins} value={impact.pointsLabel} label="Điểm đã cộng" />
+              </div>
+            ) : null}
             <div className="mt-5 flex items-start gap-3 rounded-[22px] bg-white/10 p-4">
-              <Sparkles className="mt-0.5 shrink-0 text-[#8ff8b6]" size={20} />
-              <p className="text-sm font-semibold leading-6 text-white/84">Tương đương với 2 giờ thắp sáng bóng đèn LED.</p>
+              <Leaf className="mt-0.5 shrink-0 text-[#8ff8b6]" size={20} />
+              <p className="text-sm font-semibold leading-6 text-white/84">{impact.note}</p>
             </div>
             <div className="absolute -right-14 -top-14 size-48 rounded-full bg-white/10 blur-3xl" />
           </section>

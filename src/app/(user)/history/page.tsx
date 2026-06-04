@@ -52,7 +52,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
 
   const [{ data: submissionData }, { data: redemptionData }] = await Promise.all([
     supabase.from("submissions").select("id,bin_id,image_url,ai_result,status,points,reason,risk_flags,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("reward_redemptions").select("id,reward_item_id,points_spent,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
+    supabase.from("reward_redemptions").select("id,reward_item_id,points_spent,status,redemption_code,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
   ]);
 
   const submissions = (submissionData ?? []) as HistorySubmissionRow[];
@@ -252,6 +252,7 @@ function RedemptionActivity({ activity }: { activity: Extract<HistoryActivity, {
           <span className="text-sm font-semibold text-[#5d6a60]">{new Date(activity.createdAt).toLocaleString("vi-VN")}</span>
           <span className="rounded-full bg-[#cbe6ff] px-3 py-1 text-xs font-black text-[#00517b]">Đã đổi</span>
         </div>
+        <code className="mt-2 inline-flex rounded-full bg-[#f3fcf3] px-3 py-1 font-mono text-xs font-black text-[#007a3d]">{activity.redemptionCode}</code>
       </div>
     </div>
   );

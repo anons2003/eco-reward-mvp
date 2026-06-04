@@ -54,6 +54,10 @@ export const DynamicRewardManagementActions = dynamic<{ reward?: RewardRow }>(()
   import("@/components/admin/reward-management-actions").then((mod) => mod.RewardManagementActions),
 );
 
+export const DynamicRewardRedemptionActions = dynamic<{ redemptionId: string; status: string }>(() =>
+  import("@/components/admin/reward-redemption-actions").then((mod) => mod.RewardRedemptionActions),
+);
+
 export const DynamicUserManagementActions = dynamic<{ user?: UserManagementUser }>(() =>
   import("@/components/admin/user-management-actions").then((mod) => mod.UserManagementActions),
 );

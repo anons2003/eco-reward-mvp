@@ -37,6 +37,7 @@ export type Database = {
           lat: number;
           lng: number;
           active: boolean;
+          created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["bins"]["Row"]>;
         Update: Partial<Database["public"]["Tables"]["bins"]["Row"]>;
@@ -168,6 +169,8 @@ export type Database = {
           reward_item_id: string;
           points_spent: number;
           status: string;
+          redemption_code: string;
+          fulfilled_at: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["reward_redemptions"]["Row"]> & {
@@ -226,6 +229,21 @@ export type Database = {
           submission_id: string;
         };
       };
+      review_submission_with_points: {
+        Args: {
+          p_admin_id: string;
+          p_submission_id: string;
+          p_decision: Database["public"]["Enums"]["submission_status"];
+          p_reason: string;
+        };
+        Returns: {
+          submission_id: string;
+          user_id: string;
+          status: Database["public"]["Enums"]["submission_status"];
+          points: number;
+          reason: string;
+        };
+      };
       redeem_reward: {
         Args: { reward_id: string };
         Returns: {
@@ -234,6 +252,8 @@ export type Database = {
           points_spent: number;
           remaining_points: number;
           remaining_stock: number;
+          redemption_code: string;
+          redemption_status: string;
         };
       };
     };

@@ -11,6 +11,7 @@ const directClientIslandImports = [
   "@/components/admin/point-rule-management-actions",
   "@/components/admin/review-actions",
   "@/components/admin/reward-management-actions",
+  "@/components/admin/reward-redemption-actions",
   "@/components/admin/user-management-actions",
   "@/components/user/avatar-upload-form",
   "@/components/user/capture-flow",

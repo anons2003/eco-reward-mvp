@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Edit, Eye, Filter, MapPin, QrCode, Search, Trash2, type LucideIcon } from "lucide-react";
 import { LocationGroupsSearch } from "@/components/admin/location-groups-search";
 import { DynamicAdminDashboardMotion, DynamicAdminMapLibreMap, DynamicBinManagementActions } from "@/components/shared/dynamic-client-components";
+import { env } from "@/infrastructure/config/env";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -11,8 +12,13 @@ type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 
 const binColumns = "id,name,qr_code,location_name,location_id,lat,lng,active";
 
-function qrImageUrl(qrCode: string, size = 220) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(qrCode)}`;
+function scanUrl(qrCode: string) {
+  const baseUrl = env.appUrl.replace(/\/$/, "");
+  return `${baseUrl}/scan?qr=${encodeURIComponent(qrCode)}`;
+}
+
+function qrImageUrl(data: string, size = 220) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&format=png&data=${encodeURIComponent(data)}`;
 }
 
 export default async function AdminBinsPage() {
@@ -107,7 +113,7 @@ export default async function AdminBinsPage() {
               {bins.map((bin) => (
                 <tr className="transition hover:bg-[#2ecc71]/5" key={bin.id}>
                   <td className="px-6 py-5">
-                    <img alt={`QR ${bin.qr_code}`} className="size-16 rounded-xl border border-[#bbcbbb]/35 bg-white p-1" src={qrImageUrl(bin.qr_code, 96)} />
+                    <img alt={`QR ${bin.qr_code}`} className="size-16 rounded-xl border border-[#bbcbbb]/35 bg-white p-1" src={qrImageUrl(scanUrl(bin.qr_code), 96)} />
                   </td>
                   <td className="px-6 py-5 font-mono text-sm font-black text-[#006492]">{bin.qr_code}</td>
                   <td className="px-6 py-5">
@@ -125,7 +131,7 @@ export default async function AdminBinsPage() {
                       <Link className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={`/admin/bins/${bin.id}`} title="Chi tiết">
                         <Eye size={18} />
                       </Link>
-                      <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(bin.qr_code, 512)} target="_blank" rel="noreferrer" title="Tải QR">
+                      <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(scanUrl(bin.qr_code), 512)} target="_blank" rel="noreferrer" title="Tải QR">
                         <QrCode size={18} />
                       </a>
                       <DynamicBinManagementActions bin={bin} locations={locations} />
@@ -141,7 +147,7 @@ export default async function AdminBinsPage() {
           {bins.map((bin) => (
             <article className="rounded-2xl border border-[#bbcbbb]/35 bg-white p-4 shadow-[0_10px_24px_rgba(45,156,219,0.06)]" key={bin.id}>
               <div className="flex items-start gap-3">
-                <img alt={`QR ${bin.qr_code}`} className="size-20 shrink-0 rounded-xl border border-[#bbcbbb]/35 bg-white p-1" src={qrImageUrl(bin.qr_code, 120)} />
+                <img alt={`QR ${bin.qr_code}`} className="size-20 shrink-0 rounded-xl border border-[#bbcbbb]/35 bg-white p-1" src={qrImageUrl(scanUrl(bin.qr_code), 120)} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -159,7 +165,7 @@ export default async function AdminBinsPage() {
                   Xem chi tiết
                 </Link>
                 <div className="flex items-center gap-1">
-                  <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(bin.qr_code, 512)} target="_blank" rel="noreferrer" title="Tải QR">
+                  <a className="grid size-9 place-items-center rounded-lg text-[#3d4a3e] transition hover:bg-[#e9e8e7]" href={qrImageUrl(scanUrl(bin.qr_code), 512)} target="_blank" rel="noreferrer" title="Tải QR">
                     <QrCode size={18} />
                   </a>
                   <DynamicBinManagementActions bin={bin} locations={locations} />

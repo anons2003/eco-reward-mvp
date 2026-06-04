@@ -30,6 +30,8 @@ describe("/api/rewards/[id]/redeem", () => {
         points_spent: 120,
         remaining_points: 380,
         remaining_stock: 9,
+        redemption_code: "ST-ABC123DEF0",
+        redemption_status: "issued",
       },
       error: null,
     });
@@ -59,6 +61,8 @@ describe("/api/rewards/[id]/redeem", () => {
         points_spent: 120,
         remaining_points: 380,
         remaining_stock: 9,
+        redemption_code: "ST-ABC123DEF0",
+        redemption_status: "issued",
       },
     });
     expect(rpc).toHaveBeenCalledWith("redeem_reward", { reward_id: "reward-1" });
