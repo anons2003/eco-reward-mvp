@@ -1,6 +1,6 @@
 import type { AIResult, WasteType } from "@/core/entities/types";
 
-const demoTypes: WasteType[] = ["plastic_bottle", "metal_can", "paper", "glass_bottle", "unknown"];
+const demoTypes: WasteType[] = ["plastic", "metal", "paper", "glass", "unknown"];
 
 function hashText(value: string): number {
   return [...value].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7);
@@ -11,11 +11,11 @@ export async function mockAnalyzeImage(imageUrl: string): Promise<AIResult> {
 
   if (lowerUrl.includes("plastic")) {
     return {
-      wasteType: "plastic_bottle",
+      wasteType: "plastic",
       confidence: 0.92,
       objectCount: 1,
       imageQuality: "good",
-      notes: "Mock AI nhận diện chai nhựa rõ nét.",
+      notes: "Mock AI nhận diện vật liệu nhựa rõ nét.",
     };
   }
 

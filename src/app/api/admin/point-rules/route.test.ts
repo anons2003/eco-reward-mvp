@@ -51,7 +51,7 @@ describe("/api/admin/point-rules", () => {
     createAdminClient.mockReturnValue(adminClient());
     select.mockReturnValue({ order });
     order.mockResolvedValue({
-      data: [{ waste_type: "plastic_bottle", points: 10, active: true, updated_at: "2026-06-01T00:00:00.000Z" }],
+      data: [{ waste_type: "plastic", points: 10, active: true, updated_at: "2026-06-01T00:00:00.000Z" }],
       error: null,
     });
     insert.mockReturnValue({ select: insertSelect });
@@ -70,16 +70,44 @@ describe("/api/admin/point-rules", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      rules: [{ waste_type: "plastic_bottle", points: 10, active: true, updated_at: "2026-06-01T00:00:00.000Z" }],
+      rules: [{ waste_type: "plastic", points: 10, active: true, updated_at: "2026-06-01T00:00:00.000Z" }],
     });
     expect(select).toHaveBeenCalledWith(pointRuleColumns);
     expect(order).toHaveBeenCalledWith("waste_type", { ascending: true });
+  });
+
+  it("hides legacy point rules from the admin API", async () => {
+    order.mockResolvedValueOnce({
+      data: [
+        { waste_type: "plastic", points: 10, active: true, updated_at: "2026-06-01T00:00:00.000Z" },
+        { waste_type: "plastic_bottle", points: 10, active: false, updated_at: "2026-06-01T00:00:00.000Z" },
+      ],
+      error: null,
+    });
+    const { GET } = await import("./route");
+
+    const response = await GET();
+
+    expect(await response.json()).toEqual({
+      rules: [{ waste_type: "plastic", points: 10, active: true, updated_at: "2026-06-01T00:00:00.000Z" }],
+    });
   });
 
   it("validates create payloads before inserting point rules", async () => {
     const { POST } = await import("./route");
 
     const response = await POST(postRequest({ wasteType: "bad_type", points: -1, active: true }));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Invalid point rule payload" });
+    expect(insert).not.toHaveBeenCalled();
+    expect(auditInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects legacy point rule categories outside the MVP scope", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ wasteType: "organic", points: 5, active: true }));
 
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Invalid point rule payload" });

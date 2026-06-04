@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { MVP_REVIEW_WASTE_TYPES } from "@/core/points/point-rules";
 import { requireAdmin } from "@/infrastructure/auth/admin-session";
 import { createAdminClient } from "@/infrastructure/supabase/admin";
 import { pointRuleColumns, pointRulePayloadSchema, toPointRuleInsert, type AuditInsertTable, type PointRuleInsert, type PointRuleRow } from "./point-rule-schema";
@@ -29,7 +30,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unable to load point rules" }, { status: 500 });
   }
 
-  return NextResponse.json({ rules: data ?? [] });
+  const visibleRules = (data ?? []).filter((rule) => (MVP_REVIEW_WASTE_TYPES as readonly string[]).includes(rule.waste_type));
+  return NextResponse.json({ rules: visibleRules });
 }
 
 export async function POST(request: NextRequest | Request) {

@@ -20,7 +20,7 @@ describe("buildHistoryViewModel", () => {
           id: "sub-approved",
           bin_id: "bin-b",
           image_url: "https://example.test/approved.jpg",
-          ai_result: { wasteType: "plastic_bottle", confidence: 0.91 },
+          ai_result: { wasteType: "plastic", confidence: 0.91 },
           status: "approved",
           points: 15,
           reason: "Đã duyệt.",
@@ -80,7 +80,7 @@ describe("buildHistoryViewModel", () => {
     expect(viewModel.rows[2]).toMatchObject({
       kind: "submission",
       id: "sub-approved",
-      title: "Phân loại Chai nhựa",
+      title: "Phân loại Nhựa",
       pointsLabel: "+15 pts",
       binName: "Thùng B",
     });

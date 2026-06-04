@@ -108,4 +108,14 @@ describe("/api/admin/point-rules/[wasteType]", () => {
     expect(await response.json()).toEqual({ error: "Invalid waste type" });
     expect(update).not.toHaveBeenCalled();
   });
+
+  it("rejects legacy waste types outside the MVP scope", async () => {
+    const { PATCH } = await import("./route");
+
+    const response = await PATCH(patchRequest({ points: 5, active: true }), context("organic"));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid waste type" });
+    expect(update).not.toHaveBeenCalled();
+  });
 });

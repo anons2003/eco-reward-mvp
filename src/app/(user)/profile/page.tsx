@@ -39,10 +39,10 @@ function StatCard({ Icon, label, value, unit }: { Icon: LucideIcon; label: strin
 export default async function ProfilePage() {
   const { avatarUrl, displayName, points, profile, user } = await getUserShell();
   const supabase = await getSupabaseServerClient();
-  const email = user.email ?? "nguyen.an@seatech.app";
+  const email = user.email ?? "Chưa cập nhật";
   const phone = profile?.phone ?? "Chưa cập nhật";
   const location = profile?.location ?? "Chưa cập nhật";
-  const bio = profile?.bio ?? "Hành động nhỏ, tác động lớn. Cùng nhau xây dựng thế giới xanh hơn!";
+  const bio = profile?.bio?.trim();
   const [{ data: submissionData }, { data: redemptionData }] = await Promise.all([
     supabase.from("submissions").select("id,ai_result,status,points,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
     supabase.from("reward_redemptions").select("id,reward_item_id,points_spent,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
@@ -88,7 +88,7 @@ export default async function ProfilePage() {
                 <h2 className="text-3xl font-black tracking-[-0.04em] text-[#151d18]">{displayName}</h2>
                 <span className="rounded-full bg-[#fff3c4] px-2.5 py-1 text-[10px] font-black uppercase text-[#755b00]">{metrics.tierName}</span>
               </div>
-              <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-[#3e4941]">“{bio}”</p>
+              <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-[#3e4941]">{bio ? `“${bio}”` : "Bạn chưa thêm giới thiệu cá nhân."}</p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#007a3d] px-4 text-sm font-black text-white" href="/settings">
                   <Edit3 size={16} />

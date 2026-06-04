@@ -1,7 +1,6 @@
 import type { AIResult } from "@/core/entities/types";
 import { mockAnalyzeImage } from "@/infrastructure/ai/mock-provider";
 import { openaiAnalyzeImage } from "@/infrastructure/ai/openai-provider";
-import { roboflowAnalyzeImage } from "@/infrastructure/ai/roboflow-provider";
 
 function manualReviewFallback(notes: string): AIResult {
   return {
@@ -23,7 +22,9 @@ export async function analyzeImage(imageUrl: string): Promise<AIResult> {
     return manualReviewFallback("AI review đang tắt, chuyển admin kiểm duyệt thủ công.");
   }
 
-  if (process.env.AI_PROVIDER === "openai") {
+  const provider = process.env.AI_PROVIDER ?? "mock";
+
+  if (provider === "openai") {
     try {
       return await openaiAnalyzeImage(imageUrl);
     } catch {
@@ -31,9 +32,9 @@ export async function analyzeImage(imageUrl: string): Promise<AIResult> {
     }
   }
 
-  if (process.env.AI_PROVIDER === "roboflow") {
-    return roboflowAnalyzeImage(imageUrl);
+  if (provider === "mock") {
+    return mockAnalyzeImage(imageUrl);
   }
 
-  return mockAnalyzeImage(imageUrl);
+  return manualReviewFallback("AI provider không được hỗ trợ, chuyển admin kiểm duyệt thủ công.");
 }

@@ -119,6 +119,9 @@ export type Database = {
       point_rules: {
         Row: {
           waste_type:
+            | "plastic"
+            | "metal"
+            | "glass"
             | "plastic_bottle"
             | "metal_can"
             | "paper"
@@ -208,6 +211,21 @@ export type Database = {
       };
     };
     Functions: {
+      create_submission_with_points: {
+        Args: {
+          scan_session_id: string;
+          image_url: string;
+          ai_result: Json;
+          status: Database["public"]["Enums"]["submission_status"];
+          points: number;
+          reason: string;
+          risk_flags: string[];
+          reviewed_at: string | null;
+        };
+        Returns: {
+          submission_id: string;
+        };
+      };
       redeem_reward: {
         Args: { reward_id: string };
         Returns: {

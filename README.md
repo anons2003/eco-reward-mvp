@@ -10,7 +10,7 @@ Stack triển khai:
 - Supabase SSR client, migration SQL, seed demo, Storage bucket và RLS policy để nối backend thật.
 - Supabase Auth thật cho login/logout, route protection và dashboard user.
 - Demo repository trong bộ nhớ vẫn phục vụ các flow chưa nối database thật.
-- AI adapter `mock` mặc định, có adapter Roboflow qua env.
+- AI adapter `mock` cho local demo và OpenAI Vision Structured Output cho phân tích thật.
 
 Kiến trúc source:
 
@@ -98,7 +98,7 @@ Repo public không nên commit file `.env` thật. Khi triển khai code, tạo 
 cp .env.example .env
 ```
 
-Sau đó cập nhật các giá trị thật cho database, Roboflow, storage, QR secret và thông tin admin.
+Sau đó cập nhật các giá trị thật cho database, OpenAI, storage, QR secret và thông tin admin.
 
 ## Phạm Vi
 

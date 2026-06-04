@@ -35,13 +35,16 @@ function wasteLabel(row: SubmissionRow) {
   const wasteType = typeof result.wasteType === "string" ? result.wasteType : typeof result.mode === "string" ? "manual_review" : "unknown";
   const labels: Record<string, string> = {
     manual_review: "Duyệt thủ công",
-    plastic_bottle: "Chai nhựa",
-    metal_can: "Lon kim loại",
+    plastic: "Nhựa",
+    plastic_bottle: "Nhựa",
+    metal: "Kim loại",
+    metal_can: "Kim loại",
     paper: "Giấy",
-    cardboard: "Bìa carton",
-    glass_bottle: "Chai thủy tinh",
-    organic: "Hữu cơ",
-    hazardous: "Nguy hại",
+    cardboard: "Chưa xác định",
+    glass: "Thủy tinh",
+    glass_bottle: "Thủy tinh",
+    organic: "Chưa xác định",
+    hazardous: "Chưa xác định",
     unknown: "Chưa xác định",
   };
   return labels[wasteType] ?? wasteType.replaceAll("_", " ");

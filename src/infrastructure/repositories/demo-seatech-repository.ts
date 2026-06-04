@@ -78,7 +78,7 @@ const initialSubmissions: Submission[] = [
     binId: "bin-001",
     scanSessionId: "scan-seed-001",
     imageUrl: "/demo/plastic-bottle.svg",
-    aiResult: { wasteType: "plastic_bottle", confidence: 0.93, objectCount: 1, imageQuality: "good" },
+    aiResult: { wasteType: "plastic", confidence: 0.93, objectCount: 1, imageQuality: "good" },
     status: "approved",
     points: 10,
     reason: "Lượt gửi hợp lệ và được cộng điểm tự động",
@@ -106,7 +106,7 @@ const initialPointTransactions: PointTransaction[] = [
     userId: "demo-user",
     submissionId: "sub-demo-001",
     points: 10,
-    reason: "Chai nhựa tại thùng A1",
+    reason: "Nhựa tại thùng A1",
     createdAt: initialSubmissions[0].createdAt,
   },
 ];

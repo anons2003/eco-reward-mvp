@@ -50,32 +50,33 @@ export type AdminDashboardMetrics = {
   wasteDistribution: AdminDashboardWasteDistribution[];
   wasteLabel: string;
   weeklyCollection: Array<{
+    approved: number;
     day: string;
     mobileDay: string;
-    organic: number;
-    recyclable: number;
+    pending: number;
+    rejected: number;
   }>;
 };
 
 const wasteTypeLabels: Record<string, string> = {
-  cardboard: "Bìa carton",
+  glass: "Thủy tinh",
   glass_bottle: "Thủy tinh",
-  hazardous: "Nguy hại",
   manual_review: "Duyệt thủ công",
-  metal_can: "Lon kim loại",
-  organic: "Hữu cơ",
+  metal: "Kim loại",
+  metal_can: "Kim loại",
   paper: "Giấy",
-  plastic_bottle: "Chai nhựa",
+  plastic: "Nhựa",
+  plastic_bottle: "Nhựa",
   unknown: "Chưa xác định",
 };
 
 const wasteTypeWeightsKg: Record<string, number> = {
-  cardboard: 0.05,
+  glass: 0.2,
   glass_bottle: 0.2,
-  hazardous: 0.05,
+  metal: 0.02,
   metal_can: 0.02,
-  organic: 0.1,
   paper: 0.01,
+  plastic: 0.03,
   plastic_bottle: 0.03,
   unknown: 0.03,
 };
@@ -184,20 +185,22 @@ export function buildAdminDashboardMetrics({
   const rawWeeklyCollection = dayLabels.map(([day, mobileDay], index) => {
     const target = new Date(weekStart);
     target.setDate(weekStart.getDate() + index);
-    const daySubmissions = approvedSubmissions.filter((submission) => sameLocalDate(new Date(submission.created_at), target));
+    const daySubmissions = submissions.filter((submission) => sameLocalDate(new Date(submission.created_at), target));
     return {
+      approvedCount: daySubmissions.filter((submission) => submission.status === "approved").length,
       day,
       mobileDay,
-      organicCount: daySubmissions.filter((submission) => wasteTypeFromAi(submission.ai_result) === "organic").length,
-      recyclableCount: daySubmissions.filter((submission) => wasteTypeFromAi(submission.ai_result) !== "organic").length,
+      pendingCount: daySubmissions.filter((submission) => submission.status === "pending_review").length,
+      rejectedCount: daySubmissions.filter((submission) => submission.status === "rejected").length,
     };
   });
-  const maxWeeklyCount = Math.max(1, ...rawWeeklyCollection.flatMap((item) => [item.organicCount, item.recyclableCount]));
+  const maxWeeklyCount = Math.max(1, ...rawWeeklyCollection.flatMap((item) => [item.approvedCount, item.pendingCount, item.rejectedCount]));
   const weeklyCollection = rawWeeklyCollection.map((item) => ({
+    approved: Math.round((item.approvedCount / maxWeeklyCount) * 100),
     day: item.day,
     mobileDay: item.mobileDay,
-    organic: Math.round((item.organicCount / maxWeeklyCount) * 100),
-    recyclable: Math.round((item.recyclableCount / maxWeeklyCount) * 100),
+    pending: Math.round((item.pendingCount / maxWeeklyCount) * 100),
+    rejected: Math.round((item.rejectedCount / maxWeeklyCount) * 100),
   }));
 
   const distributionCounts = new Map<string, number>();

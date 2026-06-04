@@ -28,7 +28,7 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
   const { clearGlobalLoading, setGlobalLoading } = useGlobalLoading();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [imageUrl, setImageUrl] = useState("/demo/plastic-bottle.svg");
+  const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [captured, setCaptured] = useState(false);
@@ -41,11 +41,15 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
 
     async function startCamera() {
       try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          setError("Trình duyệt không hỗ trợ camera. Vui lòng dùng trình duyệt có hỗ trợ camera để chụp ảnh thật.");
+          return;
+        }
+
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         if (videoRef.current) videoRef.current.srcObject = stream;
       } catch {
-        setCaptured(true);
-        setError("Không mở được camera. Demo đang dùng ảnh mẫu.");
+        setError("Không mở được camera. Vui lòng cấp quyền camera rồi thử lại.");
       }
     }
 
@@ -95,16 +99,26 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || video.videoWidth === 0) {
-      setImageUrl("/demo/plastic-bottle.svg");
-      setCaptured(true);
+      setError("Camera chưa sẵn sàng. Vui lòng chờ vài giây rồi chụp lại.");
       return;
     }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d")?.drawImage(video, 0, 0);
-    setImageUrl(canvas.toDataURL("image/jpeg", 0.78));
+    setCapturedImageUrl(canvas.toDataURL("image/jpeg", 0.78));
     setCaptured(true);
     setError("");
+  }
+
+  function handleCaptureButton() {
+    if (capturedImageUrl) {
+      setCapturedImageUrl(null);
+      setCaptured(false);
+      setError("");
+      return;
+    }
+
+    captureFrame();
   }
 
   async function submit() {
@@ -124,6 +138,10 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
       setError("Phiên QR này đã được sử dụng. Vui lòng quét lại.");
       return;
     }
+    if (!capturedImageUrl) {
+      setError("Bạn cần chụp ảnh thật từ camera trước khi gửi phân tích.");
+      return;
+    }
 
     setLoading(true);
     setGlobalLoading("Đang gửi phân tích...");
@@ -132,7 +150,7 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
       const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scan_session_id: scanSessionId, image_url: imageUrl }),
+        body: JSON.stringify({ scan_session_id: scanSessionId, image_url: capturedImageUrl }),
       });
       const payload = (await response.json()) as { submission?: { id: string }; error?: string };
 
@@ -179,9 +197,9 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
       <section className="overflow-hidden rounded-[32px] border border-[#d9e5da] bg-white/82 shadow-[0_22px_70px_rgba(21,29,24,0.08)]">
         <div className="bg-[#f3fcf3] bg-[radial-gradient(#bdcabe_1px,transparent_1px)] p-4 [background-size:24px_24px]">
           <div className="overflow-hidden rounded-[28px] bg-[#142219] shadow-[0_22px_70px_rgba(21,29,24,0.16)]">
-            {captured ? (
+            {captured && capturedImageUrl ? (
               <div className="relative aspect-[4/3] w-full bg-white">
-                <Image alt="Ảnh vật phẩm đã chụp" className="object-contain p-8" fill sizes="(min-width: 1024px) 720px, 100vw" src={imageUrl} unoptimized={imageUrl.startsWith("data:")} />
+                <Image alt="Ảnh vật phẩm đã chụp" className="object-contain p-8" fill sizes="(min-width: 1024px) 720px, 100vw" src={capturedImageUrl} unoptimized={capturedImageUrl.startsWith("data:")} />
               </div>
             ) : (
               <video ref={videoRef} autoPlay muted playsInline className="aspect-[4/3] w-full object-cover" />
@@ -189,11 +207,11 @@ export function CaptureFlow({ scanSessionId }: { scanSessionId: string }) {
           </div>
         </div>
         <div className="grid gap-3 p-5 sm:grid-cols-2">
-          <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#edf6ed] px-5 font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-white" onClick={captureFrame} type="button">
+          <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#edf6ed] px-5 font-black text-[#151d18] ring-1 ring-[#d9e5da] transition hover:bg-white" onClick={handleCaptureButton} type="button">
             <Camera size={18} />
             {captured ? "Chụp lại" : "Chụp ảnh"}
           </button>
-          <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 font-black text-white shadow-[0_12px_30px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] disabled:cursor-not-allowed disabled:opacity-60" disabled={!captured || sessionLoading || !sessionPayload?.session || countdown.expired || sessionPayload.session.used} onClick={submit} type="button">
+          <button className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#007a3d] px-5 font-black text-white shadow-[0_12px_30px_rgba(0,106,61,0.22)] transition hover:bg-[#006a35] disabled:cursor-not-allowed disabled:opacity-60" disabled={!capturedImageUrl || sessionLoading || !sessionPayload?.session || countdown.expired || sessionPayload.session.used} onClick={submit} type="button">
             <LoadingButtonContent loading={loading} loadingLabel="Đang gửi...">
               <ImageUp size={18} />
               {countdown.expired || sessionPayload?.session?.used ? "Quét lại QR" : "Gửi phân tích"}

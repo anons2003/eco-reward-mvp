@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { AIResult } from "@/core/entities/types";
 
-export const wasteTypes = ["plastic_bottle", "metal_can", "paper", "glass_bottle", "unknown"] as const;
+export const wasteTypes = ["plastic", "metal", "paper", "glass", "unknown"] as const;
 export const imageQualities = ["good", "blurry", "dark", "unclear"] as const;
 export const contaminationRisks = ["low", "medium", "high"] as const;
 
@@ -29,7 +29,7 @@ export const wasteReviewJsonSchema = {
     wasteType: {
       type: "string",
       enum: wasteTypes,
-      description: "The MVP waste category. Only plastic bottles, metal cans, paper, and glass bottles can be auto-classified. Use unknown for every other material.",
+      description: "The MVP waste material category. Only plastic, metal, paper, and glass can be auto-classified. Use unknown for every other material.",
     },
     confidence: {
       type: "number",
@@ -72,8 +72,24 @@ export const wasteReviewJsonSchema = {
   },
 } as const;
 
+const plasticEvidencePattern = /\b(pet|plastic|plastic bottle|water bottle|soft drink bottle|plastic cup|plastic bag|plastic container|plastic wrap)\b|chai nhựa|nhựa trong|thân nhựa|nắp nhựa|chai nước|nước uống|màng co|thân mỏng|ly nhựa|hộp nhựa|túi nilon|màng bọc nhựa/i;
+
+function correctPlasticMisread(parsed: z.infer<typeof wasteReviewSchema>) {
+  if (parsed.wasteType !== "glass") return parsed;
+
+  const evidenceText = [...parsed.visibleEvidence, parsed.notes].join(" ");
+  if (!plasticEvidencePattern.test(evidenceText)) return parsed;
+
+  return {
+    ...parsed,
+    wasteType: "plastic" as const,
+    visibleEvidence: ["material_consistency_guard: plastic evidence overrides glass", ...parsed.visibleEvidence].slice(0, 8),
+    notes: `${parsed.notes} Hệ thống đã hiệu chỉnh sang nhóm nhựa vì bằng chứng thị giác cho thấy PET/nhựa.`.slice(0, 500),
+  };
+}
+
 export function normalizeWasteReviewResult(value: unknown, meta: { provider: string; model: string }): AIResult {
-  const parsed = wasteReviewSchema.parse(value);
+  const parsed = correctPlasticMisread(wasteReviewSchema.parse(value));
 
   return {
     ...parsed,

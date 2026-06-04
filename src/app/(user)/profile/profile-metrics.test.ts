@@ -9,7 +9,7 @@ describe("buildProfileMetrics", () => {
       submissions: [
         {
           id: "sub-1",
-          ai_result: { wasteType: "plastic_bottle" },
+          ai_result: { wasteType: "plastic" },
           status: "approved",
           points: 10,
           created_at: "2026-06-01T00:00:00.000Z",

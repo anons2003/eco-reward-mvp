@@ -11,7 +11,7 @@ describe("buildDashboardMetrics", () => {
         {
           id: "sub-1",
           bin_id: "bin-a",
-          ai_result: { wasteType: "plastic_bottle" },
+          ai_result: { wasteType: "plastic" },
           status: "approved",
           points: 10,
           created_at: "2026-06-03T09:00:00.000Z",
@@ -27,7 +27,7 @@ describe("buildDashboardMetrics", () => {
         {
           id: "sub-3",
           bin_id: "bin-c",
-          ai_result: { wasteType: "metal_can" },
+          ai_result: { wasteType: "metal" },
           status: "approved",
           points: 40,
           created_at: "2026-06-01T10:00:00.000Z",
@@ -73,7 +73,7 @@ describe("buildDashboardMetrics", () => {
 
   it("uses user-facing labels instead of raw unknown values", () => {
     expect(dashboardWasteLabel({ mode: "manual_review" }, "pending_review")).toBe("Chờ duyệt phân loại");
-    expect(dashboardWasteLabel({ wasteType: "plastic_bottle" }, "approved")).toBe("Chai nhựa");
+    expect(dashboardWasteLabel({ wasteType: "plastic" }, "approved")).toBe("Nhựa");
     expect(dashboardWasteLabel({ wasteType: "unknown" }, "rejected")).toBe("Chưa xác định");
   });
 

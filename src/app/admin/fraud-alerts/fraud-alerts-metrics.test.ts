@@ -17,7 +17,7 @@ const profiles: FraudProfileRow[] = [
 
 const submissions: FraudSubmissionRow[] = [
   {
-    ai_result: { confidence: 0.92, wasteType: "plastic_bottle" },
+    ai_result: { confidence: 0.92, wasteType: "plastic" },
     bin_id: "bin-1",
     created_at: "2026-06-03T08:00:00.000Z",
     id: "submission-location",
@@ -57,7 +57,7 @@ const submissions: FraudSubmissionRow[] = [
     user_id: "user-1",
   },
   {
-    ai_result: { confidence: 0.9, wasteType: "organic" },
+    ai_result: { confidence: 0.9, wasteType: "glass" },
     bin_id: "bin-3",
     created_at: "2026-06-03T12:00:00.000Z",
     id: "submission-normal",

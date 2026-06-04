@@ -9,7 +9,7 @@ describe("mockAnalyzeImage", () => {
 
     expect(first).toEqual(second);
     expect(first.confidence).toBeGreaterThanOrEqual(0.8);
-    expect(first.wasteType).toBe("plastic_bottle");
+    expect(first.wasteType).toBe("plastic");
   });
 
   it("only returns MVP review waste types", async () => {

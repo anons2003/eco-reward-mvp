@@ -21,7 +21,7 @@ const pointTransactions: AdminDashboardPointTransactionRow[] = [
 
 const submissions: AdminDashboardSubmissionRow[] = [
   {
-    ai_result: { confidence: 0.93, wasteType: "plastic_bottle" },
+    ai_result: { confidence: 0.93, wasteType: "plastic" },
     bin_id: "bin-1",
     created_at: "2026-06-01T08:00:00.000Z",
     id: "submission-approved-plastic",
@@ -32,10 +32,10 @@ const submissions: AdminDashboardSubmissionRow[] = [
     user_id: "user-1",
   },
   {
-    ai_result: { confidence: 0.75, wasteType: "organic" },
+    ai_result: { confidence: 0.75, wasteType: "glass" },
     bin_id: "bin-1",
     created_at: "2026-06-02T08:00:00.000Z",
-    id: "submission-approved-organic",
+    id: "submission-approved-glass",
     points: 5,
     reason: "",
     risk_flags: [],
@@ -86,7 +86,7 @@ describe("buildAdminDashboardMetrics", () => {
     });
     expect(metrics.activeBins).toBe(1);
     expect(metrics.approvalRate).toBe(50);
-    expect(metrics.wasteLabel).toBe("0,1kg");
+    expect(metrics.wasteLabel).toBe("0,2kg");
     expect(metrics.reviewRows).toEqual([
       {
         confidence: 0,
@@ -96,11 +96,12 @@ describe("buildAdminDashboardMetrics", () => {
         wasteLabel: "Duyệt thủ công",
       },
     ]);
-    expect(metrics.weeklyCollection[0]).toMatchObject({ mobileDay: "T2", recyclable: 100, organic: 0 });
-    expect(metrics.weeklyCollection[1]).toMatchObject({ mobileDay: "T3", recyclable: 0, organic: 100 });
+    expect(metrics.weeklyCollection[0]).toMatchObject({ mobileDay: "T2", approved: 100, pending: 0, rejected: 0 });
+    expect(metrics.weeklyCollection[2]).toMatchObject({ mobileDay: "T4", approved: 0, pending: 100, rejected: 0 });
+    expect(metrics.weeklyCollection[3]).toMatchObject({ mobileDay: "T5", approved: 0, pending: 0, rejected: 100 });
     expect(metrics.wasteDistribution.map((item) => [item.desktopLabel, item.value])).toEqual([
-      ["Chai nhựa", 50],
-      ["Hữu cơ", 50],
+      ["Nhựa", 50],
+      ["Thủy tinh", 50],
     ]);
     expect(metrics.alerts.map((alert) => alert.title)).toEqual(["Lượt gửi chờ duyệt", "Tỷ lệ từ chối cần theo dõi", "Thùng chưa hoạt động"]);
   });

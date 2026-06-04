@@ -203,7 +203,7 @@ export default async function WalletPage() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <PromoCard title="Tích điểm từ lượt gửi thật" body="Quét QR trên thùng, chụp ảnh và chờ admin duyệt để điểm được cộng vào ví." href="/scan" cta="Quét QR" icon={Recycle} tone="green" />
+        <PromoCard title="Tích điểm từ lượt gửi thật" body="Quét QR trên thùng và chụp ảnh. Lượt rõ ràng được AI cộng điểm tự động, lượt rủi ro sẽ chuyển sang kiểm tra." href="/scan" cta="Quét QR" icon={Recycle} tone="green" />
         <PromoCard
           title={nextReward?.title ?? "Chưa có phần thưởng đang mở"}
           body={nextReward?.description ?? "Khi admin phát hành ưu đãi active, ví sẽ tự hiển thị mốc điểm tiếp theo tại đây."}

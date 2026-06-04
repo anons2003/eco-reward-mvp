@@ -227,7 +227,7 @@ demo_submission as (
     demo_session.bin_id,
     demo_session.id,
     '/demo/plastic-bottle.svg',
-    '{"wasteType":"plastic_bottle","confidence":0.91,"objectCount":1,"imageQuality":"good","notes":"Seed demo result"}'::jsonb,
+    '{"wasteType":"plastic","confidence":0.91,"objectCount":1,"imageQuality":"good","notes":"Seed demo result"}'::jsonb,
     'approved',
     10,
     'AI confidence met MVP threshold.',

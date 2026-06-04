@@ -47,10 +47,13 @@ export type HistoryViewModel = {
 };
 
 const co2KgByWasteType: Record<string, number> = {
+  plastic: 0.25,
   plastic_bottle: 0.25,
+  metal: 0.18,
   metal_can: 0.18,
   paper: 0.08,
   cardboard: 0.1,
+  glass: 0.16,
   glass_bottle: 0.16,
   organic: 0.04,
 };
@@ -64,13 +67,16 @@ export function wasteLabel(value: Json) {
   const wasteType = wasteTypeFromAi(value);
   const labels: Record<string, string> = {
     manual_review: "Duyệt thủ công",
-    plastic_bottle: "Chai nhựa",
-    metal_can: "Lon kim loại",
+    plastic: "Nhựa",
+    plastic_bottle: "Nhựa",
+    metal: "Kim loại",
+    metal_can: "Kim loại",
     paper: "Giấy",
-    cardboard: "Bìa carton",
-    glass_bottle: "Chai thủy tinh",
-    organic: "Hữu cơ",
-    hazardous: "Nguy hại",
+    cardboard: "Chưa xác định",
+    glass: "Thủy tinh",
+    glass_bottle: "Thủy tinh",
+    organic: "Chưa xác định",
+    hazardous: "Chưa xác định",
     unknown: "Chưa xác định",
   };
   return labels[wasteType] ?? wasteType.replaceAll("_", " ");

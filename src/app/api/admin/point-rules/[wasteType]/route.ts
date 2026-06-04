@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { isWasteType } from "@/core/points/point-rules";
+import { isMvpReviewWasteType } from "@/core/points/point-rules";
 import { requireAdmin } from "@/infrastructure/auth/admin-session";
 import { createAdminClient } from "@/infrastructure/supabase/admin";
 import { pointRuleColumns, pointRuleUpdateSchema, toPointRuleUpdate, type AuditInsertTable, type PointRuleRow, type PointRuleUpdate } from "../point-rule-schema";
@@ -28,7 +28,7 @@ export async function PATCH(request: NextRequest | Request, context: RouteContex
   if (!admin.ok) return admin.response;
 
   const wasteType = await getWasteType(context);
-  if (!isWasteType(wasteType)) {
+  if (!isMvpReviewWasteType(wasteType)) {
     return NextResponse.json({ error: "Invalid waste type" }, { status: 400 });
   }
 
@@ -63,7 +63,7 @@ export async function DELETE(_request: NextRequest | Request, context: RouteCont
   if (!admin.ok) return admin.response;
 
   const wasteType = await getWasteType(context);
-  if (!isWasteType(wasteType)) {
+  if (!isMvpReviewWasteType(wasteType)) {
     return NextResponse.json({ error: "Invalid waste type" }, { status: 400 });
   }
 

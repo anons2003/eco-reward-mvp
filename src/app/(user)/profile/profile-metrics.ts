@@ -34,10 +34,13 @@ export type ProfileAchievement = {
 };
 
 const co2KgByWasteType: Record<string, number> = {
+  plastic: 0.25,
   plastic_bottle: 0.25,
+  metal: 0.18,
   metal_can: 0.18,
   paper: 0.08,
   cardboard: 0.1,
+  glass: 0.16,
   glass_bottle: 0.16,
   organic: 0.04,
 };

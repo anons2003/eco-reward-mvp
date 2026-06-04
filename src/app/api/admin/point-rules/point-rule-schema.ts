@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { WASTE_TYPES } from "@/core/points/point-rules";
+import { MVP_REVIEW_WASTE_TYPES } from "@/core/points/point-rules";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
 export const pointRuleColumns = "waste_type,points,active,updated_at";
 
 export const pointRulePayloadSchema = z.object({
-  wasteType: z.enum(WASTE_TYPES),
+  wasteType: z.enum(MVP_REVIEW_WASTE_TYPES),
   points: z.number().int().min(0).max(1_000_000),
   active: z.boolean().default(true),
 });

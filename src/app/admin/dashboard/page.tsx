@@ -122,15 +122,19 @@ export default async function AdminDashboardPage() {
       <section className="grid gap-6 lg:grid-cols-12">
         <div className="rounded-2xl border border-[#d9e5da] bg-white p-4 shadow-[0_8px_24px_rgba(21,29,24,0.035)] lg:col-span-8 lg:p-6" data-admin-reveal>
           <div className="mb-6 flex items-center justify-between lg:mb-8">
-            <h2 className="text-sm font-black uppercase tracking-[0.06em] text-[#1b1c1b] lg:text-base lg:normal-case lg:tracking-[-0.01em]">Xu hướng thu gom theo tuần</h2>
+            <h2 className="text-sm font-black uppercase tracking-[0.06em] text-[#1b1c1b] lg:text-base lg:normal-case lg:tracking-[-0.01em]">Xu hướng kiểm duyệt theo tuần</h2>
             <div className="hidden gap-4 text-xs font-bold text-[#6e7a70] lg:flex">
               <span className="inline-flex items-center gap-2">
                 <span className="size-3 rounded-full bg-[#006d37]" />
-                Tái chế
+                Đã duyệt
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="size-3 rounded-full bg-[#2d9cdb]" />
-                Hữu cơ
+                <span className="size-3 rounded-full bg-[#f39c12]" />
+                Chờ duyệt
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="size-3 rounded-full bg-[#ba1a1a]" />
+                Từ chối
               </span>
             </div>
           </div>
@@ -139,8 +143,9 @@ export default async function AdminDashboardPage() {
             {weeklyCollection.map((item) => (
               <div className="flex h-full min-w-0 flex-1 flex-col items-center gap-2" key={item.day}>
                 <div className="flex min-h-0 w-full flex-1 items-end justify-center gap-1">
-                  <span data-admin-bar className="block w-1/2 max-w-4 rounded-t-lg bg-[#006d37] lg:w-4" style={{ height: `${item.recyclable}%` }} />
-                  <span data-admin-bar className="block w-1/2 max-w-4 rounded-t-lg bg-[#2d9cdb] lg:w-4" style={{ height: `${item.organic}%` }} />
+                  <span data-admin-bar className="block w-1/3 max-w-3 rounded-t-lg bg-[#006d37] lg:w-3.5" style={{ height: `${item.approved}%` }} />
+                  <span data-admin-bar className="block w-1/3 max-w-3 rounded-t-lg bg-[#f39c12] lg:w-3.5" style={{ height: `${item.pending}%` }} />
+                  <span data-admin-bar className="block w-1/3 max-w-3 rounded-t-lg bg-[#ba1a1a] lg:w-3.5" style={{ height: `${item.rejected}%` }} />
                 </div>
                 <span className="text-[10px] font-black text-[#6e7a70] lg:text-xs">{item.mobileDay}</span>
               </div>
@@ -150,11 +155,15 @@ export default async function AdminDashboardPage() {
           <div className="mt-6 flex justify-center gap-4 text-xs font-bold text-[#6e7a70] lg:hidden">
             <span className="inline-flex items-center gap-1">
               <span className="size-3 rounded-full bg-[#006d37]" />
-              Tái chế
+              Đã duyệt
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="size-3 rounded-full bg-[#2d9cdb]" />
-              Hữu cơ
+              <span className="size-3 rounded-full bg-[#f39c12]" />
+              Chờ duyệt
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="size-3 rounded-full bg-[#ba1a1a]" />
+              Từ chối
             </span>
           </div>
         </div>

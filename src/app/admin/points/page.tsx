@@ -1,6 +1,6 @@
-import { AlertTriangle, Bot, CircleHelp, Leaf, Recycle, RotateCcw, Scale, Sparkles, Trash2, type LucideIcon } from "lucide-react";
+import { Bot, CircleHelp, Leaf, RotateCcw, Scale, Sparkles, Trash2, type LucideIcon } from "lucide-react";
 import { DynamicAdminDashboardMotion, DynamicPointRuleManagementActions } from "@/components/shared/dynamic-client-components";
-import { WASTE_TYPE_DESCRIPTIONS, WASTE_TYPE_LABELS, WASTE_TYPE_TONES, WASTE_TYPES } from "@/core/points/point-rules";
+import { MVP_REVIEW_WASTE_TYPES, WASTE_TYPE_DESCRIPTIONS, WASTE_TYPE_LABELS, WASTE_TYPE_TONES } from "@/core/points/point-rules";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { Database } from "@/infrastructure/supabase/database.types";
 
@@ -9,14 +9,11 @@ type WasteType = PointRuleRow["waste_type"];
 
 const pointRuleColumns = "waste_type,points,active,updated_at";
 
-const iconByWasteType: Record<WasteType, LucideIcon> = {
-  plastic_bottle: Trash2,
-  metal_can: Sparkles,
+const iconByWasteType: Partial<Record<WasteType, LucideIcon>> = {
+  plastic: Trash2,
+  metal: Sparkles,
   paper: Leaf,
-  cardboard: Recycle,
-  glass_bottle: RotateCcw,
-  organic: Leaf,
-  hazardous: AlertTriangle,
+  glass: RotateCcw,
   unknown: CircleHelp,
 };
 
@@ -25,9 +22,10 @@ export default async function AdminPointsPage() {
   const { data, error } = await supabase.from("point_rules").select(pointRuleColumns).order("waste_type", { ascending: true });
   const rules = (data ?? []) as PointRuleRow[];
   const ruleByWasteType = new Map(rules.map((rule) => [rule.waste_type, rule]));
-  const activeRules = rules.filter((rule) => rule.active).length;
-  const totalAward = rules.filter((rule) => rule.active).reduce((sum, rule) => sum + rule.points, 0);
-  const highestRule = rules.reduce<PointRuleRow | null>((highest, rule) => (!highest || rule.points > highest.points ? rule : highest), null);
+  const visibleRules = rules.filter((rule) => (MVP_REVIEW_WASTE_TYPES as readonly string[]).includes(rule.waste_type));
+  const activeRules = visibleRules.filter((rule) => rule.active).length;
+  const totalAward = visibleRules.filter((rule) => rule.active).reduce((sum, rule) => sum + rule.points, 0);
+  const highestRule = visibleRules.reduce<PointRuleRow | null>((highest, rule) => (!highest || rule.points > highest.points ? rule : highest), null);
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-x-hidden">
@@ -41,7 +39,7 @@ export default async function AdminPointsPage() {
       </section>
 
       <section className="grid-flow-dense grid gap-4 lg:grid-cols-12">
-        <MetricCard Icon={Sparkles} label="Rule đang bật" value={`${activeRules}/${WASTE_TYPES.length}`} tone="green" />
+        <MetricCard Icon={Sparkles} label="Rule đang bật" value={`${activeRules}/${MVP_REVIEW_WASTE_TYPES.length}`} tone="green" />
         <MetricCard Icon={Scale} label="Tổng điểm mỗi vòng" value={totalAward.toLocaleString("vi-VN")} tone="blue" />
         <MetricCard Icon={Bot} label="Rule cao nhất" value={highestRule ? `${WASTE_TYPE_LABELS[highestRule.waste_type]} · ${highestRule.points}` : "Chưa có"} tone="amber" />
       </section>
@@ -53,7 +51,7 @@ export default async function AdminPointsPage() {
       ) : null}
 
       <section className="grid-flow-dense grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {WASTE_TYPES.map((wasteType) => {
+        {MVP_REVIEW_WASTE_TYPES.map((wasteType) => {
           const rule = ruleByWasteType.get(wasteType);
           return <PointRuleCard key={wasteType} rule={rule} wasteType={wasteType} />;
         })}
@@ -72,7 +70,7 @@ export default async function AdminPointsPage() {
         <article className="rounded-2xl border border-[#bbcbbb]/35 bg-white p-6 shadow-[0_12px_34px_rgba(45,156,219,0.06)] lg:col-span-5" data-admin-reveal>
           <h2 className="text-xl font-black tracking-[-0.03em] text-[#1b1c1b]">Phạm vi MVP</h2>
           <div className="mt-5 grid gap-3">
-            <ScopeRow label="Loại rác" value="Đã CRUD" />
+            <ScopeRow label="Loại rác" value="4 loại + chưa phân loại" />
             <ScopeRow label="Điểm cơ bản" value="Đã áp dụng" />
             <ScopeRow label="Cân nặng" value="Chờ field capture" />
             <ScopeRow label="Giới hạn lượt gửi" value="Chờ rule chống spam" />
@@ -106,7 +104,7 @@ function MetricCard({ Icon, label, value, tone }: { Icon: LucideIcon; label: str
 }
 
 function PointRuleCard({ rule, wasteType }: { rule?: PointRuleRow; wasteType: WasteType }) {
-  const Icon = iconByWasteType[wasteType];
+  const Icon = iconByWasteType[wasteType] ?? CircleHelp;
   const tone = WASTE_TYPE_TONES[wasteType];
   const toneClass = {
     blue: "bg-[#2d9cdb]/10 text-[#006492]",

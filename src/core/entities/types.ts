@@ -1,6 +1,9 @@
 export type UserRole = "user" | "admin";
 
 export type WasteType =
+  | "plastic"
+  | "metal"
+  | "glass"
   | "plastic_bottle"
   | "metal_can"
   | "paper"

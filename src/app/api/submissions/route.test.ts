@@ -2,35 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getUser = vi.fn();
 const from = vi.fn();
-const adminFrom = vi.fn();
+const rpc = vi.fn();
 const sessionSingle = vi.fn();
-const submissionSingle = vi.fn();
 const selectSession = vi.fn();
 const eqSession = vi.fn();
 const selectExistingSubmission = vi.fn();
 const eqExistingSubmission = vi.fn();
 const limitExistingSubmission = vi.fn();
 const maybeSingleExistingSubmission = vi.fn();
-const insertSubmission = vi.fn();
-const selectSubmission = vi.fn();
 const analyzeImage = vi.fn();
-const selectProfile = vi.fn();
-const eqProfileSelect = vi.fn();
-const singleProfile = vi.fn();
-const updateProfile = vi.fn();
-const eqProfileUpdate = vi.fn();
-const insertPointTransaction = vi.fn();
 
 vi.mock("@/infrastructure/supabase/server", () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser },
     from,
-  })),
-}));
-
-vi.mock("@/infrastructure/supabase/admin", () => ({
-  createAdminClient: vi.fn(() => ({
-    from: adminFrom,
+    rpc,
   })),
 }));
 
@@ -50,24 +36,15 @@ describe("POST /api/submissions", () => {
   beforeEach(() => {
     getUser.mockReset();
     from.mockReset();
-    adminFrom.mockReset();
+    rpc.mockReset();
     sessionSingle.mockReset();
-    submissionSingle.mockReset();
     selectSession.mockReset();
     eqSession.mockReset();
     selectExistingSubmission.mockReset();
     eqExistingSubmission.mockReset();
     limitExistingSubmission.mockReset();
     maybeSingleExistingSubmission.mockReset();
-    insertSubmission.mockReset();
-    selectSubmission.mockReset();
     analyzeImage.mockReset();
-    selectProfile.mockReset();
-    eqProfileSelect.mockReset();
-    singleProfile.mockReset();
-    updateProfile.mockReset();
-    eqProfileUpdate.mockReset();
-    insertPointTransaction.mockReset();
 
     selectSession.mockReturnValue({ eq: eqSession });
     eqSession.mockReturnValue({ single: sessionSingle });
@@ -75,36 +52,23 @@ describe("POST /api/submissions", () => {
     eqExistingSubmission.mockReturnValue({ limit: limitExistingSubmission });
     limitExistingSubmission.mockReturnValue({ maybeSingle: maybeSingleExistingSubmission });
     maybeSingleExistingSubmission.mockResolvedValue({ data: null, error: null });
-    insertSubmission.mockReturnValue({ select: selectSubmission });
-    selectSubmission.mockReturnValue({ single: submissionSingle });
-    selectProfile.mockReturnValue({ eq: eqProfileSelect });
-    eqProfileSelect.mockReturnValue({ single: singleProfile });
-    singleProfile.mockResolvedValue({ data: { points: 30 }, error: null });
-    updateProfile.mockReturnValue({ eq: eqProfileUpdate });
-    eqProfileUpdate.mockResolvedValue({ error: null });
-    insertPointTransaction.mockResolvedValue({ error: null });
+    rpc.mockResolvedValue({ data: [{ submission_id: "sub-1" }], error: null });
 
     from.mockImplementation((table: string) => {
       if (table === "scan_sessions") return { select: selectSession };
-      if (table === "submissions") return { select: selectExistingSubmission, insert: insertSubmission };
+      if (table === "submissions") return { select: selectExistingSubmission };
       throw new Error(`Unexpected user table ${table}`);
     });
 
-    adminFrom.mockImplementation((table: string) => {
-      if (table === "profiles") return { select: selectProfile, update: updateProfile };
-      if (table === "point_transactions") return { insert: insertPointTransaction };
-      throw new Error(`Unexpected admin table ${table}`);
-    });
-
     analyzeImage.mockResolvedValue({
-      wasteType: "plastic_bottle",
+      wasteType: "plastic",
       confidence: 0.92,
       objectCount: 1,
       imageQuality: "good",
-      notes: "AI nhận diện chai nhựa rõ.",
+      notes: "AI nhận diện vật liệu nhựa rõ.",
       isValidSubmission: true,
       contaminationRisk: "low",
-      visibleEvidence: ["Có chai nhựa trong ảnh"],
+      visibleEvidence: ["Có vật liệu nhựa trong ảnh"],
       fraudFlags: [],
       provider: "openai",
       model: "gpt-4.1-mini",
@@ -122,10 +86,6 @@ describe("POST /api/submissions", () => {
       },
       error: null,
     });
-    submissionSingle.mockResolvedValueOnce({
-      data: { id: "sub-1" },
-      error: null,
-    });
     const { POST } = await import("./route");
 
     const response = await POST(postSubmission({ scan_session_id: "scan-1", image_url: "data:image/jpeg;base64,abc" }));
@@ -137,39 +97,27 @@ describe("POST /api/submissions", () => {
     expect(selectExistingSubmission).toHaveBeenCalledWith("id");
     expect(eqExistingSubmission).toHaveBeenCalledWith("scan_session_id", "scan-1");
     expect(analyzeImage).toHaveBeenCalledWith("data:image/jpeg;base64,abc");
-    expect(insertSubmission).toHaveBeenCalledWith({
-      user_id: "user-1",
-      bin_id: "bin-1",
+    expect(rpc).toHaveBeenCalledWith("create_submission_with_points", {
       scan_session_id: "scan-1",
       image_url: "data:image/jpeg;base64,abc",
       ai_result: {
-        wasteType: "plastic_bottle",
+        wasteType: "plastic",
         confidence: 0.92,
         objectCount: 1,
         imageQuality: "good",
-        notes: "AI nhận diện chai nhựa rõ.",
+        notes: "AI nhận diện vật liệu nhựa rõ.",
         isValidSubmission: true,
         contaminationRisk: "low",
-        visibleEvidence: ["Có chai nhựa trong ảnh"],
+        visibleEvidence: ["Có vật liệu nhựa trong ảnh"],
         fraudFlags: [],
         provider: "openai",
         model: "gpt-4.1-mini",
       },
       status: "approved",
       points: 10,
-      reason: "AI tự động duyệt: Chai nhựa.",
+      reason: "AI tự động duyệt: Nhựa.",
       risk_flags: [],
       reviewed_at: expect.any(String),
-    });
-    expect(selectProfile).toHaveBeenCalledWith("points");
-    expect(eqProfileSelect).toHaveBeenCalledWith("id", "user-1");
-    expect(updateProfile).toHaveBeenCalledWith({ points: 40 });
-    expect(eqProfileUpdate).toHaveBeenCalledWith("id", "user-1");
-    expect(insertPointTransaction).toHaveBeenCalledWith({
-      user_id: "user-1",
-      submission_id: "sub-1",
-      points: 10,
-      reason: "AI tự động duyệt: Chai nhựa.",
     });
     expect(payload).toEqual({ submission: { id: "sub-1" } });
   });
@@ -198,16 +146,13 @@ describe("POST /api/submissions", () => {
       provider: "openai",
       model: "gpt-4.1-mini",
     });
-    submissionSingle.mockResolvedValueOnce({
-      data: { id: "sub-1" },
-      error: null,
-    });
     const { POST } = await import("./route");
 
     const response = await POST(postSubmission({ scan_session_id: "scan-1", image_url: "data:image/jpeg;base64,abc" }));
 
     expect(response.status).toBe(200);
-    expect(insertSubmission).toHaveBeenCalledWith(
+    expect(rpc).toHaveBeenCalledWith(
+      "create_submission_with_points",
       expect.objectContaining({
         status: "pending_review",
         points: 0,
@@ -215,8 +160,6 @@ describe("POST /api/submissions", () => {
         risk_flags: ["unknown_waste"],
       }),
     );
-    expect(updateProfile).not.toHaveBeenCalled();
-    expect(insertPointTransaction).not.toHaveBeenCalled();
   });
 
   it("stores risk flags when AI cannot confidently validate the image", async () => {
@@ -243,16 +186,13 @@ describe("POST /api/submissions", () => {
       provider: "openai",
       model: "gpt-4.1-mini",
     });
-    submissionSingle.mockResolvedValueOnce({
-      data: { id: "sub-1" },
-      error: null,
-    });
     const { POST } = await import("./route");
 
     const response = await POST(postSubmission({ scan_session_id: "scan-1", image_url: "data:image/jpeg;base64,abc" }));
 
     expect(response.status).toBe(200);
-    expect(insertSubmission).toHaveBeenCalledWith(
+    expect(rpc).toHaveBeenCalledWith(
+      "create_submission_with_points",
       expect.objectContaining({
         points: 0,
         reason: "AI đã phát hiện rủi ro, chờ admin kiểm tra.",
@@ -279,7 +219,7 @@ describe("POST /api/submissions", () => {
 
     expect(response.status).toBe(400);
     expect(payload.error).toBe("Phiên QR đã hết hạn.");
-    expect(insertSubmission).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
   });
 
   it("rejects scan sessions that already have a submission", async () => {
@@ -301,6 +241,34 @@ describe("POST /api/submissions", () => {
 
     expect(response.status).toBe(400);
     expect(payload.error).toBe("Phiên QR này đã được sử dụng.");
-    expect(insertSubmission).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("does not leave approved submissions behind when the atomic RPC fails", async () => {
+    getUser.mockResolvedValueOnce({ data: { user: { id: "user-1" } } });
+    sessionSingle.mockResolvedValueOnce({
+      data: {
+        id: "scan-1",
+        user_id: "user-1",
+        bin_id: "bin-1",
+        expires_at: new Date(Date.now() + 60_000).toISOString(),
+      },
+      error: null,
+    });
+    rpc.mockResolvedValueOnce({ data: null, error: { message: "profile_not_found" } });
+    const { POST } = await import("./route");
+
+    const response = await POST(postSubmission({ scan_session_id: "scan-1", image_url: "data:image/jpeg;base64,abc" }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload.error).toBe("Không tạo được lượt gửi.");
+    expect(rpc).toHaveBeenCalledWith(
+      "create_submission_with_points",
+      expect.objectContaining({
+        status: "approved",
+        points: 10,
+      }),
+    );
   });
 });

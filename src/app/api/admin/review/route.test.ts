@@ -90,7 +90,7 @@ describe("POST /api/admin/review", () => {
         user_id: "user-1",
         status: "pending_review",
         points: 10,
-        ai_result: { wasteType: "plastic_bottle" },
+        ai_result: { wasteType: "plastic" },
       },
       error: null,
     });
@@ -174,7 +174,7 @@ describe("POST /api/admin/review", () => {
         user_id: "user-1",
         status: "approved",
         points: 10,
-        ai_result: { wasteType: "plastic_bottle" },
+        ai_result: { wasteType: "plastic" },
       },
       error: null,
     });
